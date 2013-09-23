@@ -16,10 +16,11 @@
  * ChangeLog:
  * 23.9.2013, Jan Cajthaml - GNU code style & condition shorthand refactor
  * 23.9.2013, Jan Cajthaml - Base comment of method function
+ * 23.9.2013, Jan Cajthaml - Added data.h (struct Vertex, struct Edge)
  *
  * */
 #include "sgl.h"
-
+#include <vector>
 // Current error code
 static sglEErrorCode _libStatus = SGL_NO_ERROR;
 
@@ -60,6 +61,13 @@ const char* sglGetErrorString(sglEErrorCode error)
 
 	return ((int)error<(int)SGL_NO_ERROR || (int)error>(int)SGL_OUT_OF_MEMORY )?"Invalid value passed to sglGetErrorString()":errStrigTable[(int)error];
 }
+
+//---------------------------------------------------------------------------
+// Data attributes
+//---------------------------------------------------------------------------
+
+std::vector<Vertex>	VERTEX;
+std::vector<Edge>	EDGE;
 
 //---------------------------------------------------------------------------
 // Initialization functions
