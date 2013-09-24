@@ -17,8 +17,16 @@
  * 23.9.2013, Jan Cajthaml - GNU code style & condition shorthand refactor
  * 23.9.2013, Jan Cajthaml - Base comment of method function
  * 23.9.2013, Jan Cajthaml - Added data.h
+ * 24.9.2013, Jan Cajthaml - sglCircle proof of concept
  *
  * */
+
+/*
+ * useful links:
+ * Bresenham's line algorithm - http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ *
+ */
+
 #include "sgl.h"
 #include <vector>
 // Current error code
@@ -66,8 +74,8 @@ const char* sglGetErrorString(sglEErrorCode error)
 // Data attributes
 //---------------------------------------------------------------------------
 
-std::vector<Vertex>	VERTEX;
-std::vector<Edge>	EDGE;
+std::vector<Vertex>	VERTICES;
+std::vector<Edge>	EDGES;
 
 //---------------------------------------------------------------------------
 // Initialization functions
@@ -86,6 +94,7 @@ void sglFinish(void)
 }
 
 //LongName Function
+//? Clip the region ?
 int sglCreateContext(int width, int height)
 {
 
@@ -93,18 +102,22 @@ int sglCreateContext(int width, int height)
 }
 
 //LongName Function
+// ? destroy or flush or release ?
 void sglDestroyContext(int id)
 {
 
 }
 
 //LongName Function
+// ? set or set to be current ?
 void sglSetContext(int id)
 {
 
 }
 
 //LongName Function
+// ? get current context ?
+// ? context in stack or 1 context at time ?
 int sglGetContext(void)
 {
 
@@ -175,9 +188,36 @@ void sglVertex2f(float x, float y)
 // y	- center.y
 // z	- ? IS IT 2D OR 3D CIRCLE ?
 // r	- radius
+//
+// Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
 {
+	int p	= 1 - (int)r;
+	int x0	= (int) x;
+	int y0	= (int) y;
+	int x1	= 0;
+	int y1	= (int) r;
+	int x2	= 1;
+	int y2	= -2*r;
 
+	//Set pixels base color here
+
+	while(x1<y1)
+	{
+		if(p>=0)
+		{
+			y1--;
+			y2 += 2;
+			p += y2;
+		}
+
+		x1++;
+
+		x2 += 2;
+		p += x2;
+
+		//Set pixels color here
+	}
 }
 
 //2D Ellipse
@@ -187,6 +227,10 @@ void sglCircle(float x, float y, float z, float r)
 // z	- ? IS IT 2D OR 3D ELLIPSE ?
 // a	- ? width ?
 // b	- ? height ?
+//
+// for adaptive fast Ellipse algorithm:
+// - Cholesky decomposition
+// - Bresenham Algorithm
 void sglEllipse(float x, float y, float z, float a, float b)
 {
 
@@ -199,6 +243,8 @@ void sglEllipse(float x, float y, float z, float a, float b)
 // r	- radius
 // from	- ?
 // to	- ?
+//
+// ? use circle subdivision ?
 void sglArc(float x, float y, float z, float r, float from, float to)
 {
 
@@ -209,26 +255,20 @@ void sglArc(float x, float y, float z, float r, float from, float to)
 //---------------------------------------------------------------------------
 
 // ? What are the matrix modes ?
+//
+// ? we need something to hold on context ?
 void sglMatrixMode( sglEMatrixMode mode )
 {
 
 }
 
 //Push Matrix into transformation Stack
-//
-//	|	|	|	|
-//	|	|	+-M-+
-//	+---+	+---+
 void sglPushMatrix(void)
 {
 
 }
 
 //Pop Matrix from transformation Stack
-//
-//	|	|	|	|
-//	+-M-+	|   |
-//	+---+	+---+
 void sglPopMatrix(void)
 {
 
