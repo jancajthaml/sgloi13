@@ -20,6 +20,8 @@
  * ChangeLog:
  * 23.9.2013, Jan Cajthaml - added struct Vertex
  * 23.9.2013, Jan Cajthaml - added struct Edge
+ * 24.9.2013, Jan Cajthaml - added struct Color
+ * 24.9.2013, Jan Cajthaml - added struct Matrix
  *
  * */
 
@@ -82,4 +84,82 @@ struct Edge
 	}
 
 };
+
+//Color
+struct Color
+{
+	float r;
+	float g;
+	float b;
+	float a;
+
+	Color()
+	{
+		r = g = b = 0.0f;
+
+		// ? is alpha channel 1 by default or 0 ?
+		a = 1.0f;
+	}
+
+    Color(float R, float G, float B)
+    {
+    	r	= R;
+    	g	= G;
+    	b	= B;
+
+    	// ? is alpha channel 1 by default or 0 ?
+    	a	= 1.0f;
+    }
+
+    Color(float R, float G, float B, float A)
+    {
+    	r	= R;
+    	g	= G;
+    	b	= B;
+    	a	= A;
+    }
+};
+
+//Matrix
+// vectors in columns
+struct Matrix
+{
+    float matrix[16];
+
+    float& operator[](int i)
+    {
+        return matrix[i];
+    }
+
+    void operator=(float* m)
+    {
+    	//Memory copy faster then iteration
+    	//memcpy(&matrix, m, 16 * sizeof(float) );
+
+    	//Operation optimalisation
+    	//
+    	// ? whats better register shift of static allocation ?
+    	// sizeof(float) << 4
+    	//
+    	memcpy(&matrix, m, sizeof(float) << 4 );
+
+        //for(int i = 0; i<16; i++)
+          //  matrix[i] = m[i];
+    }
+
+    void set(Matrix &m)
+    {
+        *this = m;
+    }
+
+    Matrix()
+    {
+    	//Memory fill faster then iteration
+    	std::fill_n(matrix, 16, 0.0f);
+
+    	//for(int i = 0; i<16; i++)
+    		//matrix[i] = 0.0;
+    }
+};
+
 #endif /* DATA_H_ */

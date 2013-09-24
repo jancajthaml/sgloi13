@@ -16,7 +16,7 @@
  * ChangeLog:
  * 23.9.2013, Jan Cajthaml - GNU code style & condition shorthand refactor
  * 23.9.2013, Jan Cajthaml - Base comment of method function
- * 23.9.2013, Jan Cajthaml - Added data.h (struct Vertex, struct Edge)
+ * 23.9.2013, Jan Cajthaml - Added data.h
  *
  * */
 #include "sgl.h"
