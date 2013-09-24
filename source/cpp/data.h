@@ -22,8 +22,44 @@
  * 23.9.2013, Jan Cajthaml - added struct Edge
  * 24.9.2013, Jan Cajthaml - added struct Color
  * 24.9.2013, Jan Cajthaml - added struct Matrix
+ * 24.9.2013, Jan Cajthaml - added struct Context
  *
  * */
+
+//---------------------------------------------------------------------------
+// Helper Structures
+//---------------------------------------------------------------------------
+
+//Context
+struct Context
+{
+	// ? how will we hold on ID mapping ?
+	int id;
+
+	float *buffer;
+	int w;
+	int h;
+	Color clear;
+	Color color;
+
+	Context(int width, int height)
+	{
+		w		= width;
+		h		= height;
+		id		= 0;
+		buffer	= 0.0f;
+
+		// ? this shoud be static or const equivalent to NULL ?
+		clear	= Color(255,0,0);
+
+		// ? this shoud be static or const equivalent to NULL ?
+		color	= Color(0,255,0);
+	}
+};
+
+//---------------------------------------------------------------------------
+// Data Structures
+//---------------------------------------------------------------------------
 
 //Vertex
 struct Vertex
