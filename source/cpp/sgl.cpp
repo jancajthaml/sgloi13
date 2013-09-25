@@ -15,13 +15,17 @@
 /*
  * ChangeLog:
  * 23.9.2013, Jan Cajthaml - GNU code style & condition shorthand refactor
- * 23.9.2013, Jan Cajthaml - Base comment of method function
- * 23.9.2013, Jan Cajthaml - Added data.h
+ *                         - Base comment of method function
+ *                         - Added data.h
  * 24.9.2013, Jan Cajthaml - sglCircle proof of concept
  * 25.9.2013, Jan Cajthaml - Helper methods:
  *                                           in_range  - checks if(LOW<=x && x<=HIGH) withing one operation
  *                                           round     - round double to a nearest non decimal number
  *                                           current   - current Context pointer
+ *                                           normalize - normalize coords to viewport
+ *                                           setPixel  - sets pixel color
+ *
+ *                         - sglEllipse proof of concept based on fast Bresenham Type Algorithm
  *
  * */
 
@@ -42,6 +46,8 @@
 
 bool in_range(unsigned number, unsigned low, unsigned high);
 Context* current();
+void normalize(float &x, float &y);
+void setPixel(int x, int y);
 
 //---------------------------------------------------------------------------
 // SGL
@@ -85,7 +91,7 @@ const char* sglGetErrorString(sglEErrorCode error)
 			"Insufficient memory to finish the requested operation"
 	};
 
-	return ((int)error<(int)SGL_NO_ERROR || (int)error>(int)SGL_OUT_OF_MEMORY )?"Invalid value passed to sglGetErrorString()":errStrigTable[(int)error];
+	return (!in_range(error,SGL_NO_ERROR,SGL_OUT_OF_MEMORY))?"Invalid value passed to sglGetErrorString()":errStrigTable[int(error)];
 }
 
 //---------------------------------------------------------------------------
@@ -211,6 +217,15 @@ void sglClear(unsigned what)
 //LongName Function
 void sglBegin(sglEElementType mode)
 {
+	if(mode>SGL_LAST_ELEMENT_TYPE)
+	{
+		setErrCode(SGL_INVALID_ENUM);
+		return;
+	}
+
+	//? Context here ?
+
+    VERTICES.clear();
 
 }
 
@@ -226,21 +241,24 @@ void sglEnd(void)
 // w	- ? is it weight or another dimension ?
 void sglVertex4f(float x, float y, float z, float w)
 {
-
+	normalize(x, y);
+	VERTICES.push_back(Vertex (x, y, z, w));
 }
 
 //Vertex with 3 float coords
 //[x,y,z]
 void sglVertex3f(float x, float y, float z)
 {
-
+	normalize(x, y);
+	VERTICES.push_back(Vertex (x, y, z));
 }
 
 //Vertex with 2 float coords
 //[x,y]
 void sglVertex2f(float x, float y)
 {
-
+	normalize(x, y);
+	VERTICES.push_back(Vertex (x, y));
 }
 
 //2D Circle
@@ -261,7 +279,11 @@ void sglCircle(float x, float y, float z, float r)
 	int x2	= 1;
 	int y2	= -2*r;
 
-	//Set pixels base color here
+	//4 points around center
+	setPixel(x0        , y0+int(r));
+	setPixel(x0        , y0-int(r));
+	setPixel(x0+int(r) , y0);
+	setPixel(x0-int(r) , y0);
 
 	while(x1<y1)
 	{
@@ -277,7 +299,16 @@ void sglCircle(float x, float y, float z, float r)
 		x2 += 2;
 		p += x2;
 
-		//Set pixels color here
+		setPixel(x0+x1 , y0+y1);
+		setPixel(x0-x1 , y0+y1);
+		setPixel(x0+x1 , y0-y1);
+		setPixel(x0-x1 , y0-y1);
+
+		setPixel(x0+y1 , y0+x1);
+		setPixel(x0-y1 , y0+x1);
+		setPixel(x0+y1 , y0-x1);
+		setPixel(x0-y1 , y0-x1);
+
 	}
 }
 
@@ -292,10 +323,65 @@ void sglCircle(float x, float y, float z, float r)
 // for adaptive fast Ellipse algorithm:
 // - Cholesky decomposition
 // - Bresenham Algorithm
-void sglEllipse(float x, float y, float z, float a, float b)
+//
+//@see http://www.codeproject.com/Messages/2112010/A-Fast-Bresenham-Type-Algorithm-For-Drawing-Ellips.aspx
+void sglEllipse(float x1, float y1, float z, float x2, float y2)
 {
+	float x				= x2;
+	float y				= 0;
+	float EllipseError	= 0;
+	float TwoASquare	= 2 * x2 * x2;
+	float TwoBSquare	= 2 * y2 * y2;
+	float XChange		= y2 * y2 * (1 - 2 * x2);
+	float YChange		= x2 * x2;
+	float StoppingX		= TwoBSquare * x2;
+	float StoppingY		= 0;
 
+	while( StoppingX >= StoppingY)
+	{
+		setPixel(x, y);
+
+		y++;
+		StoppingY		+= TwoASquare;
+		EllipseError	+= YChange;
+		YChange			+= TwoASquare;
+
+		if( ( 2 * EllipseError + XChange) > 0 )
+		{
+			x--;
+			StoppingX		-= TwoBSquare;
+			EllipseError	+= XChange;
+			XChange			+= TwoBSquare;
+		}
+	}
+
+	x				= 0;
+	y				= y2;
+	XChange			= y2 * y2;
+	YChange			= x2 * x2 * (1 - 2 * y2);
+	EllipseError	= 0;
+	StoppingX		= 0;
+	StoppingY		= TwoASquare * y2;
+	while (StoppingX <= StoppingY)
+	{
+		setPixel(x, y);
+
+		x++;
+		StoppingX		+= TwoBSquare;
+		EllipseError	+= XChange;
+		XChange			+= TwoBSquare;
+
+		if( (2 * EllipseError + YChange) > 0)
+		{
+			y--;
+			StoppingY		-= TwoASquare;
+			EllipseError	+= YChange;
+			YChange			+= TwoASquare;
+		}
+	}
 }
+
+//DRAW LINE HERE ???
 
 //2D Arc
 //
@@ -315,12 +401,23 @@ void sglArc(float x, float y, float z, float r, float from, float to)
 // Transform functions
 //---------------------------------------------------------------------------
 
-// ? What are the matrix modes ?
+// Function name here
+//
+// modes:
+//        SGL_MODELVIEW  - desc
+//        SGL_PROJECTION - desc
 //
 // ? we need something to hold on context ?
 void sglMatrixMode( sglEMatrixMode mode )
 {
-
+	if(mode == SGL_MODELVIEW || mode == SGL_PROJECTION)
+	{
+		//Set matrix mode
+	}
+	else
+	{
+		setErrCode(SGL_INVALID_ENUM);
+	}
 }
 
 //Push Matrix into transformation Stack
@@ -517,6 +614,28 @@ double round(double x)
 	return double((x>=0.5)?(int(x)+1):int(x));
 }
 
+//Normalize coords in context of Viewport
+//@see http://www.opengl.org/sdk/docs/man/xhtml/glViewport.xml
+void normalize(float &x, float &y)
+{
+    x = (x+1)*(current()->w2)+current()->x;
+    y = (y+1)*(current()->h2)+current()->y;
+}
+
+
+void setPixel(int x, int y)
+{
+	Context* c = current();
+	int offset = (c->x+c->w*c->y)*3;
+
+	c->buffer[offset]	= c->color.r;
+	c->buffer[offset+1]	= c->color.g;
+	c->buffer[offset+2]	= c->color.b;
+}
+
+
+
 
 Context* current()
 { return manager.contexts[manager.current]; }
+
