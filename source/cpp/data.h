@@ -23,39 +23,9 @@
  * 24.9.2013, Jan Cajthaml - added struct Color
  * 24.9.2013, Jan Cajthaml - added struct Matrix
  * 24.9.2013, Jan Cajthaml - added struct Context
- *
+ * 25.9.2013, Jan Cajthaml - added ViewPort & depth flag to Context
+ * 25.9.2013, Jan Cajthaml - added struct ContextManager
  * */
-
-//---------------------------------------------------------------------------
-// Helper Structures
-//---------------------------------------------------------------------------
-
-//Context
-struct Context
-{
-	// ? how will we hold on ID mapping ?
-	int id;
-
-	float *buffer;
-	int w;
-	int h;
-	Color clear;
-	Color color;
-
-	Context(int width, int height)
-	{
-		w		= width;
-		h		= height;
-		id		= 0;
-		buffer	= 0.0f;
-
-		// ? this shoud be static or const equivalent to NULL ?
-		clear	= Color(255,0,0);
-
-		// ? this shoud be static or const equivalent to NULL ?
-		color	= Color(0,255,0);
-	}
-};
 
 //---------------------------------------------------------------------------
 // Data Structures
@@ -196,6 +166,80 @@ struct Matrix
     	//for(int i = 0; i<16; i++)
     		//matrix[i] = 0.0;
     }
+};
+
+
+
+//---------------------------------------------------------------------------
+// Helper Structures
+//---------------------------------------------------------------------------
+
+//Context
+struct Context
+{
+	int id;
+
+    //Drawing
+	float *buffer;
+	int w;
+	int h;
+	Color clear;
+	Color color;
+
+	//State
+	bool depth;
+
+	//Viewport
+	float x;
+	float y;
+	float w2;
+	float h2;
+	int min_x;
+	int min_y;
+	int max_x;
+	int max_y;
+
+	Context(int width, int height)
+	{
+		//----------------------//
+
+		//Initialise Drawing
+		w		= width;
+		h		= height;
+		id		= 0;
+		buffer	= NULL;
+
+		// ? this shoud be static or const equivalent to NULL ?
+		clear	= Color(255,0,0);
+
+		// ? this shoud be static or const equivalent to NULL ?
+		color	= Color(0,255,0);
+
+		//----------------------//
+
+		//Initialise Viewport
+		x		= 0.0f;
+		y		= 0.0f;
+		w2		= 0.0f;
+		h2		= 0.0f;
+		min_x	= 0;
+		min_y	= 0;
+		max_x	= 0;
+		max_y	= 0;
+
+		//----------------------//
+
+		//Initialise Flags
+		depth	= false;
+
+	}
+};
+
+//Context Manager
+struct ContextManager
+{
+    std::vector<Context*> contexts;
+    int current;
 };
 
 #endif /* DATA_H_ */

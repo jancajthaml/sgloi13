@@ -18,17 +18,35 @@
  * 23.9.2013, Jan Cajthaml - Base comment of method function
  * 23.9.2013, Jan Cajthaml - Added data.h
  * 24.9.2013, Jan Cajthaml - sglCircle proof of concept
+ * 25.9.2013, Jan Cajthaml - Helper methods:
+ *                                           in_range  - checks if(LOW<=x && x<=HIGH) withing one operation
+ *                                           round     - round double to a nearest non decimal number
+ *                                           current   - current Context pointer
  *
  * */
 
 /*
  * useful links:
  * Bresenham's line algorithm - http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ * C++ Code optimalisation    - http://en.wikibooks.org/wiki/Optimizing_C%2B%2B/Code_optimization/Faster_operations
  *
  */
 
 #include "sgl.h"
+#include "data.h"
 #include <vector>
+
+//---------------------------------------------------------------------------
+// Helper functions forward declaration
+//---------------------------------------------------------------------------
+
+bool in_range(unsigned number, unsigned low, unsigned high);
+Context* current();
+
+//---------------------------------------------------------------------------
+// SGL
+//---------------------------------------------------------------------------
+
 // Current error code
 static sglEErrorCode _libStatus = SGL_NO_ERROR;
 
@@ -74,8 +92,9 @@ const char* sglGetErrorString(sglEErrorCode error)
 // Data attributes
 //---------------------------------------------------------------------------
 
-std::vector<Vertex>	VERTICES;
-std::vector<Edge>	EDGES;
+static ContextManager	manager;
+std::vector<Vertex>		VERTICES;
+std::vector<Edge>		EDGES;
 
 //---------------------------------------------------------------------------
 // Initialization functions
@@ -84,7 +103,6 @@ std::vector<Edge>	EDGES;
 //LongName Function "global init ? run init ?"
 void sglInit(void)
 {
-
 }
 
 //LongName Function "gloabl finalization ? run finalization ?"
@@ -94,41 +112,65 @@ void sglFinish(void)
 }
 
 //LongName Function
-//? Clip the region ?
 int sglCreateContext(int width, int height)
 {
+	int number_of_contexts = manager.contexts.size();
 
-	return 0;
+	Context *c = new Context(width, height);
+
+	if(c == NULL)
+	{
+		setErrCode(SGL_OUT_OF_MEMORY);
+		return -1;
+	}
+
+	manager.contexts.push_back(c);
+
+	return number_of_contexts;
 }
 
 //LongName Function
 // ? destroy or flush or release ?
 void sglDestroyContext(int id)
 {
+	 if(in_range(id,0,manager.contexts.size()-1))
+	 {
+		 setErrCode(SGL_INVALID_VALUE);
+		 return;
+	 }
 
+	 delete manager.contexts[id]->buffer;
+	 delete manager.contexts[id];
 }
 
 //LongName Function
-// ? set or set to be current ?
 void sglSetContext(int id)
 {
+	 if(!in_range(id,0,manager.contexts.size()-1))
+	 {
+		 setErrCode(SGL_INVALID_VALUE);
+		 return;
+	 }
 
+	 manager.current = id;
 }
 
 //LongName Function
-// ? get current context ?
-// ? context in stack or 1 context at time ?
 int sglGetContext(void)
 {
+	if(manager.current < 0)
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return -1;
+	}
 
-	return 0;
+	return manager.current;
 }
 
 //LongName Function
 float *sglGetColorBufferPointer(void)
 {
-
-	return 0;
+    return (float *) current()->buffer;
 }
 
 //---------------------------------------------------------------------------
@@ -139,12 +181,31 @@ float *sglGetColorBufferPointer(void)
 void sglClearColor (float r, float g, float b, float alpha)
 {
 
+	current()->clear.r = r;
+    current()->clear.g = g;
+    current()->clear.b = b;
 }
 
 //LongName Function
 void sglClear(unsigned what)
 {
+	if(what != SGL_COLOR_BUFFER_BIT)
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
+	}
 
+	if(what == SGL_COLOR_BUFFER_BIT)
+	{
+		int size = current()->w * current()->h * 3;
+
+		for(int i = 0; i<size; i=i+3)
+		{
+			current()->buffer[i]	= current()->clear.r;
+			current()->buffer[i+1]	= current()->clear.g;
+			current()->buffer[i+2]	= current()->clear.b;
+		}
+	}
 }
 
 //LongName Function
@@ -348,7 +409,7 @@ void sglViewport(int x, int y, int width, int height)
 //RGB Color
 void sglColor3f(float r, float g, float b)
 {
-
+    current()->color = Color(r, g, b);
 }
 
 // ?
@@ -360,7 +421,7 @@ void sglAreaMode(sglEAreaMode mode)
 //Point "radius/diameter ?"
 void sglPointSize(float size)
 {
-
+	//Point size in context or static ?
 }
 
 //Enable given flag
@@ -439,3 +500,23 @@ void sglEmissiveMaterial(const float r, const float g, const float b, const floa
 {
 
 }
+
+//---------------------------------------------------------------------------
+// Helper functions
+//---------------------------------------------------------------------------
+
+//Check if number is in range
+//@see http://stackoverflow.com/questions/17095324/fastest-way-in-c-to-determine-if-an-integer-is-between-two-integers-inclusive
+bool in_range(unsigned number, unsigned low, unsigned high)
+{ return ((unsigned)(number-low) <= (high-low)); }
+
+//Fast double round (3 times faster than std::round because of absence of EDOM)
+//Type safe
+double round(double x)
+{
+	return double((x>=0.5)?(int(x)+1):int(x));
+}
+
+
+Context* current()
+{ return manager.contexts[manager.current]; }
