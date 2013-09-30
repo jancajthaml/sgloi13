@@ -153,6 +153,43 @@ struct Matrix
           //  matrix[i] = m[i];
     }
 
+    void operator*(float *matrix)
+    {
+
+    	matrix [0]	= 0;
+    	matrix [1]	= 0;
+    	matrix [2]	= 0;
+    	matrix [3]	= 0;
+
+    	matrix [4]	= 0;
+    	matrix [5]	= 0;
+    	matrix [6]	= 0;
+    	matrix [7]	= 0;
+
+    	matrix [8]	= 0;
+    	matrix [9]	= 0;
+    	matrix [10]	= 0;
+    	matrix [11]	= 0;
+
+    	matrix [12]	= 0;
+    	matrix [13]	= 0;
+    	matrix [14]	= 0;
+    	matrix [15]	= 0;
+
+       	//Memory copy faster then iteration
+       	//memcpy(&matrix, m, 16 * sizeof(float) );
+
+       	//Operation optimalisation
+       	//
+       	// ? whats better register shift of static allocation ?
+       	// sizeof(float) << 4
+       	//
+    //   	memcpy(&matrix, m, sizeof(float) << 4 );
+
+           //for(int i = 0; i<16; i++)
+             //  matrix[i] = m[i];
+    }
+
     void set(Matrix &m)
     {
         *this = m;
@@ -189,6 +226,9 @@ struct Context
 	//State
 	bool depth;
 
+	//Pixel size
+	float size;
+
 	//Viewport
 	float x;
 	float y;
@@ -199,8 +239,9 @@ struct Context
 	int max_x;
 	int max_y;
 
-	//Pixel size
-	float size;
+	//Transformation matrices
+	Matrix model_view;
+	Matrix projection;
 
 	Context(int width, int height)
 	{

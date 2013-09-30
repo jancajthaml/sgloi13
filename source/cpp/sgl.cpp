@@ -26,6 +26,8 @@
  *                                           setPixel  - sets pixel color
  *
  *                         - sglEllipse proof of concept based on fast Bresenham Type Algorithm
+ * 20.9.2013, Jan Cajthaml - added method sglDrawLine()
+ *                         - body of sglEnd and sglBegin
  *
  * */
 
@@ -309,6 +311,8 @@ void sglVertex2f(float x, float y)
 // Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
 {
+	//Prepsat na Bresehnamm
+
 	int p	= 1 - (int)r;
 	int x0	= int(x);
 	int y0	= int(y);
@@ -462,46 +466,72 @@ void sglArc(float x, float y, float z, float r, float from, float to)
 // ? we need something to hold on context ?
 void sglMatrixMode( sglEMatrixMode mode )
 {
-	if(mode == SGL_MODELVIEW || mode == SGL_PROJECTION)
-	{
+	//if(mode == SGL_MODELVIEW || mode == SGL_PROJECTION)
+	//{
+		switch(mode)
+		{
+			case SGL_MODELVIEW	:
+			{
+
+			}
+			break;
+
+			case SGL_PROJECTION	:
+			{
+
+			}
+			break;
+
+			default				: setErrCode(SGL_INVALID_ENUM); break;
+		}
 		//Set matrix mode
-	}
-	else
-	{
-		setErrCode(SGL_INVALID_ENUM);
-	}
+	//}
+	//else
+	//{
+		//setErrCode(SGL_INVALID_ENUM);
+	//}
 }
 
 //Push Matrix into transformation Stack
 void sglPushMatrix(void)
 {
-
+	//Create stack of matrices
 }
 
 //Pop Matrix from transformation Stack
 void sglPopMatrix(void)
 {
-
+	//Create stack of matrices
 }
 
 // ? Load identity matrix ?
 void sglLoadIdentity(void)
 {
-
+	//?
 }
 
 // ? Load matrix where ? global ? stack ?
 void sglLoadMatrix(const float *matrix)
 {
-
+	//?
 }
 
 //Multiply two matrices
 //
 // ? Formula for matrix multiplication here ?
+//
+//  | a b c d |     | 1   2  3  4 |   | a*1+b*5+c*9+d*13  a*2+b*6+c*10+d*14
+//  | e f g h |  X  | 5   6  7  8 | = |
+//  | i j k l |     | 9  10 11 12 |   |
+//  | m n o p |     | 13 14 15 16 |   |
+//
 void sglMultMatrix(const float *matrix)
 {
+	Matrix current = new Matrix();
 
+	matrix = matrix*current;
+
+	//multiply two matices 4x4
 }
 
 //Translate coordinates
@@ -509,7 +539,11 @@ void sglMultMatrix(const float *matrix)
 // ? fotmula for matrix by vector multiplication in terms of vertex translation here ?
 void sglTranslate(float x, float y, float z)
 {
+	//aplikuj transformaci posunuti na aktualni matici
 
+	//1 vytvorit novou matici popisujici posunuti
+	//starou matici vynasobit zprava novou
+	//nahradit starou matici novou matici
 }
 
 // ? Scales what? Context or scene ?
@@ -524,12 +558,15 @@ void sglScale(float scalex, float scaley, float scalez)
 void sglRotate2D(float angle, float centerx, float centery)
 {
 
+	//2D rotace -> rotace okolo osy z
+
 }
 
 // ? rotates what ? Context or scene ?
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
+	// rotace okolo osy y
 
 }
 
