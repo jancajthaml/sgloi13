@@ -1,47 +1,33 @@
-/*
- * build.cpp
- *
- *  Created on: 23.9.2013
- *      Author: jancajthaml
- */
 
-#include <iostream>;
-#include <cmath>
-#include <limits>
+#include <assert.h>
+#include <algorithm>
+#include <vector>
+#include <iostream>
 
+#include "data.h";
 using namespace std;
 
-double r(double x)
-{
-	return double((x>=0.5)?(int(x)+1):int(x));
-}
+int main() {
+    Matrix a, b, c;
 
-double s(double x)
-{
-	return round(x);
-}
+    a[0] = 13;
+    cout << a[0] << endl;
+    assert(a[0] == 13);
 
-void test(char* name, double (*f)(double))
-{
-	int it = std::numeric_limits<int>::max()>>2;
+    assert(b[0] == 0);
+    b = a;
+    assert(b[0] == 13);
+    b *= a;
+    assert(b[0] == 13*13);
+    b += a;
+    assert(b[0] == 13*13+13);
+    b -= a;
+    assert(b[0] == 13*13);
 
-	clock_t begin = clock();
-
-	for(int i=0; i<it; i++)
-	{
-		f(double(i)/1000.0);
-	}
-	clock_t end = clock();
-
-	cout << "test " << name << " " << double(end - begin) / CLOCKS_PER_SEC << endl;
-
-}
-
-int main(int argc, char **argv)
-{
-
-	cout << "test" << endl;
+    Matrix d = a + b;
+    assert(a[0] == 13);
+    assert(b[0] == 13*13);
+    assert(d[0] == 13*13+13);
 
 	return 0;
 }
-

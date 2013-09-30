@@ -26,8 +26,10 @@
  *                                           setPixel  - sets pixel color
  *
  *                         - sglEllipse proof of concept based on fast Bresenham Type Algorithm
- * 20.9.2013, Jan Cajthaml - added method sglDrawLine()
+ * 29.9.2013, Jan Cajthaml - added method sglDrawLine()
  *                         - body of sglEnd and sglBegin
+ *
+ * 30.9.2013, Jan Cajthaml - added sglDrawLine Bresenham´s algorithm draw line implementation
  *
  * */
 
@@ -51,7 +53,7 @@ Context* current();
 void normalize(float &x, float &y);
 void setPixel(int x, int y);
 
-void sglDrawLine(float x1, float y1, float x2, float y2);
+void sglDrawLine(Vertex start, Vertex end);
 
 //---------------------------------------------------------------------------
 // SGL
@@ -269,7 +271,7 @@ void sglEnd(void)
 			int size = VERTICES.size();
 
 			for( int i=0; i<size; i+=2 )
-				sglDrawLine(VERTICES[i].x,VERTICES[i].y,VERTICES[i+1].x,VERTICES[i+1].y);
+				sglDrawLine(VERTICES[i],VERTICES[i+1]);
 		}
 		break;
 
@@ -424,13 +426,51 @@ void sglEllipse(float x1, float y1, float z, float x2, float y2)
 }
 
 //Line
-void sglDrawLine(float x1, float y1, float x2, float y2)
-{
 //Breceanuv algoritmus
+//DDA algoritmus (jednoduzsi)
+//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
+void sglDrawLine(Vertex start, Vertex end)
+{
+	int x1		= int(start.x);
+	int x2		= int(end.x);
 
-	//DDA algoritmus (jednoduzsi)
+    if (x1 > x2)
+    {
+    	sglDrawLine(end, start);
+    	return;
+    }
+
+    int y1		= int(start.y)		;
+    int y2		= int(end.y)		;
+    int slope						;
+    int dx		= x2 - x1			;
+    int dy		= y2 - y1			;
+
+    if (dy < 0)
+    {
+    	slope	= -1				;
+    	dy		= -dy				;
+    }
+    else slope	= 1					;
+
+    int incE	= dy << 1			;
+    int incNE	= (dy - dx) << 1	;
+    int d		= (dy << 1) - dx	;
+    int y		= y1				;
+    int x							;
+
+    for (x = x1; x <= x2; x++)
+    {
+    	setPixel(x, y);
+
+    	if (d > 0)
+    	{
+    			d += incNE			;
+    			y += slope			;
+    	}
+    	else	d += incE			;
+    }
 }
-
 
 //Line
 void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
@@ -527,44 +567,6 @@ void sglLoadMatrix(const float *matrix)
 //
 void sglMultMatrix( float *matrix)
 {
-
-	Matrix* A = new Matrix();
-	Matrix* B = Matrix();
-
-	Matrix C = new Matrix();
-	Matrix D = Matrix();
-
-	float* E;
-
-	A=E;
-	C=E;
-
-	A*E;
-	C*E;
-
-	A+E;
-	C+E;
-
-	A-E;
-	C-E;
-
-	A = B;
-	A - B;
-	A + B;
-	A * B;
-
-	A+=B;
-	A-=B;
-	A*=B;
-
-	C = D;
-	C - D;
-	C + D;
-	C * D;
-
-	C+=D;
-	C-=D;
-	C*=D;
 
 
 
