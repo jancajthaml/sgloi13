@@ -525,11 +525,48 @@ void sglLoadMatrix(const float *matrix)
 //  | i j k l |     | 9  10 11 12 |   |
 //  | m n o p |     | 13 14 15 16 |   |
 //
-void sglMultMatrix(const float *matrix)
+void sglMultMatrix( float *matrix)
 {
-	Matrix current = new Matrix();
 
-	matrix = matrix*current;
+	Matrix* A = new Matrix();
+	Matrix* B = Matrix();
+
+	Matrix C = new Matrix();
+	Matrix D = Matrix();
+
+	float* E;
+
+	A=E;
+	C=E;
+
+	A*E;
+	C*E;
+
+	A+E;
+	C+E;
+
+	A-E;
+	C-E;
+
+	A = B;
+	A - B;
+	A + B;
+	A * B;
+
+	A+=B;
+	A-=B;
+	A*=B;
+
+	C = D;
+	C - D;
+	C + D;
+	C * D;
+
+	C+=D;
+	C-=D;
+	C*=D;
+
+
 
 	//multiply two matices 4x4
 }

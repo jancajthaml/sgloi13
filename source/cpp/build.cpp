@@ -40,12 +40,8 @@ void test(char* name, double (*f)(double))
 int main(int argc, char **argv)
 {
 
-	test("r1",r);
-	test("s1",s);
-	test("r2",r);
-	test("s2",s);
-	test("r3",r);
-	test("s3",s);
+	cout << "test" << endl;
+
 	return 0;
 }
 
