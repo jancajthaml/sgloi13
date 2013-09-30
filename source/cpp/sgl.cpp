@@ -49,6 +49,8 @@ Context* current();
 void normalize(float &x, float &y);
 void setPixel(int x, int y);
 
+void sglDrawLine(float x1, float y1, float x2, float y2);
+
 //---------------------------------------------------------------------------
 // SGL
 //---------------------------------------------------------------------------
@@ -101,6 +103,8 @@ const char* sglGetErrorString(sglEErrorCode error)
 static ContextManager	manager;
 std::vector<Vertex>		VERTICES;
 std::vector<Edge>		EDGES;
+bool					isDrawing;
+sglEElementType			current_primitive_drawing;
 
 //---------------------------------------------------------------------------
 // Initialization functions
@@ -109,6 +113,7 @@ std::vector<Edge>		EDGES;
 //LongName Function "global init ? run init ?"
 void sglInit(void)
 {
+	isDrawing = false;
 }
 
 //LongName Function "gloabl finalization ? run finalization ?"
@@ -223,6 +228,10 @@ void sglBegin(sglEElementType mode)
 		return;
 	}
 
+	//Musime vedet zde co jsme vykreslovali, nastaven enum zde
+
+	isDrawing					= false;
+	current_primitive_drawing	= mode;
 	//? Context here ?
 
     VERTICES.clear();
@@ -232,13 +241,42 @@ void sglBegin(sglEElementType mode)
 //LongName Function
 void sglEnd(void)
 {
+	if(isDrawing)
+	{
+		//throw exception did not begun
+		return;
+	}
 
+	//Podle promenne nastavene v sglBegin vykreslime
+
+	isDrawing = true;
+
+	switch(current_primitive_drawing)
+	{
+		case SGL_POINTS :
+		{
+			int size = VERTICES.size();
+
+			for( int i=0; i<size; i++ )
+				setPixel(VERTICES[i].x,VERTICES[i].y);
+		}
+		break;
+
+		case SGL_LINES :
+		{
+			int size = VERTICES.size();
+
+			for( int i=0; i<size; i+=2 )
+				sglDrawLine(VERTICES[i].x,VERTICES[i].y,VERTICES[i+1].x,VERTICES[i+1].y);
+		}
+		break;
+
+	}
 }
 
-//Vertex with 4 float coords
+//Vertex with 3 float coords in homogenous coordinates
 //[x,y,z,w]
 //
-// w	- ? is it weight or another dimension ?
 void sglVertex4f(float x, float y, float z, float w)
 {
 	normalize(x, y);
@@ -272,10 +310,10 @@ void sglVertex2f(float x, float y)
 void sglCircle(float x, float y, float z, float r)
 {
 	int p	= 1 - (int)r;
-	int x0	= (int) x;
-	int y0	= (int) y;
+	int x0	= int(x);
+	int y0	= int(y);
 	int x1	= 0;
-	int y1	= (int) r;
+	int y1	= int(r);
 	int x2	= 1;
 	int y2	= -2*r;
 
@@ -381,7 +419,21 @@ void sglEllipse(float x1, float y1, float z, float x2, float y2)
 	}
 }
 
-//DRAW LINE HERE ???
+//Line
+void sglDrawLine(float x1, float y1, float x2, float y2)
+{
+//Breceanuv algoritmus
+
+	//DDA algoritmus (jednoduzsi)
+}
+
+
+//Line
+void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
+{
+
+}
+
 
 //2D Arc
 //
@@ -518,7 +570,7 @@ void sglAreaMode(sglEAreaMode mode)
 //Point "radius/diameter ?"
 void sglPointSize(float size)
 {
-	//Point size in context or static ?
+    current()->size = size;
 }
 
 //Enable given flag
@@ -625,16 +677,16 @@ void normalize(float &x, float &y)
 
 void setPixel(int x, int y)
 {
-	Context* c = current();
+	Context* c	= current();
+	c->x		= x;
+	c->y		= y;
+
 	int offset = (c->x+c->w*c->y)*3;
 
 	c->buffer[offset]	= c->color.r;
 	c->buffer[offset+1]	= c->color.g;
 	c->buffer[offset+2]	= c->color.b;
 }
-
-
-
 
 Context* current()
 { return manager.contexts[manager.current]; }

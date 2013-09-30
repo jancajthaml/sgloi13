@@ -199,6 +199,9 @@ struct Context
 	int max_x;
 	int max_y;
 
+	//Pixel size
+	float size;
+
 	Context(int width, int height)
 	{
 		//----------------------//
@@ -232,6 +235,9 @@ struct Context
 		//Initialise Flags
 		depth	= false;
 
+		//----------------------//
+
+		size	= 1;
 	}
 };
 

@@ -18,7 +18,7 @@ double r(double x)
 
 double s(double x)
 {
-	if(x>=0.5){return ceil(x);}else{return floor(x);}
+	return round(x);
 }
 
 void test(char* name, double (*f)(double))
