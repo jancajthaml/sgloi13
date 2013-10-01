@@ -1,4 +1,5 @@
 testapp/testapp
+source/cpp/testapp
 source/cpp/sgl.o
 testapp/hdrloader.o
 testapp/nffread.o
