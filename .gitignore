@@ -1,0 +1,9 @@
+source/cpp/sgl.o
+testapp/hdrloader.o
+testapp/nffread.o
+testapp/testapp.o
+testapp/timer.o
+xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/xcuserdata/janbrejcha.xcuserdatad/UserInterfaceState.xcuserstate
+xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/libsgl.xcscheme
+xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/xcschememanagement.plist
