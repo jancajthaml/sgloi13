@@ -25,6 +25,9 @@
  * 24.9.2013, Jan Cajthaml - added struct Context
  * 25.9.2013, Jan Cajthaml - added ViewPort & depth flag to Context
  * 25.9.2013, Jan Cajthaml - added struct ContextManager
+ * 30.9.2013, Jan Cajthaml - added operator overload for aritmetic operations on Matrix
+ * 30.9.2013, Jan Cajthaml - added operator overload for aritmetic operations on Color
+ * 30.9.2013, Jan Cajthaml - added Model,Projection,Current and MPV (Model-Projection-View pre-calculated) matricies to Context
  * */
 
 //---------------------------------------------------------------------------
@@ -124,6 +127,31 @@ struct Color
     	b	= B;
     	a	= A;
     }
+
+    inline Color operator +(const Color &other)
+    { return Color(*this) += other; }
+
+    inline Color operator -(const Color &other)
+    { return Color(*this) -= other; }
+
+    Color& operator+=(const Color& other)
+	{
+        this->r = (other.r + this->r) * 0.5f;
+        this->g = (other.g + this->g) * 0.5f;
+        this->b = (other.b + this->b) * 0.5f;
+
+        return *this;
+    }
+
+    Color& operator-=(const Color& other)
+    {
+    	this->r = (this->r - other.r) * 0.5f;
+    	this->g = (this->g - other.g) * 0.5f;
+    	this->b = (this->b - other.b) * 0.5f;
+
+    	return *this;
+    }
+
 };
 
 //Matrix
@@ -132,40 +160,109 @@ struct Matrix
 {
     float matrix[16];
 
-    float& operator[](int i)
-    {
-        return matrix[i];
-    }
-
-    void operator=(float* m)
-    {
-    	//Memory copy faster then iteration
-    	//memcpy(&matrix, m, 16 * sizeof(float) );
-
-    	//Operation optimalisation
-    	//
-    	// ? whats better register shift of static allocation ?
-    	// sizeof(float) << 4
-    	//
-    	memcpy(&matrix, m, sizeof(float) << 4 );
-
-        //for(int i = 0; i<16; i++)
-          //  matrix[i] = m[i];
-    }
-
-    void set(Matrix &m)
-    {
-        *this = m;
-    }
-
     Matrix()
     {
-    	//Memory fill faster then iteration
-    	std::fill_n(matrix, 16, 0.0f);
 
-    	//for(int i = 0; i<16; i++)
-    		//matrix[i] = 0.0;
+    	std::fill_n(matrix, 16, 0.0f);
     }
+
+    float& operator[](int i)
+    { return matrix[i]; }
+
+    const float& operator[](int i) const
+    { return matrix[i]; }
+
+    inline Matrix operator +(const Matrix &other)
+    { return Matrix(*this) += other; }
+
+    inline Matrix operator -(const Matrix &other)
+    { return Matrix(*this) -= other; }
+
+    inline Matrix operator *(const Matrix &other)
+    { return Matrix(*this) *= other; }
+
+    Matrix& operator+=(const Matrix& other)
+	{
+    	this->matrix[0]  += other.matrix[0];
+    	this->matrix[1]  += other.matrix[1];
+    	this->matrix[2]  += other.matrix[2];
+    	this->matrix[3]  += other.matrix[3];
+    	this->matrix[4]  += other.matrix[4];
+    	this->matrix[5]  += other.matrix[5];
+    	this->matrix[6]  += other.matrix[6];
+    	this->matrix[7]  += other.matrix[7];
+    	this->matrix[8]  += other.matrix[8];
+    	this->matrix[9]  += other.matrix[9];
+    	this->matrix[10] += other.matrix[10];
+    	this->matrix[11] += other.matrix[11];
+    	this->matrix[12] += other.matrix[12];
+    	this->matrix[13] += other.matrix[13];
+    	this->matrix[14] += other.matrix[14];
+    	this->matrix[15] += other.matrix[15];
+
+        return *this;
+	}
+
+    Matrix& operator-=(const Matrix& other)
+	{
+    	this->matrix[0]  -= other.matrix[0];
+    	this->matrix[1]  -= other.matrix[1];
+    	this->matrix[2]  -= other.matrix[2];
+    	this->matrix[3]  -= other.matrix[3];
+    	this->matrix[4]  -= other.matrix[4];
+    	this->matrix[5]  -= other.matrix[5];
+    	this->matrix[6]  -= other.matrix[6];
+    	this->matrix[7]  -= other.matrix[7];
+    	this->matrix[8]  -= other.matrix[8];
+    	this->matrix[9]  -= other.matrix[9];
+    	this->matrix[10] -= other.matrix[10];
+    	this->matrix[11] -= other.matrix[11];
+    	this->matrix[12] -= other.matrix[12];
+    	this->matrix[13] -= other.matrix[13];
+    	this->matrix[14] -= other.matrix[14];
+    	this->matrix[15] -= other.matrix[15];
+
+    	return *this;
+    }
+
+    Matrix& operator*=(const Matrix& other)
+    {
+    	// Row 1
+    	this->matrix[0]  = this->matrix[0]  * other.matrix[0]  +  this->matrix[1]  * other.matrix[4]  +  this->matrix[2] * other.matrix[8]   +  this->matrix[3]  * other.matrix[12];    // Column 1
+    	this->matrix[1]  = this->matrix[0]  * other.matrix[1]  +  this->matrix[1]  * other.matrix[5]  +  this->matrix[2] * other.matrix[9]   +  this->matrix[3]  * other.matrix[13];    // Column 2
+    	this->matrix[2]  = this->matrix[0]  * other.matrix[2]  +  this->matrix[1]  * other.matrix[6]  +  this->matrix[2] * other.matrix[10]  +  this->matrix[3]  * other.matrix[14];    // Column 3
+    	this->matrix[3]  = this->matrix[0]  * other.matrix[3]  +  this->matrix[1]  * other.matrix[7]  +  this->matrix[2] * other.matrix[11]  +  this->matrix[3]  * other.matrix[15];    // Column 4
+
+    	// Row 2
+    	this->matrix[4]  = this->matrix[4]  * other.matrix[0]  +  this->matrix[5]  * other.matrix[4]  +  this->matrix[6] * other.matrix[8]   +  this->matrix[7]  * other.matrix[12];    // Column 1
+    	this->matrix[5]  = this->matrix[4]  * other.matrix[1]  +  this->matrix[5]  * other.matrix[5]  +  this->matrix[6] * other.matrix[9]   +  this->matrix[7]  * other.matrix[13];    // Column 2
+    	this->matrix[6]  = this->matrix[4]  * other.matrix[2]  +  this->matrix[5]  * other.matrix[6]  +  this->matrix[6] * other.matrix[10]  +  this->matrix[7]  * other.matrix[14];    // Column 3
+    	this->matrix[7]  = this->matrix[4]  * other.matrix[3]  +  this->matrix[5]  * other.matrix[7]  +  this->matrix[6] * other.matrix[11]  +  this->matrix[7]  * other.matrix[15];    // Column 4
+
+    	// Row 3
+    	this->matrix[8]  = this->matrix[8]  * other.matrix[0]  +  this->matrix[9]  * other.matrix[4]  +  this->matrix[10] * other.matrix[8]  +  this->matrix[11] * other.matrix[12];    // Column 1
+    	this->matrix[9]  = this->matrix[8]  * other.matrix[1]  +  this->matrix[9]  * other.matrix[5]  +  this->matrix[10] * other.matrix[9]  +  this->matrix[11] * other.matrix[13];    // Column 2
+    	this->matrix[10] = this->matrix[8]  * other.matrix[2]  +  this->matrix[9]  * other.matrix[6]  +  this->matrix[10] * other.matrix[10] +  this->matrix[11] * other.matrix[14];    // Column 3
+    	this->matrix[11] = this->matrix[8]  * other.matrix[3]  +  this->matrix[9]  * other.matrix[7]  +  this->matrix[10] * other.matrix[11] +  this->matrix[11] * other.matrix[15];    // Column 4
+
+    	// Row 4
+    	this->matrix[12] = this->matrix[12] * other.matrix[0]  +  this->matrix[13] * other.matrix[4]  +  this->matrix[14] * other.matrix[8]  +  this->matrix[15] * other.matrix[12];    // Column 1
+    	this->matrix[13] = this->matrix[12] * other.matrix[1]  +  this->matrix[13] * other.matrix[5]  +  this->matrix[14] * other.matrix[9]  +  this->matrix[15] * other.matrix[13];    // Column 2
+    	this->matrix[14] = this->matrix[12] * other.matrix[2]  +  this->matrix[13] * other.matrix[6]  +  this->matrix[14] * other.matrix[10] +  this->matrix[15] * other.matrix[14];    // Column 3
+    	this->matrix[15] = this->matrix[12] * other.matrix[3]  +  this->matrix[13] * other.matrix[7]  +  this->matrix[14] * other.matrix[11] +  this->matrix[15] * other.matrix[15];    // Column 4
+
+        return *this;
+    }
+
+    inline void operator=(float* m)
+    { memcpy(&matrix, m, sizeof(float) << 4 ); }
+
+    inline void operator=(Matrix m)
+    { memcpy(&matrix, m.matrix, sizeof(float) << 4 ); }
+
+    inline void set(const Matrix &m)
+    { *this = m; }
+
 };
 
 
@@ -189,6 +286,9 @@ struct Context
 	//State
 	bool depth;
 
+	//Pixel size
+	float size;
+
 	//Viewport
 	float x;
 	float y;
@@ -198,6 +298,12 @@ struct Context
 	int min_y;
 	int max_x;
 	int max_y;
+
+	//Transformation matrices
+	Matrix current;
+	Matrix model_view;
+	Matrix projection;
+	Matrix mpv;
 
 	Context(int width, int height)
 	{
@@ -232,6 +338,9 @@ struct Context
 		//Initialise Flags
 		depth	= false;
 
+		//----------------------//
+
+		size	= 1;
 	}
 };
 

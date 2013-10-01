@@ -26,6 +26,10 @@
  *                                           setPixel  - sets pixel color
  *
  *                         - sglEllipse proof of concept based on fast Bresenham Type Algorithm
+ * 29.9.2013, Jan Cajthaml - added method sglDrawLine()
+ *                         - body of sglEnd and sglBegin
+ *
+ * 30.9.2013, Jan Cajthaml - added sglDrawLine Bresenham´s algorithm draw line implementation
  *
  * */
 
@@ -48,6 +52,8 @@ bool in_range(unsigned number, unsigned low, unsigned high);
 Context* current();
 void normalize(float &x, float &y);
 void setPixel(int x, int y);
+
+void sglDrawLine(Vertex start, Vertex end);
 
 //---------------------------------------------------------------------------
 // SGL
@@ -101,6 +107,8 @@ const char* sglGetErrorString(sglEErrorCode error)
 static ContextManager	manager;
 std::vector<Vertex>		VERTICES;
 std::vector<Edge>		EDGES;
+bool					isDrawing;
+sglEElementType			current_primitive_drawing;
 
 //---------------------------------------------------------------------------
 // Initialization functions
@@ -109,6 +117,7 @@ std::vector<Edge>		EDGES;
 //LongName Function "global init ? run init ?"
 void sglInit(void)
 {
+	isDrawing = false;
 }
 
 //LongName Function "gloabl finalization ? run finalization ?"
@@ -223,6 +232,10 @@ void sglBegin(sglEElementType mode)
 		return;
 	}
 
+	//Musime vedet zde co jsme vykreslovali, nastaven enum zde
+
+	isDrawing					= false;
+	current_primitive_drawing	= mode;
 	//? Context here ?
 
     VERTICES.clear();
@@ -232,13 +245,42 @@ void sglBegin(sglEElementType mode)
 //LongName Function
 void sglEnd(void)
 {
+	if(isDrawing)
+	{
+		//throw exception did not begun
+		return;
+	}
 
+	//Podle promenne nastavene v sglBegin vykreslime
+
+	isDrawing = true;
+
+	switch(current_primitive_drawing)
+	{
+		case SGL_POINTS :
+		{
+			int size = VERTICES.size();
+
+			for( int i=0; i<size; i++ )
+				setPixel(VERTICES[i].x,VERTICES[i].y);
+		}
+		break;
+
+		case SGL_LINES :
+		{
+			int size = VERTICES.size();
+
+			for( int i=0; i<size; i+=2 )
+				sglDrawLine(VERTICES[i],VERTICES[i+1]);
+		}
+		break;
+
+	}
 }
 
-//Vertex with 4 float coords
+//Vertex with 3 float coords in homogenous coordinates
 //[x,y,z,w]
 //
-// w	- ? is it weight or another dimension ?
 void sglVertex4f(float x, float y, float z, float w)
 {
 	normalize(x, y);
@@ -271,11 +313,13 @@ void sglVertex2f(float x, float y)
 // Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
 {
+	//Prepsat na Bresehnamm
+
 	int p	= 1 - (int)r;
-	int x0	= (int) x;
-	int y0	= (int) y;
+	int x0	= int(x);
+	int y0	= int(y);
 	int x1	= 0;
-	int y1	= (int) r;
+	int y1	= int(r);
 	int x2	= 1;
 	int y2	= -2*r;
 
@@ -381,7 +425,59 @@ void sglEllipse(float x1, float y1, float z, float x2, float y2)
 	}
 }
 
-//DRAW LINE HERE ???
+//Line
+//Breceanuv algoritmus
+//DDA algoritmus (jednoduzsi)
+//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
+void sglDrawLine(Vertex start, Vertex end)
+{
+	int x1		= int(start.x);
+	int x2		= int(end.x);
+
+    if (x1 > x2)
+    {
+    	sglDrawLine(end, start);
+    	return;
+    }
+
+    int y1		= int(start.y)		;
+    int y2		= int(end.y)		;
+    int slope						;
+    int dx		= x2 - x1			;
+    int dy		= y2 - y1			;
+
+    if (dy < 0)
+    {
+    	slope	= -1				;
+    	dy		= -dy				;
+    }
+    else slope	= 1					;
+
+    int incE	= dy << 1			;
+    int incNE	= (dy - dx) << 1	;
+    int d		= (dy << 1) - dx	;
+    int y		= y1				;
+    int x							;
+
+    for (x = x1; x <= x2; x++)
+    {
+    	setPixel(x, y);
+
+    	if (d > 0)
+    	{
+    			d += incNE			;
+    			y += slope			;
+    	}
+    	else	d += incE			;
+    }
+}
+
+//Line
+void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
+{
+
+}
+
 
 //2D Arc
 //
@@ -410,46 +506,71 @@ void sglArc(float x, float y, float z, float r, float from, float to)
 // ? we need something to hold on context ?
 void sglMatrixMode( sglEMatrixMode mode )
 {
-	if(mode == SGL_MODELVIEW || mode == SGL_PROJECTION)
-	{
+	//if(mode == SGL_MODELVIEW || mode == SGL_PROJECTION)
+	//{
+		switch(mode)
+		{
+			case SGL_MODELVIEW	:
+			{
+
+			}
+			break;
+
+			case SGL_PROJECTION	:
+			{
+
+			}
+			break;
+
+			default				: setErrCode(SGL_INVALID_ENUM); break;
+		}
 		//Set matrix mode
-	}
-	else
-	{
-		setErrCode(SGL_INVALID_ENUM);
-	}
+	//}
+	//else
+	//{
+		//setErrCode(SGL_INVALID_ENUM);
+	//}
 }
 
 //Push Matrix into transformation Stack
 void sglPushMatrix(void)
 {
-
+	//Create stack of matrices
 }
 
 //Pop Matrix from transformation Stack
 void sglPopMatrix(void)
 {
-
+	//Create stack of matrices
 }
 
 // ? Load identity matrix ?
 void sglLoadIdentity(void)
 {
-
+	//?
 }
 
 // ? Load matrix where ? global ? stack ?
 void sglLoadMatrix(const float *matrix)
 {
-
+	//?
 }
 
 //Multiply two matrices
 //
 // ? Formula for matrix multiplication here ?
-void sglMultMatrix(const float *matrix)
+//
+//  | a b c d |     | 1   2  3  4 |   | a*1+b*5+c*9+d*13  a*2+b*6+c*10+d*14
+//  | e f g h |  X  | 5   6  7  8 | = |
+//  | i j k l |     | 9  10 11 12 |   |
+//  | m n o p |     | 13 14 15 16 |   |
+//
+void sglMultMatrix( float *matrix)
 {
 
+
+
+	//multiply two matices 4x4
 }
 
 //Translate coordinates
@@ -457,7 +578,11 @@ void sglMultMatrix(const float *matrix)
 // ? fotmula for matrix by vector multiplication in terms of vertex translation here ?
 void sglTranslate(float x, float y, float z)
 {
+	//aplikuj transformaci posunuti na aktualni matici
 
+	//1 vytvorit novou matici popisujici posunuti
+	//starou matici vynasobit zprava novou
+	//nahradit starou matici novou matici
 }
 
 // ? Scales what? Context or scene ?
@@ -472,12 +597,15 @@ void sglScale(float scalex, float scaley, float scalez)
 void sglRotate2D(float angle, float centerx, float centery)
 {
 
+	//2D rotace -> rotace okolo osy z
+
 }
 
 // ? rotates what ? Context or scene ?
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
+	// rotace okolo osy y
 
 }
 
@@ -518,7 +646,7 @@ void sglAreaMode(sglEAreaMode mode)
 //Point "radius/diameter ?"
 void sglPointSize(float size)
 {
-	//Point size in context or static ?
+    current()->size = size;
 }
 
 //Enable given flag
@@ -625,16 +753,16 @@ void normalize(float &x, float &y)
 
 void setPixel(int x, int y)
 {
-	Context* c = current();
+	Context* c	= current();
+	c->x		= x;
+	c->y		= y;
+
 	int offset = (c->x+c->w*c->y)*3;
 
 	c->buffer[offset]	= c->color.r;
 	c->buffer[offset+1]	= c->color.g;
 	c->buffer[offset+2]	= c->color.b;
 }
-
-
-
 
 Context* current()
 { return manager.contexts[manager.current]; }
