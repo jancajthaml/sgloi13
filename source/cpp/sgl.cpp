@@ -565,7 +565,7 @@ void sglLoadMatrix(const float *matrix)
 //  | i j k l |     | 9  10 11 12 |   |
 //  | m n o p |     | 13 14 15 16 |   |
 //
-void sglMultMatrix( float *matrix)
+void sglMultMatrix(const float *matrix)
 {
 
 
