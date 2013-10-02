@@ -170,8 +170,8 @@ public:
 		if (dy < 0)
 			sign = -1;
 		int c0, c1, p;
-		c0 = 2 * dy * sign;
-		c1 = c0 - 2 * dx;
+		c0 = (dy << 1) * sign;
+		c1 = c0 - (dx << 1);
 		p = c0 - dx;
 
 		setPixel(x1, y1);
@@ -198,8 +198,8 @@ public:
 		if (dy < 0)
 			sign = -1;
 		int c0, c1, p;
-		c0 = 2 * dy * sign;
-		c1 = c0 - 2 * dx;
+		c0 = (dy << 1) * sign;
+		c1 = c0 - (dx << 1);
 		p = c0 - dx;
 
 		setPixel(y1, x1);
