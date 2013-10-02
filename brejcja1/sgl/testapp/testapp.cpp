@@ -668,16 +668,17 @@ void DrawTestScene0B(void)
 {
   sglDisable(SGL_DEPTH_TEST);
 
-  float centerX=0, centerY=0;
+  float centerX=WIDTH/2, centerY=HEIGHT/2;
   //	float centerX=0, centerY=0;
   int numSegments = 64;
-  float angleStep = 0.25f*M_PI/(float)numSegments;
-  float r=HEIGHT;
+  float angleStep = 2.0f*M_PI/(float)numSegments;
+  float r=HEIGHT/4;
   //float r=0.5f;
   // line test
   sglPointSize(1);
   for(int i=0; i<numSegments; i++) {
-	sglColor3f(i/(float)numSegments,i/(float)numSegments,i/(float)numSegments);
+	//sglColor3f(i/(float)numSegments,i/(float)numSegments,i/(float)numSegments);
+	sglColor3f(1.0f, 1.0f, 0.5f);
 	float angle = angleStep*(float)i;
 	sglBegin(SGL_LINES);
 	sglVertex2f(centerX, centerY );
@@ -1171,6 +1172,7 @@ int main(int argc, char **argv)
   sglClearColor(0, 0, 0, 1);
   sglClear(SGL_COLOR_BUFFER_BIT);
   DrawTestScene0B();
+  WriteTGA("results/test0b.tga");
   cout << "done in " << timer.UserTime() << " sec." << endl;
   totalTime += timer.UserTime();
 #endif

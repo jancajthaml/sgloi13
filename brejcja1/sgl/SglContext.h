@@ -108,6 +108,13 @@ public:
 			{
 				if (!depthTest)
 					drawPoints2D();
+				break;
+			}
+			case SGL_LINES:
+			{
+				if (!depthTest)
+					drawLines2D();
+				break;
 			}
 		}
 		vertices.clear();
@@ -121,14 +128,110 @@ public:
 		}			
 	}
 
-	void setPixel(float x, float y)
+	void drawLines2D()
 	{
-		if (x >= 0 && x < width && y >= 0 && y < height)
+		for (int i = 0; i < vertices.size(); i += 2)
 		{
-			framebuffer[(int)round(x) + width * (int)round(y)] = color;				
+			drawLine2D(vertices[i], vertices[i+1]);		
 		}
 
 	}
+
+	void drawLine2D(Vertex a, Vertex b)
+	{
+		//obtain the points
+		int x1, x2, y1, y2, xt, yt;
+		x1 = (int)round(a.x);
+		y1 = (int)round(a.y);
+		x2 = (int)round(b.x);
+		y2 = (int)round(b.y);
+	
+		int dx = abs(x2 - x1);
+		int dy = abs(y2 - y1);
+		if (dx > dy)
+			if (x1 < x2)
+				bresenham_x(x1, y1, x2, y2);
+			else
+				bresenham_x(x2, y2, x1, y1);
+		else
+			if (y1 < y2)
+				bresenham_y(y1, x1, y2, x2);
+			else
+				bresenham_y(y2, x2, y1, x1);
+
+	}
+
+	void bresenham_x(int x1, int y1, int x2, int y2)
+	{
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+
+		int sign = 1;
+		if (dy < 0)
+			sign = -1;
+		int c0, c1, p;
+		c0 = 2 * dy * sign;
+		c1 = c0 - 2 * dx;
+		p = c0 - dx;
+
+		setPixel(x1, y1);
+		for (int i = x1 + 1; i <= x2; ++i)
+		{
+			if (p < 0)
+				p += c0;
+			else
+			{
+				p += c1;
+				y1 += sign;
+			}
+
+			setPixel(i, y1);	
+		}
+	}
+
+	void bresenham_y(int x1, int y1, int x2, int y2)
+	{
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+
+		int sign = 1;
+		if (dy < 0)
+			sign = -1;
+		int c0, c1, p;
+		c0 = 2 * dy * sign;
+		c1 = c0 - 2 * dx;
+		p = c0 - dx;
+
+		setPixel(y1, x1);
+		for (int i = x1 + 1; i <= x2; ++i)
+		{
+			if (p < 0)
+				p += c0;
+			else
+			{
+				p += c1;
+				y1 += sign;
+			}
+
+			setPixel(y1, i);	
+		}
+	}
+
+	void setPixel(float x, float y)
+	{
+		setPixel((int)round(x), (int)round(y));				
+	}
+
+	void setPixel(int x, int y)
+	{
+		if (x >= 0 && x < width && y >= 0 && y < height)
+		{
+			framebuffer[x + width * y] = color;				
+		}
+
+	}
+
+
 
 	float round(float number)
 	{
