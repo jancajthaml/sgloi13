@@ -1,10 +1,9 @@
 testapp/testapp
 source/cpp/testapp
-source/cpp/sgl.o
-testapp/hdrloader.o
-testapp/nffread.o
-testapp/testapp.o
-testapp/timer.o
+brejcja1/sgl/testapp/testapp
+brejcja1/sgl/testappp
+*.o
+*.tga
 xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/contents.xcworkspacedata
 xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/xcuserdata/janbrejcha.xcuserdatad/UserInterfaceState.xcuserstate
 xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/libsgl.xcscheme
