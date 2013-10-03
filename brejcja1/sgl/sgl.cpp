@@ -170,7 +170,14 @@ void sglOrtho(float left, float right, float bottom, float top, float near, floa
 
 void sglFrustum(float left, float right, float bottom, float top, float near, float far) {}
 
-void sglViewport(int x, int y, int width, int height) {}
+void sglViewport(int x, int y, int width, int height)
+{
+	sglEErrorCode err;
+	sglEErrorCode err2;
+	ctx_mgr.getContext(&err).setViewport(width, height, x, y, &err2);
+	setErrCode(err);
+	setErrCode(err2);
+}
 
 //---------------------------------------------------------------------------
 // Attribute functions

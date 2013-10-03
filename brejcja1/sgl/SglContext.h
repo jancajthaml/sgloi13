@@ -4,6 +4,7 @@
 #include "sgl.h"
 #include "Color.h"
 #include "Vertex.h"
+#include "Viewport.h"
 #include <cstdlib>
 #include <exception>
 #include <cstdio>
@@ -15,6 +16,7 @@ class SGLContext
 private:
 	int width;
 	int height;
+	
 	Color *framebuffer;
 	Color clearColor;
 	Color color;
@@ -22,6 +24,8 @@ private:
 
 	std::vector<Vertex> vertices;	
 	bool depthTest;
+
+	Viewport viewport;
 public:
 	SGLContext(){};
 	SGLContext(int width, int height)
@@ -140,7 +144,7 @@ public:
 	void drawLine2D(Vertex a, Vertex b)
 	{
 		//obtain the points
-		int x1, x2, y1, y2, xt, yt;
+		int x1, x2, y1, y2;
 		x1 = (int)round(a.x);
 		y1 = (int)round(a.y);
 		x2 = (int)round(b.x);
@@ -240,9 +244,24 @@ public:
 
 	void setVertex2f(float x, float y)
 	{
-		vertices.push_back(Vertex(x, y));
+		Vertex v;
+		if (viewport.isReadyToUse())
+			v = viewport.calculateWindowCoordinates(x, y);
+		else
+		{
+			v.x = x;
+			v.y = y;
+		}
+		vertices.push_back(v);
 	}	
 
+	void setViewport(int width, int height, int x, int y, sglEErrorCode * err)
+	{
+		if (typeStack.size() > 0)
+			*err = SGL_INVALID_OPERATION;
+
+		viewport.changeViewport(width, height, x, y);
+	}
 };
 
 
