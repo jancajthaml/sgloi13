@@ -12,3 +12,4 @@ xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes
 xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/xcschememanagement.plist
 brejcja1/sgl/testapp/test.dSYM/Contents/Info.plist
 brejcja1/sgl/testapp/test.dSYM/Contents/Resources/DWARF/test
+*.swp
