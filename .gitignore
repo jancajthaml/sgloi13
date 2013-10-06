@@ -2,9 +2,13 @@ testapp/testapp
 source/cpp/testapp
 brejcja1/sgl/testapp/testapp
 brejcja1/sgl/testappp
+brejcja1/sgl/docs
+brejcja1/sgl/test
 *.o
 *.tga
 xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/contents.xcworkspacedata
 xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/xcuserdata/janbrejcha.xcuserdatad/UserInterfaceState.xcuserstate
 xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/libsgl.xcscheme
 xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/xcschememanagement.plist
+brejcja1/sgl/testapp/test.dSYM/Contents/Info.plist
+brejcja1/sgl/testapp/test.dSYM/Contents/Resources/DWARF/test

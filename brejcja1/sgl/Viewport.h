@@ -29,12 +29,10 @@ public:
 		changeViewport(width, height, x, y);
 	}
 
-	Vertex calculateWindowCoordinates(float xnd, float ynd)
+	void calculateWindowCoordinates(Vertex & v)
 	{
-		Vertex v;
-		v.x = (xnd + 1) * width_2_x;
-		v.y = (ynd + 1) * height_2_y;
-		return v;
+		v.v[0] = (v.v[0] + 1) * width_2_x;
+		v.v[1] = (v.v[1] + 1) * height_2_y;
 	}	
 
 	void changeViewport(int width, int height, int x, int y)

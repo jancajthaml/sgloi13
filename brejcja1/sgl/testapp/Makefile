@@ -11,7 +11,7 @@ LIBRARIES = -lglut -lGL -lGLU  #-lXext -lX11 -lm
 #LIBRARIES = -lm
 OBJS = testapp.o ../sgl.o nffread.o timer.o hdrloader.o
 OBJS2 = raytracer.o sgl/sgl.o nffread.o timer.o hdrloader.o
-
+TEST = ../tests.cpp
 #-lXmu -lXi 
 all: testapp
 testapp: $(OBJS)
@@ -22,5 +22,6 @@ testapp: $(OBJS)
 	$(CC) $(CFLAGS) -c $*.cpp -o $*.o
 
 clean:
-	rm -f testapp $(OBJS)
-
+	rm -f testapp $(OBJS) test
+test:
+	$(CC) $(CFLAGS)  $(TEST) -o test

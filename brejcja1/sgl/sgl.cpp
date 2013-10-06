@@ -8,6 +8,7 @@
 #include "SGLContext.h"
 #include "Color.h"
 #include "ContextManager.h"
+#include "Matrix4.h"
 #include <cstdio>
 ContextManager ctx_mgr;
 
@@ -146,17 +147,56 @@ void sglArc(float x, float y, float z, float radius, float from, float to) {}
 // Transform functions
 //---------------------------------------------------------------------------
 
-void sglMatrixMode( sglEMatrixMode mode ) {}
+void sglMatrixMode( sglEMatrixMode mode )
+{
+	
+	sglEErrorCode err1, err2;
+	ctx_mgr.getContext(&err1).setMatrixMode(mode, &err2);
+	setErrCode(err1);
+	setErrCode(err2);
 
-void sglPushMatrix(void) {}
+}
 
-void sglPopMatrix(void) {}
+void sglPushMatrix(void)
+{
+	sglEErrorCode err1, err2;
+	ctx_mgr.getContext(&err1).pushMatrix(&err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
-void sglLoadIdentity(void) {}
+void sglPopMatrix(void)
+{
+	sglEErrorCode err1, err2;
+	ctx_mgr.getContext(&err1).popMatrix(&err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
-void sglLoadMatrix(const float *matrix) {}
+void sglLoadIdentity(void)
+{
+	sglEErrorCode err1, err2;
+	ctx_mgr.getContext(&err1).setCurrentMatrix(Matrix4::makeIdentity(), &err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
-void sglMultMatrix(const float *matrix) {}
+void sglLoadMatrix(const float *matrix)
+{
+	sglEErrorCode err1, err2;
+	ctx_mgr.getContext(&err1).setCurrentMatrix(Matrix4(matrix), &err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
+
+void sglMultMatrix(const float *matrix)
+{
+	sglEErrorCode err1, err2;
+	Matrix4 mat(matrix);
+	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(mat, &err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
 void sglTranslate(float x, float y, float z) {}
 
@@ -166,7 +206,17 @@ void sglRotate2D(float angle, float centerx, float centery) {}
 
 void sglRotateY(float angle) {}
 
-void sglOrtho(float left, float right, float bottom, float top, float near, float far) {}
+void sglOrtho(float left, float right, float bottom, float top, float near, float far)
+{
+	//printf("multiplying with ortho matrix\n");
+	Matrix4 ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
+	//ortho.print();
+	sglEErrorCode err1, err2;
+	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(ortho, &err2);
+	//ctx_mgr.getContext(&err1).getCurrentMatrix().print();
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
 void sglFrustum(float left, float right, float bottom, float top, float near, float far) {}
 

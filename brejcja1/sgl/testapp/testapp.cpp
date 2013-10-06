@@ -7,8 +7,8 @@
 
 /// uncomment the tests you wish to run
 
-#define TEST0
-//#define TEST1
+//#define TEST0
+#define TEST1
 //#define TEST2
 //#define TEST3
 //#define TEST4
@@ -698,7 +698,7 @@ void DrawTestScene1A(void)
   // set the projection matrix
   sglMatrixMode(SGL_PROJECTION);
   sglLoadIdentity();
-  sglOrtho(-10*WIDTH/HEIGHT, 10*WIDTH/HEIGHT, -10, 10, -1, 1);
+  sglOrtho(-10*WIDTH/(float)HEIGHT, 10*WIDTH/(float)HEIGHT, -10, 10, -1, 1);
 
   // set the modelview matrix
   sglMatrixMode(SGL_MODELVIEW);
@@ -757,7 +757,7 @@ void DrawTestScene1A(void)
       sglVertex2f(offsetx+r*cos(angle),offsety+r*sin(angle));
     }
     sglEnd();
-   
+ 
   } // for r...
 
   offsety += 2.5*r;
@@ -795,7 +795,6 @@ void DrawTestScene1A(void)
     sglArc(offsetx,offsety,  0,rr,0,M_PI/2);
     sglArc(offsetx+4,offsety,0,rr,M_PI*2/2,M_PI*3/2);
   }
-
 }
 
  
@@ -1182,7 +1181,7 @@ int main(int argc, char **argv)
   timer.Restart();
 
   sglSetContext(_contexts[0]);
-  sglClearColor(0, 0, 0, 1);
+  sglClearColor(0.0, 0, 0, 1);
   sglClear(SGL_COLOR_BUFFER_BIT);
   for(int i=0; i<1000; i++) {
 	DrawTestScene1A();
