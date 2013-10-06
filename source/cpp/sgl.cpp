@@ -40,7 +40,6 @@
  *
  */
 
-#include "sgl.h"
 #include "data.h"
 #include <vector>
 
@@ -50,8 +49,8 @@
 
 bool in_range(unsigned number, unsigned low, unsigned high);
 Context* current();
-void normalize(float &x, float &y);
-void setPixel(int x, int y);
+//void normalize(float &x, float &y);
+//void setPixel(int x, int y);
 
 void sglDrawLine(Vertex start, Vertex end);
 
@@ -105,10 +104,10 @@ const char* sglGetErrorString(sglEErrorCode error)
 //---------------------------------------------------------------------------
 
 static ContextManager	manager;
-std::vector<Vertex>		VERTICES;
-std::vector<Edge>		EDGES;
-bool					isDrawing;
-sglEElementType			current_primitive_drawing;
+//std::vector<Vertex>		VERTICES;
+//std::vector<Edge>		EDGES;
+//bool					isDrawing;
+
 
 //---------------------------------------------------------------------------
 // Initialization functions
@@ -117,13 +116,13 @@ sglEElementType			current_primitive_drawing;
 //LongName Function "global init ? run init ?"
 void sglInit(void)
 {
-	isDrawing = false;
+	//isDrawing = false;
 }
 
 //LongName Function "gloabl finalization ? run finalization ?"
 void sglFinish(void)
 {
-
+	manager.contexts.clear();
 }
 
 //LongName Function
@@ -195,7 +194,6 @@ float *sglGetColorBufferPointer(void)
 //Clears buffer with given RGBA color value
 void sglClearColor (float r, float g, float b, float alpha)
 {
-
 	current()->clear.r = r;
     current()->clear.g = g;
     current()->clear.b = b;
@@ -204,23 +202,30 @@ void sglClearColor (float r, float g, float b, float alpha)
 //LongName Function
 void sglClear(unsigned what)
 {
-	if(what != SGL_COLOR_BUFFER_BIT)
+	if (current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+
+	if (((what & SGL_COLOR_BUFFER_BIT) != SGL_COLOR_BUFFER_BIT) && ((what & SGL_DEPTH_BUFFER_BIT) != SGL_DEPTH_BUFFER_BIT))
 	{
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
 
-	if(what == SGL_COLOR_BUFFER_BIT)
+	if ((what & SGL_COLOR_BUFFER_BIT) == SGL_COLOR_BUFFER_BIT)
 	{
-		int size = current()->w * current()->h * 3;
-
-		for(int i = 0; i<size; i=i+3)
-		{
-			current()->buffer[i]	= current()->clear.r;
-			current()->buffer[i+1]	= current()->clear.g;
-			current()->buffer[i+2]	= current()->clear.b;
-		}
+		current()->clearBuffer(what);
 	}
+
+	if ((what & SGL_DEPTH_BUFFER_BIT) == SGL_DEPTH_BUFFER_BIT)
+	{
+			//TODO clear with depth buffer bit
+	}
+
+	setErrCode(SGL_NO_ERROR);
+
 }
 
 //LongName Function
@@ -232,76 +237,34 @@ void sglBegin(sglEElementType mode)
 		return;
 	}
 
-	//Musime vedet zde co jsme vykreslovali, nastaven enum zde
-
-	isDrawing					= false;
-	current_primitive_drawing	= mode;
-	//? Context here ?
-
-    VERTICES.clear();
-
+	current()->pushTypeState(mode);
 }
 
 //LongName Function
 void sglEnd(void)
-{
-	if(isDrawing)
-	{
-		//throw exception did not begun
-		return;
-	}
-
-	//Podle promenne nastavene v sglBegin vykreslime
-
-	isDrawing = true;
-
-	switch(current_primitive_drawing)
-	{
-		case SGL_POINTS :
-		{
-			int size = VERTICES.size();
-
-			for( int i=0; i<size; i++ )
-				setPixel(VERTICES[i].x,VERTICES[i].y);
-		}
-		break;
-
-		case SGL_LINES :
-		{
-			int size = VERTICES.size();
-
-			for( int i=0; i<size; i+=2 )
-				sglDrawLine(VERTICES[i],VERTICES[i+1]);
-		}
-		break;
-
-	}
-}
+{ current()->draw(); }
 
 //Vertex with 3 float coords in homogenous coordinates
 //[x,y,z,w]
 //
 void sglVertex4f(float x, float y, float z, float w)
 {
-	normalize(x, y);
-	VERTICES.push_back(Vertex (x, y, z, w));
+	//normalize(x, y);
+	//VERTICES.push_back(Vertex (x, y, z, w));
 }
 
 //Vertex with 3 float coords
 //[x,y,z]
 void sglVertex3f(float x, float y, float z)
 {
-	normalize(x, y);
-	VERTICES.push_back(Vertex (x, y, z));
+	//normalize(x, y);
+	//VERTICES.push_back(Vertex (x, y, z));
 }
 
 //Vertex with 2 float coords
 //[x,y]
 void sglVertex2f(float x, float y)
-{
-	normalize(x, y);
-	VERTICES.push_back(Vertex (x, y));
-}
+{ current()->setVertex2f(x,y); }
 
 //2D Circle
 //
@@ -313,6 +276,7 @@ void sglVertex2f(float x, float y)
 // Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
 {
+	/*
 	//Prepsat na Bresehnamm
 
 	int p	= 1 - (int)r;
@@ -354,6 +318,7 @@ void sglCircle(float x, float y, float z, float r)
 		setPixel(x0-y1 , y0-x1);
 
 	}
+	*/
 }
 
 //2D Ellipse
@@ -371,6 +336,7 @@ void sglCircle(float x, float y, float z, float r)
 //@see http://www.codeproject.com/Messages/2112010/A-Fast-Bresenham-Type-Algorithm-For-Drawing-Ellips.aspx
 void sglEllipse(float x1, float y1, float z, float x2, float y2)
 {
+	/*
 	float x				= x2;
 	float y				= 0;
 	float EllipseError	= 0;
@@ -423,6 +389,7 @@ void sglEllipse(float x1, float y1, float z, float x2, float y2)
 			YChange			+= TwoASquare;
 		}
 	}
+	*/
 }
 
 //Line
@@ -431,6 +398,7 @@ void sglEllipse(float x1, float y1, float z, float x2, float y2)
 //@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
 void sglDrawLine(Vertex start, Vertex end)
 {
+	/*
 	int x1		= int(start.x);
 	int x2		= int(end.x);
 
@@ -470,6 +438,7 @@ void sglDrawLine(Vertex start, Vertex end)
     	}
     	else	d += incE			;
     }
+    */
 }
 
 //Line
@@ -506,55 +475,50 @@ void sglArc(float x, float y, float z, float r, float from, float to)
 // ? we need something to hold on context ?
 void sglMatrixMode( sglEMatrixMode mode )
 {
-	//if(mode == SGL_MODELVIEW || mode == SGL_PROJECTION)
-	//{
-		switch(mode)
+	switch(mode)
+	{
+		case SGL_MODELVIEW	:
+		case SGL_PROJECTION	:
 		{
-			case SGL_MODELVIEW	:
-			{
-
-			}
-			break;
-
-			case SGL_PROJECTION	:
-			{
-
-			}
-			break;
-
-			default				: setErrCode(SGL_INVALID_ENUM); break;
+			current()->setMatrixMode(mode);
 		}
-		//Set matrix mode
-	//}
-	//else
-	//{
-		//setErrCode(SGL_INVALID_ENUM);
-	//}
+		break;
+
+		default				: setErrCode(SGL_INVALID_ENUM); break;
+	}
 }
 
 //Push Matrix into transformation Stack
 void sglPushMatrix(void)
 {
-	//Create stack of matrices
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+
+	current()->pushMatrix();
 }
 
 //Pop Matrix from transformation Stack
 void sglPopMatrix(void)
 {
-	//Create stack of matrices
+	if (current()->stackEmpty())
+	{
+		setErrCode(SGL_STACK_UNDERFLOW);
+		return;
+	}
+
+	current()->popMatrix();
 }
 
 // ? Load identity matrix ?
 void sglLoadIdentity(void)
-{
-	//?
-}
+{ current()->setCurrentMatrix(Matrix::identity()); }
 
 // ? Load matrix where ? global ? stack ?
-void sglLoadMatrix(const float *matrix)
-{
-	//?
-}
+void sglLoadMatrix(const float* matrix)
+{ current()->setCurrentMatrix(Matrix(matrix)); }
 
 //Multiply two matrices
 //
@@ -565,12 +529,10 @@ void sglLoadMatrix(const float *matrix)
 //  | i j k l |     | 9  10 11 12 |   |
 //  | m n o p |     | 13 14 15 16 |   |
 //
-void sglMultMatrix(const float *matrix)
+void sglMultMatrix(const float* matrix)
 {
-
-
-
-	//multiply two matices 4x4
+	Matrix mat = Matrix(matrix);
+	current()->multiplyCurrentMatrix(mat);
 }
 
 //Translate coordinates
@@ -612,7 +574,14 @@ void sglRotateY(float angle)
 // ?
 void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 {
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
+	Matrix ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
+	current()->multiplyCurrentMatrix(ortho);
 }
 
 // ?
@@ -624,6 +593,13 @@ void sglFrustum(float left, float right, float bottom, float top, float near, fl
 //Sets scene viewport
 void sglViewport(int x, int y, int width, int height)
 {
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+
+	current()->setViewport(width, height, x, y);
 
 }
 
@@ -742,27 +718,8 @@ double round(double x)
 	return double((x>=0.5)?(int(x)+1):int(x));
 }
 
-//Normalize coords in context of Viewport
-//@see http://www.opengl.org/sdk/docs/man/xhtml/glViewport.xml
-void normalize(float &x, float &y)
-{
-    x = (x+1)*(current()->w2)+current()->x;
-    y = (y+1)*(current()->h2)+current()->y;
-}
 
 
-void setPixel(int x, int y)
-{
-	Context* c	= current();
-	c->x		= x;
-	c->y		= y;
-
-	int offset = (c->x+c->w*c->y)*3;
-
-	c->buffer[offset]	= c->color.r;
-	c->buffer[offset+1]	= c->color.g;
-	c->buffer[offset+2]	= c->color.b;
-}
 
 Context* current()
 { return manager.contexts[manager.current]; }
