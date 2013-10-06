@@ -1,10 +1,10 @@
 if [ "$1" = "clean" ]; then
-	rm testapp
-	cd ../../testapp
+	rm testappp
+	cd testapp
 	make clean
 else
-	cd ../../testapp
+	cd testapp
 	make
-	cd ../source/cpp
-	ln -s ../../testapp/testapp testapp
+	cd ../ 
+	ln -s ./testapp/testapp testappp
 fi
