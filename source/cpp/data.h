@@ -494,7 +494,7 @@ struct Context
 		if((size)%2==0) size++;
 		int size = size<<1;
 
-		if(size==1)
+		if(size<100)
 		{
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
 				setPixel(v_it->x, v_it->y);
