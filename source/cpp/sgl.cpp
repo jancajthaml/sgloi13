@@ -402,14 +402,8 @@ void sglMultMatrix(const float* matrix)
 void sglTranslate(float x, float y, float z)
 {
 //	current()->translate(x,y,z);
-//	printf("current\n");
-//	current()->getCurrentMatrix().print();
 	Matrix translate = Matrix::translate(x,y,z);
-//	printf("translate \n");
-//	translate.print();
 	current()->multiplyCurrentMatrix(translate);
-//	printf("after translate\n");
-//	current()->getCurrentMatrix().print();
 }
 
 // ? Scales what? Context or scene ?

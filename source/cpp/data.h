@@ -547,6 +547,24 @@ struct Context
 	}
 	void drawCricle(float x, float y, float z, float r)
 	{
+
+		sglBegin(SGL_POLYGON);
+		float diff = 0.15707963267f;
+
+		float scaleR = calculateRadiusScaleFactor();
+					//axis_x *= scaleR;
+					//axis_y *= scaleR;
+		//r *= calculateRadiusScaleFactor();
+
+
+		for(int i = 0; i < 40; ++i)
+		{
+			sglVertex2f(x+(r * sin(i*diff)), y+(r * cos(i*diff)));
+		}
+		sglEnd();
+/*
+
+
 		//fix
 		Vertex v(x, y, 0.0f, 0.0f);
 		transform(v);
@@ -592,6 +610,7 @@ struct Context
 				setPixel(x0-y1 , y0-x1);
 
 			}
+			*/
 	}
 
 	void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
@@ -744,68 +763,16 @@ struct Context
 	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
 	void drawLine2D(Vertex a, Vertex b)
 	{
+		int dx = abs(b.x - a.x);
+		int dy = abs(b.y - a.y);
 
-		//obtain the points
-		int x1, x2, y1, y2;
-		x1 = (int)round(a.x);
-		y1 = (int)round(a.y);
-		x2 = (int)round(b.x);
-		y2 = (int)round(b.y);
-
-		int dx = abs(x2 - x1);
-		int dy = abs(y2 - y1);
 		if (dx > dy)
-			if (x1 < x2)
-				bresenham_x(x1, y1, x2, y2);
-			else
-				bresenham_x(x2, y2, x1, y1);
+			if (a.x < b.x)	bresenham_x(a.x, a.y, b.x, b.y);
+			else			bresenham_x(b.x, b.y, a.x, a.y);
 		else
-			if (y1 < y2)
-				bresenham_y(y1, x1, y2, x2);
-			else
-				bresenham_y(y2, x2, y1, x1);
+			if (a.y < b.y)	bresenham_y(a.y, a.x, b.y, b.x);
+			else			bresenham_y(b.y, b.x, a.y, a.x);
 
-/*
-		int x1		= int(start.x);
-		int x2		= int(end.x);
-
-		if (x1 > x2)
-		{
-			drawLine2D(end, start);
-			return;
-		}
-
-		int y1		= int(start.y)		;
-		int y2		= int(end.y)		;
-		int slope						;
-		int dx		= x2 - x1			;
-		int dy		= y2 - y1			;
-
-		if (dy < 0)
-		{
-			slope	= -1				;
-			dy		= -dy				;
-		}
-		else slope	= 1					;
-
-		int incE	= dy << 1			;
-		int incNE	= (dy - dx) << 1	;
-		int d		= (dy << 1) - dx	;
-		int y		= y1				;
-		int x							;
-
-		for (x = x1; x <= x2; x++)
-		{
-			setPixel(x, y);
-
-			if (d > 0)
-			{
-				d += incNE			;
-				y += slope			;
-			}
-			else	d += incE			;
-		}
-		*/
 	}
 
 	void bresenham_x(int x1, int y1, int x2, int y2)
