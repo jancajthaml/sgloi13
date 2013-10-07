@@ -8,6 +8,9 @@
 #include <vector>
 #include <list>
 #include <cmath>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include "sgl.h"
 #ifndef DATA_H_
 #define DATA_H_
@@ -491,10 +494,10 @@ struct Context
 
 	void drawPoints()
 	{
-		int thickness = size;
-		if((thickness)%2==1) thickness++;
-		thickness = thickness>>1;
-		if(thickness==1)
+		if((size)%2==0) size++;
+		int size = size<<1;
+
+		if(size==1)
 		{
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
 				setPixel(v_it->x, v_it->y);
@@ -502,32 +505,14 @@ struct Context
 		else
 		{
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			for(int i = -size; i<thickness-1; i++)
-			for(int j = -size; j<thickness-1; j++)
+			for(int i = -size; i<size-1; i++)
+			for(int j = -size; j<size-1; j++)
 				setPixel(v_it->x+j, v_it->y+i);
 		}
 	}
 
-	void transform(Vertex &v)
-	{
-		v = (current_p * current_mv) * v;
-		viewport.calculateWindowCoordinates(v);
-	}
-
-	float calculateRadiusScaleFactor()
-	{
-		Matrix m = current_p * current_mv;
-		return sqrt((m.matrix[0] * m.matrix[5]) - (m.matrix[1] * m.matrix[4]));
-	}
 	void drawCricle(float x, float y, float z, float r)
 	{
-		Vertex v(x, y, 0.0f, 0.0f);
-		transform(v);
-		x = v.x; y = v.y; z = v.z;
-		//calculate r scale factor
-		float scaleR = calculateRadiusScaleFactor();		
-		printf("scaleR: %f\n", scaleR);
-		r = r / scaleR; 
 		int p	= 1 - (int)r;
 			int x0	= int(x);
 			int y0	= int(y);
