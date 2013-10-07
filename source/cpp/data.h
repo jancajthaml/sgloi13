@@ -324,6 +324,11 @@ struct Matrix
 
 	static Matrix rotateY(float angle)
 	{ return Matrix( cos(angle), 0.0f, -sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sin(angle), 0.0f, cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
+	
+	void print()
+	{
+		printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", matrix[0], matrix[4], matrix[8], matrix[12], matrix[1], matrix[5], matrix[9], matrix[13], matrix[2], matrix[6], matrix[10], matrix[14], matrix[3], matrix[7], matrix[11], matrix[15]);
+	}
 
 };
 
@@ -423,8 +428,7 @@ struct Context
 	Viewport viewport;
 	sglEMatrixMode matrixMode;
 
-	std::vector<Matrix> projection;
-	std::vector<Matrix> model_view;
+	std::vector<Matrix> transformStack;
 
 	Context(int width, int height)
 	{
@@ -868,23 +872,24 @@ struct Context
 	void setViewport(int width, int height, int x, int y)
 	{ viewport.changeViewport(width, height, x, y); }
 
-	std::vector<Matrix> & getCurrentMatrixStack()
+
+	Matrix & getCurrentMatrix()
 	{
-		if (matrixMode		== SGL_MODELVIEW)	return model_view;
-		else if(matrixMode	== SGL_PROJECTION)	return projection;
-		else throw std::exception();
-	}
+		if (matrixMode == SGL_MODELVIEW)
+			return current_mv;
+	       	return current_p;
+	}	
 
 	void pushMatrix()
 	{
-		if (matrixMode == SGL_MODELVIEW)	getCurrentMatrixStack().push_back(current_mv);
-		else 								getCurrentMatrixStack().push_back(current_p);
+		if (matrixMode == SGL_MODELVIEW)	transformStack.push_back(current_mv);
+		else 					transformStack.push_back(current_p);
 	}
 
 	void setCurrentMatrix(Matrix matrix)
 	{
 		if (matrixMode == SGL_MODELVIEW)	current_mv	= matrix;
-		else								current_p	= matrix;
+		else					current_p	= matrix;
 	}
 
 	void setMatrixMode(sglEMatrixMode mode)
@@ -894,16 +899,14 @@ struct Context
 	{ return (types.size() > 0); }
 
 	bool stackEmpty()
-	{ return (getCurrentMatrixStack().size() == 0); }
+	{ return (transformStack.size() == 0); }
 
 	void popMatrix()
 	{
-		std::vector<Matrix> matrixStack = getCurrentMatrixStack();
+		if (matrixMode == SGL_MODELVIEW)	current_mv	= transformStack.back();
+		else								current_p	= transformStack.back();
 
-		if (matrixMode == SGL_MODELVIEW)	current_mv	= matrixStack.back();
-		else								current_p	= matrixStack.back();
-
-		matrixStack.pop_back();
+		transformStack.pop_back();
 	}
 
 	void pushTypeState(sglEElementType type)
