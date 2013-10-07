@@ -320,7 +320,7 @@ void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
 // ? use circle subdivision ?
 void sglArc(float x, float y, float z, float r, float from, float to)
 {
-
+	current()->drawArc2D(x,y,z,r,from,to);
 }
 
 //---------------------------------------------------------------------------
@@ -373,23 +373,13 @@ void sglPopMatrix(void)
 	current()->popMatrix();
 }
 
-// ? Load identity matrix ?
 void sglLoadIdentity(void)
 { current()->setCurrentMatrix(Matrix::identity()); }
 
-// ? Load matrix where ? global ? stack ?
 void sglLoadMatrix(const float* matrix)
 { current()->setCurrentMatrix(Matrix(matrix)); }
 
 //Multiply two matrices
-//
-// ? Formula for matrix multiplication here ?
-//
-//  | a b c d |     | 1   2  3  4 |   | a*1+b*5+c*9+d*13  a*2+b*6+c*10+d*14
-//  | e f g h |  X  | 5   6  7  8 | = |
-//  | i j k l |     | 9  10 11 12 |   |
-//  | m n o p |     | 13 14 15 16 |   |
-//
 void sglMultMatrix(const float* matrix)
 {
 	Matrix mat = Matrix(matrix);
@@ -397,29 +387,23 @@ void sglMultMatrix(const float* matrix)
 }
 
 //Translate coordinates
-//
-// ? fotmula for matrix by vector multiplication in terms of vertex translation here ?
 void sglTranslate(float x, float y, float z)
 {
-//	current()->translate(x,y,z);
 	Matrix translate = Matrix::translate(x,y,z);
 	current()->multiplyCurrentMatrix(translate);
 }
 
-// ? Scales what? Context or scene ?
+//Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
-
-	Matrix scale = Matrix::scale(scalex, scaley, scalez, 1.0f);
+	Matrix scale = Matrix::scale(scalex, scaley, scalez);
 	current()->multiplyCurrentMatrix(scale);
 }
 
 //Rotate **** around the centerx,centery axis with given angle
-//
-// ? rotates what ? Context or scene ?
 void sglRotate2D(float angle, float centerx, float centery)
 {
-	Matrix rotate = Matrix::rotate(angle, centerx, centery);
+	Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
 	current()->multiplyCurrentMatrix(rotate);
 }
 

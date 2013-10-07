@@ -49,13 +49,17 @@ struct Vertex
 	float w;
 
 	Vertex()
-	{ x = y = z = w = 0.0f; }
+	{
+		x = y = z = 0.0f;
+		w = 1.0f;
+	}
 
 	Vertex(float X, float Y)
 	{
 		x = X;
 		y = Y;
-		z = w = 0.0f;
+		z = 0.0f;
+		w = 1.0f;
 	}
 
 	Vertex(float X, float Y, float Z)
@@ -63,7 +67,7 @@ struct Vertex
 		x = X;
 		y = Y;
 		z = Z;
-		w = 0.0f;
+		w = 1.0f;
 	}
 
 	Vertex(float X, float Y, float Z, float W)
@@ -73,31 +77,6 @@ struct Vertex
 		z = Z;
 		w = W;
 	}
-};
-
-//Edge
-struct Edge
-{
-	float	x_s;
-	float	y_s;
-	float	z_s;
-	float	x_e;
-	float	y_e;
-	float	z_e;
-
-    Edge()
-    { x_s = y_s = z_s = x_e = y_e = z_e = 0.0f; }
-
-    Edge(Vertex start, Vertex end)
-	{
-    	x_s	= start.x;
-    	y_s	= start.y;
-    	z_s	= start.z;
-    	x_e	= end.x;
-    	y_e	= end.y;
-    	z_e	= end.z;
-	}
-
 };
 
 //Color
@@ -217,10 +196,10 @@ struct Matrix
     Vertex operator*(const Vertex& other)const
 	{
 		Vertex res;
-		res.x = (other.x*this->matrix[0]) + (other.y*this->matrix[1]) + (other.z*this->matrix[2]) + this->matrix[3];
-		res.y = (other.x*this->matrix[4]) + (other.y*this->matrix[5]) + (other.z*this->matrix[6]) + this->matrix[7];
-		res.z = (other.x*this->matrix[8]) + (other.y*this->matrix[9]) + (other.z*this->matrix[10]) + this->matrix[11];
-		res.w = (other.x*this->matrix[12]) + (other.y*this->matrix[13]) + (other.z*this->matrix[14]) + this->matrix[15];
+		res.x = (other.x*this->matrix[0]) + (other.y*this->matrix[4]) + (other.z*this->matrix[8]) + (other.w*this->matrix[12]);
+		res.y = (other.x*this->matrix[1]) + (other.y*this->matrix[5]) + (other.z*this->matrix[9]) + (other.w*this->matrix[13]);
+		res.z = (other.x*this->matrix[2]) + (other.y*this->matrix[6]) + (other.z*this->matrix[10]) + (other.w*this->matrix[14]);
+		res.w = (other.x*this->matrix[3]) + (other.y*this->matrix[7]) + (other.z*this->matrix[11]) + (other.w*this->matrix[15]);
 
 		return res;
 	}
@@ -307,23 +286,52 @@ struct Matrix
     inline void set(const Matrix &m)
     { *this = m; }
 
+
 	/**
 	 * Factory method for creating identity matrix
 	 */
 	static Matrix identity()
-	{ return Matrix(	1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+	{
+		return Matrix(	1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
+	}
 
-	static Matrix scale(float x, float y, float z, float w)
-	{ return Matrix(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, w); }
+	static Matrix scale(float sc_x, float sc_y, float sc_z)
+	{
+		return Matrix( sc_x, 0.0f, 0.0f, 0.0f,
+			       	0.0f, sc_y, 0.0f, 0.0f,
+			       	0.0f, 0.0f, sc_z, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
+	}
+	static Matrix translate(float t_x, float t_y, float t_z)
+	{
+		return Matrix(	1.0f, 0.0f, 0.0f, 0.0f ,
+				0.0f, 1.0f, 0.0f, 0.0f ,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				t_x, t_y, t_z, 1.0f);
+	};
 
-	static Matrix translate(float x, float y, float z)
-	{ return Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, x, y, z, 1.0f); }
+	static Matrix rotate2D(float angle, float c_x, float c_y)
+	{
+		float cos_a = cos(angle);
+		float sin_a = sin(angle);
+		return Matrix(	cos_a, -sin_a, 0.0f, 0.0f ,
+				sin_a, cos_a, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				0.0f, 0.0f, 0.0f, 1.0f);
 
-	static Matrix rotate(float angle, float centerx, float centery)
-	{ return Matrix( cos(angle), -sin(angle), 0.0f, 0.0f, sin(angle), cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
+	}
 
 	static Matrix rotateY(float angle)
-	{ return Matrix( cos(angle), 0.0f, -sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sin(angle), 0.0f, cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
+	{
+		return identity();
+	}
+
+	/**
+	 * Factory method for creating identity matrix
+	 */
 
 	void print()
 	{
@@ -467,7 +475,7 @@ struct Context
 
 	void setVertex2f(float x, float y)
 	{
-		Vertex v(x, y, 0.0f, 0.0f);
+		Vertex v(x, y);
 		v = (current_p * current_mv) * v;
 
 		if (viewport.ready)
@@ -542,21 +550,20 @@ struct Context
 	void drawCricle(float x, float y, float z, float r)
 	{
 
-		sglBegin(SGL_POLYGON);
-		float diff = 0.15707963267f;
+	//	sglBegin(SGL_POLYGON);
+		//float diff = 0.15707963267f;
 
-		float scaleR = calculateRadiusScaleFactor();
+		//float scaleR = calculateRadiusScaleFactor();
 					//axis_x *= scaleR;
 					//axis_y *= scaleR;
 		//r *= calculateRadiusScaleFactor();
 
 
-		for(int i = 0; i < 40; ++i)
-		{
-			sglVertex2f(x+(r * sin(i*diff)), y+(r * cos(i*diff)));
-		}
-		sglEnd();
-/*
+//		for(int i = 0; i < 40; ++i)
+	//	{
+		//	sglVertex2f(x+(r * sin(i*diff)), y+(r * cos(i*diff)));
+	//	}
+	//	sglEnd();
 
 
 		//fix
@@ -604,7 +611,7 @@ struct Context
 				setPixel(x0-y1 , y0-x1);
 
 			}
-			*/
+
 	}
 
 	void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
@@ -757,6 +764,7 @@ struct Context
 	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
 	void drawLine2D(Vertex a, Vertex b)
 	{
+		//bresenham(a.x,a.y,b.x,b.y);
 		int dx = abs(b.x - a.x);
 		int dy = abs(b.y - a.y);
 
@@ -766,7 +774,28 @@ struct Context
 		else
 			if (a.y < b.y)	bresenham_y(a.y, a.x, b.y, b.x);
 			else			bresenham_y(b.y, b.x, a.y, a.x);
+	}
 
+
+	void drawArc2D(float x, float y, float z, float radius, float from, float to)
+	{
+		float step		= ((to - from) / 40);
+		float circleX	= 0;
+		float circleY	= 0;
+
+		if (from >= to) return;
+
+		sglBegin(SGL_LINE_STRIP);
+
+		for (float fi = from; fi < to; fi += step)
+		{
+			circleX = x + radius * cos(fi);
+			circleY = y + radius * sin(fi);
+			sglVertex2f(circleX, circleY);
+		}
+
+		sglVertex2f(x + radius * cos(to), y + radius * sin(to));
+		sglEnd();
 	}
 
 	void bresenham_x(int x1, int y1, int x2, int y2)
@@ -849,7 +878,7 @@ struct Context
 	void multiplyCurrentMatrix(Matrix & m)
 	{
 		if (matrixMode == SGL_MODELVIEW)	current_mv	= current_mv * m;
-		else								current_p	*= m;
+		else								current_p   = current_p  * m;
 	}
 
 	void setViewport(int width, int height, int x, int y)
@@ -866,7 +895,7 @@ struct Context
 	void pushMatrix()
 	{
 		if (matrixMode == SGL_MODELVIEW)	transformStack.push_back(current_mv);
-		else 					transformStack.push_back(current_p);
+		else 								transformStack.push_back(current_p);
 	}
 
 	void setCurrentMatrix(Matrix matrix)
