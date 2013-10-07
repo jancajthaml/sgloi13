@@ -46,10 +46,10 @@ public class Context
 	public LinkedList <Vertex> vertices = new LinkedList<Vertex>();
 	public ArrayDeque <sglEElementType> types = new ArrayDeque<sglEElementType>();
 	
-	public Viewport viewport;
+	public Viewport viewport = new Viewport();
 	public sglEMatrixMode matrixMode;
 
-	public ArrayDeque <Matrix> transformStack;
+	public ArrayDeque <Matrix> transformStack = new ArrayDeque();
 
 	public Context(int width, int height)
 	{

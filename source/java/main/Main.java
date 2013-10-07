@@ -372,11 +372,11 @@ public class Main
 	{ current().multiplyCurrentMatrix(Matrix.translate(x,y,z)); }
 
 	//Scale
-	static void sglScale(float scalex, float scaley, float scalez)
+	public static void sglScale(float scalex, float scaley, float scalez)
 	{ current().multiplyCurrentMatrix(Matrix.scale(scalex, scaley, scalez)); }
 
 	//Rotate **** around the centerx,centery axis with given angle
-	static void sglRotate2D(float angle, float centerx, float centery)
+	public static void sglRotate2D(float angle, float centerx, float centery)
 	{ current().multiplyCurrentMatrix(Matrix.rotate2D(angle, centerx, centery)); }
 
 	// ? rotates what ? Context or scene ?

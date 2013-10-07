@@ -42,9 +42,9 @@ public class Viewport
 	void changeViewport(int width, int height, int x, int y)
 	{
 		this.width			= width;
-		this.height		= height;
+		this.height			= height;
 		this.width_2_x		= (float)(width>>1) + x;
-		this.height_2_y	= (float)(height>>1) + y;
+		this.height_2_y		= (float)(height>>1) + y;
 		this.x				= x;
 		this.y				= y;
 		ready				= true;
