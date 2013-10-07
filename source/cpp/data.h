@@ -491,10 +491,10 @@ struct Context
 
 	void drawPoints()
 	{
-		if((size)%2==0) size++;
-		int size = size<<1;
-
-		if(size==1)
+		int thickness = size;
+		if((thickness)%2==1) thickness++;
+		thickness = thickness>>1;
+		if(thickness==1)
 		{
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
 				setPixel(v_it->x, v_it->y);
@@ -502,8 +502,8 @@ struct Context
 		else
 		{
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			for(int i = -size; i<size-1; i++)
-			for(int j = -size; j<size-1; j++)
+			for(int i = -size; i<thickness-1; i++)
+			for(int j = -size; j<thickness-1; j++)
 				setPixel(v_it->x+j, v_it->y+i);
 		}
 	}
