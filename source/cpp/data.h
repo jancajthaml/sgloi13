@@ -325,6 +325,11 @@ struct Matrix
 	static Matrix rotateY(float angle)
 	{ return Matrix( cos(angle), 0.0f, -sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sin(angle), 0.0f, cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
 
+	void print()
+	{
+		printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", matrix[0], matrix[4], matrix[8], matrix[12], matrix[1], matrix[5], matrix[9], matrix[13], matrix[2], matrix[6], matrix[10], matrix[14], matrix[3], matrix[7], matrix[11], matrix[15]);
+	}
+
 };
 
 
@@ -423,8 +428,7 @@ struct Context
 	Viewport viewport;
 	sglEMatrixMode matrixMode;
 
-	std::vector<Matrix> projection;
-	std::vector<Matrix> model_view;
+	std::vector<Matrix> transformStack;
 
 	Context(int width, int height)
 	{
@@ -584,68 +588,84 @@ struct Context
 			}
 	}
 
-	void drawEllipse(float x1, float y1, float z, float x2, float y2)
-	{
-		Vertex v(x1, y1, z, 0.0f);
-		transform(v);
-		x1 = v.x; y1 = v.y; z = v.z;
-		//calculate r scale factor
-		float scaleR = calculateRadiusScaleFactor(); 
-		x2 = x2 * scaleR;
-		y2 = y2 * scaleR;
-		float x				= x2;
-		float y				= 0;
-		float EllipseError	= 0;
-		float TwoASquare	= 2 * x2 * x2;
-		float TwoBSquare	= 2 * y2 * y2;
-		float XChange		= y2 * y2 * (1 - 2 * x2);
-		float YChange		= x2 * x2;
-		float StoppingX		= TwoBSquare * x2;
-		float StoppingY		= 0;
-
-		while( StoppingX >= StoppingY)
+	void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
 		{
-			setPixel(x, y);
+		//	Vertex v(center_x, center_y, center_z, 0.0f);
+			//transform(v);
+			//center_x = v.x;
+			//center_y = v.y;
+			//center_z = v.z;
 
-			y++;
-			StoppingY		+= TwoASquare;
-			EllipseError	+= YChange;
-			YChange			+= TwoASquare;
+			//calculate r scale factor
+		//	float scaleR = calculateRadiusScaleFactor();
+			//axis_x *= scaleR;
+			//axis_y *= scaleR;
 
-			if( ( 2 * EllipseError + XChange) > 0 )
+			bool ellipse_adaptive = false;
+
+			if(ellipse_adaptive)
 			{
-				x--;
-				StoppingX		-= TwoBSquare;
-				EllipseError	+= XChange;
-				XChange			+= TwoBSquare;
+
+			}
+			else
+			{
+				sglBegin(SGL_POLYGON);
+
+				//float diff = 0.15707963267f;
+
+				//for(int i = 0; i < 40; ++i)
+				//{
+				//sglVertex2f(center_x+(axis_x * sin(i*diff)), center_y+(axis_y * cos(i*diff)));
+				//}
+
+				//TRANSLATE!!!
+
+				sglVertex2f( center_x										, center_y + axis_y								 );
+				sglVertex2f( center_x + (axis_x * 0.1564344693575539	)	, center_y + ( axis_y * 0.987688339911341		));
+				sglVertex2f( center_x + (axis_x * 0.3090170026893479	)	, center_y + ( axis_y * 0.9510565135936411		));
+				sglVertex2f( center_x + (axis_x * 0.45399051142368685	)	, center_y + ( axis_y * 0.8910065182350011		));
+				sglVertex2f( center_x + (axis_x * 0.587785266437776		)	, center_y + ( axis_y * 0.8090169840977831		));
+				sglVertex2f( center_x + (axis_x * 0.7071067966408575	)	, center_y + ( axis_y * 0.7071067657322372		));
+				sglVertex2f( center_x + (axis_x * 0.8090170097906934	)	, center_y + ( axis_y * 0.5877852310745185		));
+				sglVertex2f( center_x + (axis_x * 0.891006511019614		)	, center_y + ( axis_y * 0.4539905255846804		));
+				sglVertex2f( center_x + (axis_x * 0.9510565271012029	)	, center_y + ( axis_y * 0.3090169611173454		));
+				sglVertex2f( center_x + (axis_x * 0.9876883560735247	)	, center_y + ( axis_y * 0.15643436731351018		));
+				sglVertex2f( center_x + (axis_x * 0.999999999999999		)	, center_y - ( axis_y * 4.371139000186241E-8	));
+				sglVertex2f( center_x + (axis_x * 0.9876883423975937	)	, center_y - ( axis_y * 0.15643445365997144		));
+				sglVertex2f( center_x + (axis_x * 0.9510565000860774	)	, center_y - ( axis_y * 0.30901704426134974		));
+				sglVertex2f( center_x + (axis_x * 0.8910064713304968	)	, center_y - ( axis_y * 0.4539906034789449		));
+				sglVertex2f( center_x + (axis_x * 0.8090170284743339	)	, center_y - ( axis_y * 0.5877852053586913		));
+				sglVertex2f( center_x + (axis_x * 0.7071067769704655	)	, center_y - ( axis_y * 0.7071067854026294		));
+				sglVertex2f( center_x + (axis_x * 0.5877851957112599	)	, center_y - ( axis_y * 0.809017035483602		));
+				sglVertex2f( center_x + (axis_x * 0.4539903804212881	)	, center_y - ( axis_y * 0.8910065849840472		));
+				sglVertex2f( center_x + (axis_x * 0.3090168061705656	)	, center_y - ( axis_y * 0.9510565774464436		));
+				sglVertex2f( center_x + (axis_x * 0.15643444188190603	)	, center_y - ( axis_y * 0.9876883442630557		));
+				sglVertex2f( center_x - (axis_x * 8.742278000372475E-8	)	, center_y - ( axis_y * 0.9999999999999962		));
+				sglVertex2f( center_x - (axis_x * 0.1564346145748253	)	, center_y - ( axis_y * 0.9876883169111731		));
+				sglVertex2f( center_x - (axis_x * 0.3090169724585808	)	, center_y - ( axis_y * 0.9510565234162125		));
+				sglVertex2f( center_x - (axis_x * 0.4539905362098265	)	, center_y - ( axis_y * 0.8910065056058313		));
+				sglVertex2f( center_x - (axis_x * 0.5877853371642876	)	, center_y - ( axis_y * 0.8090169327119581		));
+				sglVertex2f( center_x - (axis_x * 0.7071069006049366	)	, center_y - ( axis_y * 0.7071066617681382		));
+				sglVertex2f( center_x - (axis_x * 0.8090171312459549	)	, center_y - ( axis_y * 0.5877850639056469		));
+				sglVertex2f( center_x - (axis_x * 0.8910066589484567	)	, center_y - ( axis_y * 0.4539902352578838		));
+				sglVertex2f( center_x - (axis_x * 0.951056480440929		)	, center_y - ( axis_y * 0.3090171047228822		));
+				sglVertex2f( center_x - (axis_x * 0.9876883324525811	)	, center_y - ( axis_y * 0.156434516450301		));
+				sglVertex2f( center_x - (axis_x * 0.9999999999999999	)	, center_y + ( axis_y * 1.1924880454806035E-8	));
+				sglVertex2f( center_x - (axis_x * 0.9876883287216551	)	, center_y + ( axis_y * 0.15643454000643153		));
+				sglVertex2f( center_x - (axis_x * 0.9510564730709448	)	, center_y + ( axis_y * 0.30901712740535175		));
+				sglVertex2f( center_x - (axis_x * 0.8910064316413727	)	, center_y + ( axis_y * 0.45399068137320586		));
+				sglVertex2f( center_x - (axis_x * 0.8090168369495607	)	, center_y + ( axis_y * 0.5877854689698682		));
+				sglVertex2f( center_x - (axis_x * 0.7071065465657921	)	, center_y + ( axis_y * 0.7071070158072251		));
+				sglVertex2f( center_x - (axis_x * 0.5877849321000184	)	, center_y + ( axis_y * 0.8090172270082862		));
+				sglVertex2f( center_x - (axis_x * 0.45399051495953424	)	, center_y + ( axis_y * 0.8910065164333968		));
+				sglVertex2f( center_x - (axis_x * 0.30901694977611		)	, center_y + ( axis_y * 0.9510565307861931		));
+				sglVertex2f( center_x - (axis_x * 0.1564343555354446	)	, center_y + ( axis_y * 0.9876883579389858		));
+
+			//	}
+
+				sglEnd();
 			}
 		}
-
-		x				= 0;
-		y				= y2;
-		XChange			= y2 * y2;
-		YChange			= x2 * x2 * (1 - 2 * y2);
-		EllipseError	= 0;
-		StoppingX		= 0;
-		StoppingY		= TwoASquare * y2;
-		while (StoppingX <= StoppingY)
-		{
-			setPixel(x, y);
-
-			x++;
-			StoppingX		+= TwoBSquare;
-			EllipseError	+= XChange;
-			XChange			+= TwoBSquare;
-
-			if( (2 * EllipseError + YChange) > 0)
-			{
-				y--;
-				StoppingY		-= TwoASquare;
-				EllipseError	+= YChange;
-				YChange			+= TwoASquare;
-			}
-		}
-	}
 
 	void drawLineStrip()
 	{
@@ -868,23 +888,24 @@ struct Context
 	void setViewport(int width, int height, int x, int y)
 	{ viewport.changeViewport(width, height, x, y); }
 
-	std::vector<Matrix> & getCurrentMatrixStack()
+
+	Matrix & getCurrentMatrix()
 	{
-		if (matrixMode		== SGL_MODELVIEW)	return model_view;
-		else if(matrixMode	== SGL_PROJECTION)	return projection;
-		else throw std::exception();
+		if (matrixMode == SGL_MODELVIEW)
+			return current_mv;
+	       	return current_p;
 	}
 
 	void pushMatrix()
 	{
-		if (matrixMode == SGL_MODELVIEW)	getCurrentMatrixStack().push_back(current_mv);
-		else 								getCurrentMatrixStack().push_back(current_p);
+		if (matrixMode == SGL_MODELVIEW)	transformStack.push_back(current_mv);
+		else 					transformStack.push_back(current_p);
 	}
 
 	void setCurrentMatrix(Matrix matrix)
 	{
 		if (matrixMode == SGL_MODELVIEW)	current_mv	= matrix;
-		else								current_p	= matrix;
+		else					current_p	= matrix;
 	}
 
 	void setMatrixMode(sglEMatrixMode mode)
@@ -894,16 +915,14 @@ struct Context
 	{ return (types.size() > 0); }
 
 	bool stackEmpty()
-	{ return (getCurrentMatrixStack().size() == 0); }
+	{ return (transformStack.size() == 0); }
 
 	void popMatrix()
 	{
-		std::vector<Matrix> matrixStack = getCurrentMatrixStack();
+		if (matrixMode == SGL_MODELVIEW)	current_mv	= transformStack.back();
+		else								current_p	= transformStack.back();
 
-		if (matrixMode == SGL_MODELVIEW)	current_mv	= matrixStack.back();
-		else								current_p	= matrixStack.back();
-
-		matrixStack.pop_back();
+		transformStack.pop_back();
 	}
 
 	void pushTypeState(sglEElementType type)
