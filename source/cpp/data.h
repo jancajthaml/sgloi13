@@ -8,6 +8,9 @@
 #include <vector>
 #include <list>
 #include <cmath>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include "sgl.h"
 #ifndef DATA_H_
 #define DATA_H_
@@ -348,6 +351,11 @@ struct Viewport
 		ready = false;
 	}
 
+	float calculateRatio()
+	{
+		return sqrt(width * width + height * height)/sqrt(8);
+	}
+
 	Viewport(int width, int height, int x, int y)
 	{
 		changeViewport(width, height, x, y);
@@ -491,19 +499,23 @@ struct Context
 
 	void drawPoints()
 	{
-		int thickness = size;
-		if((thickness)%2==1) thickness++;
-		thickness = thickness>>1;
-		if(thickness==1)
+
+		if(size==1)
 		{
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
 				setPixel(v_it->x, v_it->y);
 		}
 		else
 		{
+			int thickness = size;
+
+			if((thickness%2)==0) thickness++;
+
+			thickness >>= 1;
+
 			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			for(int i = -size; i<thickness-1; i++)
-			for(int j = -size; j<thickness-1; j++)
+			for(int i = -thickness; i<size-1; i++)
+			for(int j = -thickness; j<size-1; j++)
 				setPixel(v_it->x+j, v_it->y+i);
 		}
 	}
@@ -526,9 +538,8 @@ struct Context
 		transform(v);
 		x = v.x; y = v.y; z = v.z;
 		//calculate r scale factor
-		float scaleR = calculateRadiusScaleFactor();		
-		printf("scaleR: %f\n", scaleR);
-		r = r / scaleR; 
+		float scaleR = calculateRadiusScaleFactor() * viewport.calculateRatio();		
+		r = r * scaleR; 
 		int p	= 1 - (int)r;
 			int x0	= int(x);
 			int y0	= int(y);
