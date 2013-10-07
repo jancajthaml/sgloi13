@@ -13,3 +13,5 @@ brejcja1/sgl/testapp/test.dSYM/Contents/Info.plist
 brejcja1/sgl/testapp/test.dSYM/Contents/Resources/DWARF/test
 *.swp
 desc.neon
+source/cpp/Archive.zip
+source/cpp/testapp/testapp
