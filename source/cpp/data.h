@@ -508,8 +508,26 @@ struct Context
 		}
 	}
 
+	void transform(Vertex &v)
+	{
+		v = (current_p * current_mv) * v;
+		viewport.calculateWindowCoordinates(v);
+	}
+
+	float calculateRadiusScaleFactor()
+	{
+		Matrix m = current_p * current_mv;
+		return sqrt((m.matrix[0] * m.matrix[5]) - (m.matrix[1] * m.matrix[4]));
+	}
 	void drawCricle(float x, float y, float z, float r)
 	{
+		Vertex v(x, y, 0.0f, 0.0f);
+		transform(v);
+		x = v.x; y = v.y; z = v.z;
+		//calculate r scale factor
+		float scaleR = calculateRadiusScaleFactor();		
+		printf("scaleR: %f\n", scaleR);
+		r = r / scaleR; 
 		int p	= 1 - (int)r;
 			int x0	= int(x);
 			int y0	= int(y);
