@@ -39,30 +39,85 @@ public class Matrix
 	}
 
 	public static Matrix identity()
-	{ return new Matrix(	1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+	{
+		return new Matrix(	1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
+	}
 
-	public static Matrix scale(float x, float y, float z, float w)
-	{ return new Matrix(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, w); }
+	public static Matrix scale(float sc_x, float sc_y, float sc_z)
+	{
+		return new Matrix( sc_x, 0.0f, 0.0f, 0.0f,
+			       	0.0f, sc_y, 0.0f, 0.0f,
+			       	0.0f, 0.0f, sc_z, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
+	}
+	
+	public static Matrix translate(float t_x, float t_y, float t_z)
+	{
+		return new Matrix(	1.0f, 0.0f, 0.0f, 0.0f ,
+				0.0f, 1.0f, 0.0f, 0.0f ,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				t_x, t_y, t_z, 1.0f);
+	};
 
-	public static Matrix translate(float x, float y, float z)
-	{ return new Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, x, y, z, 1.0f); }
+	public static Matrix rotate2D(float angle, float c_x, float c_y)
+	{
+		float cos_a = (float)Math.cos(angle);
+		float sin_a = (float)Math.sin(angle);
+		return new Matrix(	cos_a, -sin_a, 0.0f, 0.0f ,
+				sin_a, cos_a, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				0.0f, 0.0f, 0.0f, 1.0f);
 
-	public static Matrix rotate(float angle, float centerx, float centery)
-	{ return new Matrix( (float)Math.cos(angle), -(float)Math.sin(angle), 0.0f, 0.0f, (float)Math.sin(angle), (float)Math.cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
+	}
 
 	public static Matrix rotateY(float angle)
-	{ return new Matrix( (float)Math.cos(angle), 0.0f, -(float)Math.sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, (float)Math.sin(angle), 0.0f, (float)Math.cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
-
+	{
+		return identity();
+	}
+	
 	public Matrix multiply(Matrix other)
 	{
-	
+		Matrix m = new Matrix();
+		
+		// Row 1
+    	m.matrix[0]  = this.matrix[0]  * other.matrix[0]  +  this.matrix[1]  * other.matrix[4]  +  this.matrix[2] * other.matrix[8]   +  this.matrix[3]  * other.matrix[12];    // Column 1
+    	m.matrix[1]  = this.matrix[0]  * other.matrix[1]  +  this.matrix[1]  * other.matrix[5]  +  this.matrix[2] * other.matrix[9]   +  this.matrix[3]  * other.matrix[13];    // Column 2
+    	m.matrix[2]  = this.matrix[0]  * other.matrix[2]  +  this.matrix[1]  * other.matrix[6]  +  this.matrix[2] * other.matrix[10]  +  this.matrix[3]  * other.matrix[14];    // Column 3
+    	m.matrix[3]  = this.matrix[0]  * other.matrix[3]  +  this.matrix[1]  * other.matrix[7]  +  this.matrix[2] * other.matrix[11]  +  this.matrix[3]  * other.matrix[15];    // Column 4
+
+    	// Row 2
+    	m.matrix[4]  = this.matrix[4]  * other.matrix[0]  +  this.matrix[5]  * other.matrix[4]  +  this.matrix[6] * other.matrix[8]   +  this.matrix[7]  * other.matrix[12];    // Column 1
+    	m.matrix[5]  = this.matrix[4]  * other.matrix[1]  +  this.matrix[5]  * other.matrix[5]  +  this.matrix[6] * other.matrix[9]   +  this.matrix[7]  * other.matrix[13];    // Column 2
+    	m.matrix[6]  = this.matrix[4]  * other.matrix[2]  +  this.matrix[5]  * other.matrix[6]  +  this.matrix[6] * other.matrix[10]  +  this.matrix[7]  * other.matrix[14];    // Column 3
+    	m.matrix[7]  = this.matrix[4]  * other.matrix[3]  +  this.matrix[5]  * other.matrix[7]  +  this.matrix[6] * other.matrix[11]  +  this.matrix[7]  * other.matrix[15];    // Column 4
+
+    	// Row 3
+    	m.matrix[8]  = this.matrix[8]  * other.matrix[0]  +  this.matrix[9]  * other.matrix[4]  +  this.matrix[10] * other.matrix[8]  +  this.matrix[11] * other.matrix[12];    // Column 1
+    	m.matrix[9]  = this.matrix[8]  * other.matrix[1]  +  this.matrix[9]  * other.matrix[5]  +  this.matrix[10] * other.matrix[9]  +  this.matrix[11] * other.matrix[13];    // Column 2
+    	m.matrix[10] = this.matrix[8]  * other.matrix[2]  +  this.matrix[9]  * other.matrix[6]  +  this.matrix[10] * other.matrix[10] +  this.matrix[11] * other.matrix[14];    // Column 3
+    	m.matrix[11] = this.matrix[8]  * other.matrix[3]  +  this.matrix[9]  * other.matrix[7]  +  this.matrix[10] * other.matrix[11] +  this.matrix[11] * other.matrix[15];    // Column 4
+
+    	// Row 4
+    	m.matrix[12] = this.matrix[12] * other.matrix[0]  +  this.matrix[13] * other.matrix[4]  +  this.matrix[14] * other.matrix[8]  +  this.matrix[15] * other.matrix[12];    // Column 1
+    	m.matrix[13] = this.matrix[12] * other.matrix[1]  +  this.matrix[13] * other.matrix[5]  +  this.matrix[14] * other.matrix[9]  +  this.matrix[15] * other.matrix[13];    // Column 2
+    	m.matrix[14] = this.matrix[12] * other.matrix[2]  +  this.matrix[13] * other.matrix[6]  +  this.matrix[14] * other.matrix[10] +  this.matrix[15] * other.matrix[14];    // Column 3
+    	m.matrix[15] = this.matrix[12] * other.matrix[3]  +  this.matrix[13] * other.matrix[7]  +  this.matrix[14] * other.matrix[11] +  this.matrix[15] * other.matrix[15];    // Column 4
+
 		return other;
 	}
 
 	public Vertex multiply(Vertex other)
 	{
-		
-		return other;
+		Vertex res = new Vertex(0,0);
+		res.x = (other.x*this.matrix[0]) + (other.y*this.matrix[4]) + (other.z*this.matrix[8]) + (other.w*this.matrix[12]);
+		res.y = (other.x*this.matrix[1]) + (other.y*this.matrix[5]) + (other.z*this.matrix[9]) + (other.w*this.matrix[13]);
+		res.z = (other.x*this.matrix[2]) + (other.y*this.matrix[6]) + (other.z*this.matrix[10]) + (other.w*this.matrix[14]);
+		res.w = (other.x*this.matrix[3]) + (other.y*this.matrix[7]) + (other.z*this.matrix[11]) + (other.w*this.matrix[15]);
+
+		return res;
 	}
 
 }

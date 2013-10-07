@@ -40,4 +40,8 @@ public class Color
 		this.g = (this.g - other.g) * 0.5f;
 		this.b = (this.b - other.b) * 0.5f;
 	}
+	
+	 public int getRGB()
+	 { return ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | ((int)(b * 255)); }
+	 
 }
