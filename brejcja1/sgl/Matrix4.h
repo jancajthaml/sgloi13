@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstring>
 #include <exception>
+#include <cmath>
 
 #define MATRIX4_LENGTH 16
 #define MATRIX4_ROW_LENGTH 4
@@ -145,6 +146,7 @@
 	}
 	
 
+
 	void print()
 	{
 		printf("%f %f %f %f \n%f %f %f %f \n%f %f %f %f \n%f %f %f %f \n",
@@ -165,6 +167,33 @@
 				0.0f, 0.0f, 1.0f, 0.0f,
 				0.0f, 0.0f, 0.0f, 1.0f);
 	}
+
+	static Matrix4 makeScale(float sc_x, float sc_y, float sc_z)
+	{
+		return Matrix4( sc_x, 0.0f, 0.0f, 0.0f,
+			       	0.0f, sc_y, 0.0f, 0.0f,
+			       	0.0f, 0.0f, sc_z, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
+	}
+	static Matrix4 makeTranslation(float t_x, float t_y, float t_z)
+	{
+		return Matrix4(	1.0f, 0.0f, 0.0f, 0.0f ,
+				0.0f, 1.0f, 0.0f, 0.0f ,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				t_x, t_y, t_z, 1.0f);
+	};
+
+	static Matrix4 makeRotation2D(float angle, float c_x, float c_y)
+	{
+		float cos_a = cos(angle);
+		float sin_a = sin(angle);
+		return Matrix4(	cos_a, sin_a, 0.0f, 0.0f ,
+				-sin_a, cos_a, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				0.0f, 0.0f, 0.0f, 1.0f);
+		
+	}
+	
 
 };
 

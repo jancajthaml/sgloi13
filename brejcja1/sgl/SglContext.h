@@ -29,6 +29,7 @@ private:
 	std::vector<Matrix4> modelviewStack;
 	sglEMatrixMode matrixMode;
 
+	unsigned int pointThickness;
 	std::vector<Vertex> vertices;	
 	bool depthTest;
 
@@ -49,7 +50,7 @@ public:
 	{
 		this->width = width;
 		this->height = height;
-		framebuffer = (Color *)malloc(sizeof(float) * width * height);
+		framebuffer = (Color *)malloc(sizeof(Color) * width * height);
 		if (!framebuffer)
 			throw std::exception();
 		clearColor = Color(0.0f, 0.0f, 0.0f);
@@ -57,6 +58,17 @@ public:
 		depthTest = false;
 		currentModelviewMatrix = Matrix4::makeIdentity();
 		currentProjectionMatrix = Matrix4::makeIdentity();
+		pointThickness = 1;
+	}
+
+	void setPointSize(float t)
+	{
+		int thickness = (int)round(t);
+		if (thickness % 2 == 1)
+			--thickness;
+		if (thickness < 1)
+			thickness = 1;
+		pointThickness = thickness;
 	}
 
 	void clear(unsigned what, sglEErrorCode * err)
@@ -139,16 +151,52 @@ public:
 					drawLines2D();
 				break;
 			}
+			case SGL_LINE_STRIP:
+			{
+				if (!depthTest)
+					drawLineStrip2D();
+				break;
+			}
+			case SGL_LINE_LOOP:
+			{
+				if (!depthTest)
+					drawLineLoop2D();
+				break;
+			}
 		}
 		vertices.clear();
+	}
+
+	void drawLineStrip2D()
+	{
+		for (int i = 0; i < (int)vertices.size() - 1; i++)
+		{
+			drawLine2D(vertices[i], vertices[i+1]);
+		}
+	}
+
+	void drawLineLoop2D()
+	{
+		drawLineStrip2D();
+		drawLine2D(vertices[vertices.size() - 1], vertices[0]);
 	}
 
 	void drawPoints2D()
 	{
 		for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
 		{
-			setPixel(v_it->v[0], v_it->v[1]);		
-		}			
+			float x = v_it->v[0];
+			float y = v_it->v[1];
+			int offset = pointThickness >> 1;
+			for (int i = -offset; i <= offset; ++i)
+			{	
+				for (int j = -offset; j <= offset; ++j)
+				{
+					setPixel(x + i, y + j);
+				}
+			}
+		}		
+
 	}
 
 	void drawLines2D()
@@ -263,8 +311,10 @@ public:
 
 	void setVertex2f(float x, float y)
 	{
-		Vertex v(x, y, 0.0f, 0.0f);
+		Vertex v(x, y, 0.0f, 1.0f);
+		v.print();
 		v = currentProjectionMatrix * currentModelviewMatrix * v;	
+		v.print();
 		//currentProjectionMatrix.print();
 		//currentModelviewMatrix.print();
 		if (viewport.isReadyToUse())
