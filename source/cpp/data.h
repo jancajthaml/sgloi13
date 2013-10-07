@@ -521,6 +521,7 @@ struct Context
 	}
 	void drawCricle(float x, float y, float z, float r)
 	{
+		//fix
 		Vertex v(x, y, 0.0f, 0.0f);
 		transform(v);
 		x = v.x; y = v.y; z = v.z;
