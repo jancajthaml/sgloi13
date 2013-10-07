@@ -348,6 +348,11 @@ struct Viewport
 		ready = false;
 	}
 
+	float calculateRatio()
+	{
+		return sqrt(width * width + height * height)/sqrt(8);
+	}
+
 	Viewport(int width, int height, int x, int y)
 	{
 		changeViewport(width, height, x, y);
@@ -526,9 +531,8 @@ struct Context
 		transform(v);
 		x = v.x; y = v.y; z = v.z;
 		//calculate r scale factor
-		float scaleR = calculateRadiusScaleFactor();		
-		printf("scaleR: %f\n", scaleR);
-		r = r / scaleR; 
+		float scaleR = calculateRadiusScaleFactor() * viewport.calculateRatio();		
+		r = r * scaleR; 
 		int p	= 1 - (int)r;
 			int x0	= int(x);
 			int y0	= int(y);
