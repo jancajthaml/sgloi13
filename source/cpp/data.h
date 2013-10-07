@@ -532,7 +532,7 @@ struct Context
 	float calculateRadiusScaleFactor()
 	{
 		Matrix m = current_p * current_mv;
-		return sqrt((m.matrix[0] * m.matrix[5]) - (m.matrix[1] * m.matrix[4]));
+		return sqrt((m.matrix[0] * m.matrix[5]) - (m.matrix[1] * m.matrix[4])) * viewport.calculateRatio();
 	}
 	void drawCricle(float x, float y, float z, float r)
 	{
@@ -540,9 +540,8 @@ struct Context
 		Vertex v(x, y, 0.0f, 0.0f);
 		transform(v);
 		x = v.x; y = v.y; z = v.z;
-		//calculate r scale factor
-		float scaleR = calculateRadiusScaleFactor() * viewport.calculateRatio();		
-		r = r * scaleR; 
+		//calculate r scale factor		
+		r = r * calculateRadiusScaleFactor(); 
 		int p	= 1 - (int)r;
 			int x0	= int(x);
 			int y0	= int(y);
@@ -586,7 +585,13 @@ struct Context
 
 	void drawEllipse(float x1, float y1, float z, float x2, float y2)
 	{
-
+		Vertex v(x1, y1, z, 0.0f);
+		transform(v);
+		x1 = v.x; y1 = v.y; z = v.z;
+		//calculate r scale factor
+		float scaleR = calculateRadiusScaleFactor();		
+		x2 = x2 * scaleR;
+		y2 = y2 * scaleR;	
 		float x				= x2;
 		float y				= 0;
 		float EllipseError	= 0;
