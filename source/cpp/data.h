@@ -73,6 +73,11 @@ struct Vertex
 		z = Z;
 		w = W;
 	}
+
+	void print()
+	{
+		printf("%f, %f, %f, %f\n", x, y, z, w);
+	}
 };
 
 //Edge
@@ -217,10 +222,10 @@ struct Matrix
     Vertex operator*(const Vertex& other)const
 	{
 		Vertex res;
-		res.x = (other.x*this->matrix[0]) + (other.y*this->matrix[1]) + (other.z*this->matrix[2]) + this->matrix[3];
-		res.y = (other.x*this->matrix[4]) + (other.y*this->matrix[5]) + (other.z*this->matrix[6]) + this->matrix[7];
-		res.z = (other.x*this->matrix[8]) + (other.y*this->matrix[9]) + (other.z*this->matrix[10]) + this->matrix[11];
-		res.w = (other.x*this->matrix[12]) + (other.y*this->matrix[13]) + (other.z*this->matrix[14]) + this->matrix[15];
+		res.x = (other.x*this->matrix[0]) + (other.y*this->matrix[4]) + (other.z*this->matrix[8]) + (other.w*this->matrix[12]);
+		res.y = (other.x*this->matrix[1]) + (other.y*this->matrix[5]) + (other.z*this->matrix[9]) + (other.w*this->matrix[13]);
+		res.z = (other.x*this->matrix[2]) + (other.y*this->matrix[6]) + (other.z*this->matrix[10]) + (other.w*this->matrix[14]);
+		res.w = (other.x*this->matrix[3]) + (other.y*this->matrix[7]) + (other.z*this->matrix[11]) + (other.w*this->matrix[15]);
 
 		return res;
 	}
@@ -467,9 +472,10 @@ struct Context
 
 	void setVertex2f(float x, float y)
 	{
-		Vertex v(x, y, 0.0f, 0.0f);
+		Vertex v(x, y, 0.0f, 1.0f);
+		v.print();
 		v = (current_p * current_mv) * v;
-
+		v.print();
 		if (viewport.ready)
 		{
 			viewport.calculateWindowCoordinates(v);
@@ -882,7 +888,7 @@ struct Context
 	void multiplyCurrentMatrix(Matrix & m)
 	{
 		if (matrixMode == SGL_MODELVIEW)	current_mv	= current_mv * m;
-		else								current_p	*= m;
+		else					current_p       = current_p  * m;
 	}
 
 	void setViewport(int width, int height, int x, int y)

@@ -5,7 +5,7 @@
 // Author: Jaroslav Krivanek, Jiri Bittner CTU Prague
 //---------------------------------------------------------------------------
 #include "sgl.h"	
-#include "SGLContext.h"
+#include "SglContext.h"
 #include "Color.h"
 #include "ContextManager.h"
 #include "Matrix4.h"
@@ -198,11 +198,34 @@ void sglMultMatrix(const float *matrix)
 	setErrCode(err2);
 }
 
-void sglTranslate(float x, float y, float z) {}
+void sglTranslate(float x, float y, float z)
+{
+	sglEErrorCode err1, err2;
+	Matrix4 translation = Matrix4::makeTranslation(x, y, z);
+	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(translation, &err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
-void sglScale(float scalex, float scaley, float scalez) {}
+void sglScale(float scalex, float scaley, float scalez)
+{
+	sglEErrorCode err1, err2;
+	Matrix4 scale = Matrix4::makeScale(scalex, scaley, scalez);
+	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(scale, &err2);
+	setErrCode(err1);
+	setErrCode(err2);
+}
 
-void sglRotate2D(float angle, float centerx, float centery) {}
+
+void sglRotate2D(float angle, float centerx, float centery)
+{
+	sglEErrorCode err1, err2;
+	Matrix4 rotate = Matrix4::makeRotation2D(angle, centerx, centery);
+	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(rotate, &err2);
+	setErrCode(err1);
+	setErrCode(err2);
+
+}
 
 void sglRotateY(float angle) {}
 
@@ -242,7 +265,12 @@ void sglColor3f(float r, float g, float b)
 
 void sglAreaMode(sglEAreaMode mode) {}
 
-void sglPointSize(float size) {}
+void sglPointSize(float size)
+{
+	sglEErrorCode err;
+	ctx_mgr.getContext(&err).setPointSize(size);
+	setErrCode(err);
+}
 
 void sglEnable(sglEEnableFlags cap) {}
 
