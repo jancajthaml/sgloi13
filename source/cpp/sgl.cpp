@@ -401,11 +401,9 @@ void sglMultMatrix(const float* matrix)
 // ? fotmula for matrix by vector multiplication in terms of vertex translation here ?
 void sglTranslate(float x, float y, float z)
 {
-	//aplikuj transformaci posunuti na aktualni matici
-
-	//1 vytvorit novou matici popisujici posunuti
-	//starou matici vynasobit zprava novou
-	//nahradit starou matici novou matici
+//	current()->translate(x,y,z);
+	Matrix translate = Matrix::translate(x,y,z);
+	current()->multiplyCurrentMatrix(translate);
 }
 
 // ? Scales what? Context or scene ?

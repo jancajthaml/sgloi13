@@ -315,11 +315,14 @@ struct Matrix
 	static Matrix scale(float x, float y, float z, float w)
 	{ return Matrix(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, w); }
 
+	static Matrix translate(float x, float y, float z)
+	{ return Matrix(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, x, y, z, 1.0f); }
+
 	static Matrix rotate(float angle, float centerx, float centery)
-	{ return Matrix(cos(angle), sin(angle), 0.0f, 0.0f, -sin(angle), cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+	{ return Matrix( cos(angle), -sin(angle), 0.0f, 0.0f, sin(angle), cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
 
 	static Matrix rotateY(float angle)
-	{ return Matrix(cos(angle), 0.0f, sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -sin(angle), 0.0f, cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+	{ return Matrix( cos(angle), 0.0f, -sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sin(angle), 0.0f, cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
 
 };
 
@@ -449,7 +452,7 @@ struct Context
 
 		//this->width = width;
 		//this->height = height;
-		buffer = (float*) malloc(sizeof(float) * width * height);
+		buffer = (float*) malloc(sizeof(float) * width * height * 3);
 
 		if (!buffer) throw std::exception();
 
@@ -844,10 +847,8 @@ struct Context
 		}
 	}
 
-
-
 	void setPixel(float x, float y)
-	{ setPixel((int)round(x), (int)round(y)); }
+	{ setPixel(int(x), int(y)); }
 
 	int stackSize()
 	{ return types.size(); }
