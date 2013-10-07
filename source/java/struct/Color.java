@@ -3,10 +3,10 @@ package struct;
 public class Color
 {
 
-	float r;
-	float g;
-	float b;
-	float a;
+	public float r;
+	public float g;
+	public float b;
+	public float a;
 
 	public Color()
 	{ r = g = b = a = 1.0f; }

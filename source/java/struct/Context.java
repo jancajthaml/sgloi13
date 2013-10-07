@@ -1,27 +1,30 @@
 package struct;
 
-import java.util.Vector;
+import static type.sglEElementType.SGL_POLYGON;
+import static type.sglEMatrixMode.SGL_PROJECTION;
+import static type.sglEMatrixMode.SGL_MODELVIEW;
 
+import java.util.Vector;
 import type.sglEElementType;
 import type.sglEMatrixMode;
 
 public class Context
 {
 
-	int id;
+	public int id;
 
     //Drawing
-	float[] buffer;
-	int w;
-	int h;
-	Color clear;
-	Color color;
+	public float[] buffer;
+	public int w;
+	public int h;
+	public Color clear;
+	public Color color;
 
 	//State
-	boolean depth;
+	public boolean depth;
 
 	//Pixel size
-	int size;
+	public int size;
 
 
 	//Transformation matrices
@@ -29,17 +32,17 @@ public class Context
 	//Matrix model_view;
 	//Matrix projection;
 
-	Matrix current_mv;
-	Matrix current_p;
+	public Matrix current_mv;
+	public Matrix current_p;
 
 	
-	Vector<Vertex> vertices;
+	public Vector<Vertex> vertices;
 
-	Vector<sglEElementType> types;
-	Viewport viewport;
-	sglEMatrixMode matrixMode;
+	public Vector<sglEElementType> types;
+	public Viewport viewport;
+	public sglEMatrixMode matrixMode;
 
-	Vector<Matrix> transformStack;
+	public Vector<Matrix> transformStack;
 
 	public Context(int width, int height)
 	{
@@ -76,11 +79,9 @@ public class Context
 		current_p = Matrix.identity();
 	}
 
-	void setVertex2f(float x, float y)
+	public void setVertex2f(float x, float y)
 	{
-		Vertex v = new Vertex(x, y, 0.0f, 0.0f);
-		
-		v = (current_p * current_mv) * v;
+		Vertex v = (current_p.multiply(current_mv)).multiply(new Vertex(x, y, 0.0f, 0.0f));
 
 		if (viewport.ready)
 		{
@@ -94,7 +95,7 @@ public class Context
 		vertices.add(v);
 	}
 
-	void draw()
+	public void draw()
 	{
 		if (types.size() == 0);//throw std::exception();
 
@@ -117,7 +118,7 @@ public class Context
 		vertices.clear();
 	}
 
-	void drawPoints()
+	public void drawPoints()
 	{
 
 		if(size==1)
@@ -140,21 +141,20 @@ public class Context
 		}
 	}
 
-	Vertex transform(Vertex v)
+	public Vertex transform(Vertex v)
 	{
-		v = (current_p * current_mv) * v;
+		v = (current_p.multiply(current_mv)).multiply(v);
 		viewport.calculateWindowCoordinates(v);
 		return v;
 	}
 
-	float calculateRadiusScaleFactor()
+	public float calculateRadiusScaleFactor()
 	{
-		Matrix m = current_p * current_mv;
-		
+		Matrix m = current_p.multiply(current_mv);
 		return (float) (Math.sqrt((m.matrix[0] * m.matrix[5]) - (m.matrix[1] * m.matrix[4])) * viewport.calculateRatio());
 	}
 	
-	void drawCricle(float x, float y, float z, float r)
+	public void drawCricle(float x, float y, float z, float r)
 	{
 		//fix
 		Vertex v = transform(new Vertex(x, y, 0.0f, 0.0f));
@@ -206,7 +206,7 @@ public class Context
 			}
 	}
 
-	void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
+	public void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
 		{
 		//	Vertex v(center_x, center_y, center_z, 0.0f);
 			//transform(v);
@@ -285,24 +285,24 @@ public class Context
 			}
 		}
 
-	void drawLineStrip()
+	public void drawLineStrip()
 	{
 		for (int i = 0; i < (int)vertices.size()-1; i++)
 			drawLine2D(vertices.get(i), vertices.get(i+1));
 	}
 
-	void drawLineLoop()
+	public void drawLineLoop()
 	{
 		for (int i = 0; i < (int)vertices.size()-1; i++)
 			drawLine2D(vertices.get(i), vertices.get(i+1));
 		drawLine2D(vertices.get((int)vertices.size()-1), vertices.get(0));
 	}
 
-	void drawTriangles()
+	public void drawTriangles()
 	{
 	}
 
-	void drawPolygon()
+	public void drawPolygon()
 	{
 		//if(SGL_LINE)
 		//{
@@ -325,7 +325,7 @@ public class Context
 			//setPixel(v_it->x, v_it->y);
 	}
 
-	void drawLines()
+	public void drawLines()
 	{
 		for (int i = 0; i < (int)vertices.size(); i += 2)
 			drawLine2D(vertices.get(i), vertices.get(i+1));
@@ -335,7 +335,7 @@ public class Context
 	//Breceanuv algoritmus
 	//DDA algoritmus (jednoduzsi)
 	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
-	void drawLine2D(Vertex a, Vertex b)
+	public void drawLine2D(Vertex a, Vertex b)
 	{
 
 		//obtain the points
@@ -401,7 +401,7 @@ public class Context
 		*/
 	}
 
-	void bresenham_x(int x1, int y1, int x2, int y2)
+	public void bresenham_x(int x1, int y1, int x2, int y2)
 	{
 			int dx = x2 - x1;
 			int dy = y2 - y1;
@@ -478,45 +478,45 @@ public class Context
 	int stackSize()
 	{ return types.size(); }
 
-	void multiplyCurrentMatrix(Matrix m)
+	public void multiplyCurrentMatrix(Matrix m)
 	{
-		if (matrixMode == SGL_MODELVIEW)	current_mv	= current_mv * m;
-		else								current_p	*= m;
+		if (matrixMode == SGL_MODELVIEW)	current_mv	= current_mv.multiply(m);
+		else								current_p	= current_p.multiply(m);
 	}
 
-	void setViewport(int width, int height, int x, int y)
+	public void setViewport(int width, int height, int x, int y)
 	{ viewport.changeViewport(width, height, x, y); }
 
 
-	Matrix getCurrentMatrix()
+	public Matrix getCurrentMatrix()
 	{
 		if (matrixMode == SGL_MODELVIEW)
 			return current_mv;
 	       	return current_p;
 	}
 
-	void pushMatrix()
+	public void pushMatrix()
 	{
 		if (matrixMode == SGL_MODELVIEW)	transformStack.push_back(current_mv);
-		else 					transformStack.push_back(current_p);
+		else 								transformStack.push_back(current_p);
 	}
 
-	void setCurrentMatrix(Matrix matrix)
+	public void setCurrentMatrix(Matrix matrix)
 	{
 		if (matrixMode == SGL_MODELVIEW)	current_mv	= matrix;
 		else					current_p	= matrix;
 	}
 
-	void setMatrixMode(sglEMatrixMode mode)
+	public void setMatrixMode(sglEMatrixMode mode)
 	{ matrixMode = mode; }
 
-	boolean invalidTypeStack()
+	public boolean invalidTypeStack()
 	{ return (types.size() > 0); }
 
-	boolean stackEmpty()
+	public boolean stackEmpty()
 	{ return (transformStack.size() == 0); }
 
-	void popMatrix()
+	public void popMatrix()
 	{
 		if (matrixMode == SGL_MODELVIEW)	current_mv	= transformStack.back();
 		else								current_p	= transformStack.back();
@@ -524,10 +524,10 @@ public class Context
 		transformStack.pop_back();
 	}
 
-	void pushTypeState(sglEElementType type)
+	public void pushTypeState(sglEElementType type)
 	{ types.push_back(type); }
 
-	void clearBuffer(unsigned what)
+	public void clearBuffer(unsigned what)
 	{
 		int size = w * h * 3;
 

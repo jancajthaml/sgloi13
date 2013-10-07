@@ -15,7 +15,7 @@ public class Matrix
 		this.matrix=f;
 	}
 	
-	Matrix(float m11, float m21, float m31, float m41, float m12, float m22, float m32, float m42, float m13, float m23, float m33, float m43,  float m14, float m24, float m34, float m44)
+	public Matrix(float m11, float m21, float m31, float m41, float m12, float m22, float m32, float m42, float m13, float m23, float m33, float m43,  float m14, float m24, float m34, float m44)
 	{
 		this.matrix[0] = m11;
 		this.matrix[1] = m21;
@@ -52,5 +52,17 @@ public class Matrix
 
 	public static Matrix rotateY(float angle)
 	{ return new Matrix( (float)Math.cos(angle), 0.0f, -(float)Math.sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, (float)Math.sin(angle), 0.0f, (float)Math.cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f ); }
+
+	public Matrix multiply(Matrix other)
+	{
+	
+		return other;
+	}
+
+	public Vertex multiply(Vertex other)
+	{
+		
+		return other;
+	}
 
 }
