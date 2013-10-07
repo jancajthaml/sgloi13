@@ -15,6 +15,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 
+
 /*
  * Side-notes:
  * Jan Cajthaml -using struct instead of class because of no need of encapsulation
