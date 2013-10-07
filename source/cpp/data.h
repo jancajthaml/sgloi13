@@ -307,9 +307,16 @@ struct Matrix
 	 * Factory method for creating identity matrix
 	 */
 	static Matrix identity()
-	{
-		return Matrix(	1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	}
+	{ return Matrix(	1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+
+	static Matrix scale(float x, float y, float z, float w)
+	{ return Matrix(x, 0.0f, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, w); }
+
+	static Matrix rotate(float angle, float centerx, float centery)
+	{ return Matrix(cos(angle), sin(angle), 0.0f, 0.0f, -sin(angle), cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
+
+	static Matrix rotateY(float angle)
+	{ return Matrix(cos(angle), 0.0f, sin(angle), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -sin(angle), 0.0f, cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f); }
 
 };
 
@@ -360,9 +367,15 @@ struct Viewport
 		this->height_2_y	= (float)(height>>1) + y;
 		this->x				= x;
 		this->y				= y;
-		ready			= true;
+		ready				= true;
 	}
 
+	//transform to window coordinates according to http://msdn.microsoft.com/en-us/library/dd374202(v=vs.85).aspx
+	void normalize(float &x, float &y)
+	{
+	    x = (x+1)*width_2_x;
+	    y = (y+1)*height_2_y;
+	}
 };
 
 //Context
@@ -381,7 +394,7 @@ struct Context
 	bool depth;
 
 	//Pixel size
-	float size;
+	int size;
 
 
 	//Transformation matrices
@@ -478,8 +491,121 @@ struct Context
 
 	void drawPoints()
 	{
-		for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			setPixel(v_it->x, v_it->y);
+		if((size)%2==0) size++;
+		int size = size<<1;
+
+		if(size==1)
+		{
+			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
+				setPixel(v_it->x, v_it->y);
+		}
+		else
+		{
+			for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
+			for(int i = -size; i<size-1; i++)
+			for(int j = -size; j<size-1; j++)
+				setPixel(v_it->x+j, v_it->y+i);
+		}
+	}
+
+	void drawCricle(float x, float y, float z, float r)
+	{
+		int p	= 1 - (int)r;
+			int x0	= int(x);
+			int y0	= int(y);
+			int x1	= 0;
+			int y1	= int(r);
+			int x2	= 1;
+			int y2	= -2*r;
+
+			//4 points around center
+			setPixel(x0        , y0+int(r));
+			setPixel(x0        , y0-int(r));
+			setPixel(x0+int(r) , y0);
+			setPixel(x0-int(r) , y0);
+
+			while(x1<y1)
+			{
+				if(p>=0)
+				{
+					y1--;
+					y2 += 2;
+					p += y2;
+				}
+
+				x1++;
+
+				x2 += 2;
+				p += x2;
+
+				setPixel(x0+x1 , y0+y1);
+				setPixel(x0-x1 , y0+y1);
+				setPixel(x0+x1 , y0-y1);
+				setPixel(x0-x1 , y0-y1);
+
+				setPixel(x0+y1 , y0+x1);
+				setPixel(x0-y1 , y0+x1);
+				setPixel(x0+y1 , y0-x1);
+				setPixel(x0-y1 , y0-x1);
+
+			}
+	}
+
+	void drawEllipse(float x1, float y1, float z, float x2, float y2)
+	{
+
+		float x				= x2;
+		float y				= 0;
+		float EllipseError	= 0;
+		float TwoASquare	= 2 * x2 * x2;
+		float TwoBSquare	= 2 * y2 * y2;
+		float XChange		= y2 * y2 * (1 - 2 * x2);
+		float YChange		= x2 * x2;
+		float StoppingX		= TwoBSquare * x2;
+		float StoppingY		= 0;
+
+		while( StoppingX >= StoppingY)
+		{
+			setPixel(x, y);
+
+			y++;
+			StoppingY		+= TwoASquare;
+			EllipseError	+= YChange;
+			YChange			+= TwoASquare;
+
+			if( ( 2 * EllipseError + XChange) > 0 )
+			{
+				x--;
+				StoppingX		-= TwoBSquare;
+				EllipseError	+= XChange;
+				XChange			+= TwoBSquare;
+			}
+		}
+
+		x				= 0;
+		y				= y2;
+		XChange			= y2 * y2;
+		YChange			= x2 * x2 * (1 - 2 * y2);
+		EllipseError	= 0;
+		StoppingX		= 0;
+		StoppingY		= TwoASquare * y2;
+		while (StoppingX <= StoppingY)
+		{
+			setPixel(x, y);
+
+			x++;
+			StoppingX		+= TwoBSquare;
+			EllipseError	+= XChange;
+			XChange			+= TwoBSquare;
+
+			if( (2 * EllipseError + YChange) > 0)
+			{
+				y--;
+				StoppingY		-= TwoASquare;
+				EllipseError	+= YChange;
+				YChange			+= TwoASquare;
+			}
+		}
 	}
 
 	void drawLineStrip()
@@ -687,6 +813,7 @@ struct Context
 			buffer[offset+2]	= color.b;
 		}
 	}
+
 
 
 	void setPixel(float x, float y)

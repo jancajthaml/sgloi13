@@ -275,51 +275,7 @@ void sglVertex2f(float x, float y)
 //
 // Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
-{
-	/*
-	//Prepsat na Bresehnamm
-
-	int p	= 1 - (int)r;
-	int x0	= int(x);
-	int y0	= int(y);
-	int x1	= 0;
-	int y1	= int(r);
-	int x2	= 1;
-	int y2	= -2*r;
-
-	//4 points around center
-	setPixel(x0        , y0+int(r));
-	setPixel(x0        , y0-int(r));
-	setPixel(x0+int(r) , y0);
-	setPixel(x0-int(r) , y0);
-
-	while(x1<y1)
-	{
-		if(p>=0)
-		{
-			y1--;
-			y2 += 2;
-			p += y2;
-		}
-
-		x1++;
-
-		x2 += 2;
-		p += x2;
-
-		setPixel(x0+x1 , y0+y1);
-		setPixel(x0-x1 , y0+y1);
-		setPixel(x0+x1 , y0-y1);
-		setPixel(x0-x1 , y0-y1);
-
-		setPixel(x0+y1 , y0+x1);
-		setPixel(x0-y1 , y0+x1);
-		setPixel(x0+y1 , y0-x1);
-		setPixel(x0-y1 , y0-x1);
-
-	}
-	*/
-}
+{ current()->drawCricle(x,y,z,r); }
 
 //2D Ellipse
 //
@@ -335,62 +291,7 @@ void sglCircle(float x, float y, float z, float r)
 //
 //@see http://www.codeproject.com/Messages/2112010/A-Fast-Bresenham-Type-Algorithm-For-Drawing-Ellips.aspx
 void sglEllipse(float x1, float y1, float z, float x2, float y2)
-{
-	/*
-	float x				= x2;
-	float y				= 0;
-	float EllipseError	= 0;
-	float TwoASquare	= 2 * x2 * x2;
-	float TwoBSquare	= 2 * y2 * y2;
-	float XChange		= y2 * y2 * (1 - 2 * x2);
-	float YChange		= x2 * x2;
-	float StoppingX		= TwoBSquare * x2;
-	float StoppingY		= 0;
-
-	while( StoppingX >= StoppingY)
-	{
-		setPixel(x, y);
-
-		y++;
-		StoppingY		+= TwoASquare;
-		EllipseError	+= YChange;
-		YChange			+= TwoASquare;
-
-		if( ( 2 * EllipseError + XChange) > 0 )
-		{
-			x--;
-			StoppingX		-= TwoBSquare;
-			EllipseError	+= XChange;
-			XChange			+= TwoBSquare;
-		}
-	}
-
-	x				= 0;
-	y				= y2;
-	XChange			= y2 * y2;
-	YChange			= x2 * x2 * (1 - 2 * y2);
-	EllipseError	= 0;
-	StoppingX		= 0;
-	StoppingY		= TwoASquare * y2;
-	while (StoppingX <= StoppingY)
-	{
-		setPixel(x, y);
-
-		x++;
-		StoppingX		+= TwoBSquare;
-		EllipseError	+= XChange;
-		XChange			+= TwoBSquare;
-
-		if( (2 * EllipseError + YChange) > 0)
-		{
-			y--;
-			StoppingY		-= TwoASquare;
-			EllipseError	+= YChange;
-			YChange			+= TwoASquare;
-		}
-	}
-	*/
-}
+{ current()->drawEllipse(x1,y1,z,x2,y2); }
 
 //Line
 //Breceanuv algoritmus
@@ -398,47 +299,7 @@ void sglEllipse(float x1, float y1, float z, float x2, float y2)
 //@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
 void sglDrawLine(Vertex start, Vertex end)
 {
-	/*
-	int x1		= int(start.x);
-	int x2		= int(end.x);
-
-    if (x1 > x2)
-    {
-    	sglDrawLine(end, start);
-    	return;
-    }
-
-    int y1		= int(start.y)		;
-    int y2		= int(end.y)		;
-    int slope						;
-    int dx		= x2 - x1			;
-    int dy		= y2 - y1			;
-
-    if (dy < 0)
-    {
-    	slope	= -1				;
-    	dy		= -dy				;
-    }
-    else slope	= 1					;
-
-    int incE	= dy << 1			;
-    int incNE	= (dy - dx) << 1	;
-    int d		= (dy << 1) - dx	;
-    int y		= y1				;
-    int x							;
-
-    for (x = x1; x <= x2; x++)
-    {
-    	setPixel(x, y);
-
-    	if (d > 0)
-    	{
-    			d += incNE			;
-    			y += slope			;
-    	}
-    	else	d += incE			;
-    }
-    */
+	current()->drawLine2D(start, end);
 }
 
 //Line
@@ -551,6 +412,8 @@ void sglTranslate(float x, float y, float z)
 void sglScale(float scalex, float scaley, float scalez)
 {
 
+	Matrix scale = Matrix::scale(scalex, scaley, scalez, 1.0f);
+	current()->multiplyCurrentMatrix(scale);
 }
 
 //Rotate **** around the centerx,centery axis with given angle
@@ -558,17 +421,16 @@ void sglScale(float scalex, float scaley, float scalez)
 // ? rotates what ? Context or scene ?
 void sglRotate2D(float angle, float centerx, float centery)
 {
-
-	//2D rotace -> rotace okolo osy z
-
+	Matrix rotate = Matrix::rotate(angle, centerx, centery);
+	current()->multiplyCurrentMatrix(rotate);
 }
 
 // ? rotates what ? Context or scene ?
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
-	// rotace okolo osy y
-
+	Matrix rotate = Matrix::rotateY(angle);
+	current()->multiplyCurrentMatrix(rotate);
 }
 
 // ?
@@ -587,7 +449,14 @@ void sglOrtho(float left, float right, float bottom, float top, float near, floa
 // ?
 void sglFrustum(float left, float right, float bottom, float top, float near, float far)
 {
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
+	Matrix frustum((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
+	current()->multiplyCurrentMatrix(frustum);
 }
 
 //Sets scene viewport
@@ -600,7 +469,6 @@ void sglViewport(int x, int y, int width, int height)
 	}
 
 	current()->setViewport(width, height, x, y);
-
 }
 
 //---------------------------------------------------------------------------
@@ -609,19 +477,27 @@ void sglViewport(int x, int y, int width, int height)
 
 //RGB Color
 void sglColor3f(float r, float g, float b)
-{
-    current()->color = Color(r, g, b);
-}
+{ current()->color = Color(r, g, b); }
 
 // ?
 void sglAreaMode(sglEAreaMode mode)
 {
-
+	if(mode>SGL_FILL)
+	{
+		setErrCode(SGL_INVALID_ENUM);
+		return;
+	}
 }
 
 //Point "radius/diameter ?"
 void sglPointSize(float size)
 {
+    if(size <= 0.0f)
+    {
+    	setErrCode(SGL_INVALID_VALUE);
+    	return;
+    }
+
     current()->size = size;
 }
 
