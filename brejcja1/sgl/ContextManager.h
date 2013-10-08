@@ -51,7 +51,7 @@ public:
 		if (currentID >= 0)
 			return contexts[currentID];
 		*err = SGL_INVALID_OPERATION;	
-
+		return contexts[0];
 	}
 
 	void deleteContext(int id)

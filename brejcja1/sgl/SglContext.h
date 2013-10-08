@@ -22,11 +22,13 @@ private:
 	Color clearColor;
 	Color color;
 	std::vector<sglEElementType> typeStack;
-	
+	Matrix4 PMMatrix;
+	Matrix4 PMVMatrix;
+	bool projMatChanged;
+	bool modelMatChanged;	
 	Matrix4 currentModelviewMatrix;
 	Matrix4 currentProjectionMatrix;	
 	std::vector<Matrix4> projectionStack;
-	std::vector<Matrix4> modelviewStack;
 	sglEMatrixMode matrixMode;
 
 	unsigned int pointThickness;
@@ -45,7 +47,11 @@ private:
 		return true;
 	}
 public:
-	SGLContext(){};
+	SGLContext()
+	{
+		projMatChanged = true;
+		modelMatChanged = true;
+	};
 	SGLContext(int width, int height)
 	{
 		this->width = width;
@@ -59,11 +65,17 @@ public:
 		currentModelviewMatrix = Matrix4::makeIdentity();
 		currentProjectionMatrix = Matrix4::makeIdentity();
 		pointThickness = 1;
+		projMatChanged = true;
+		modelMatChanged = true;
+	}
+	bool beginEndCheck()
+	{
+		return typeStack.size() == 0 ? true : false;
 	}
 
 	void setPointSize(float t)
 	{
-		int thickness = (int)round(t);
+		int thickness = (int)floor(t);
 		if (thickness % 2 == 1)
 			--thickness;
 		if (thickness < 1)
@@ -212,10 +224,10 @@ public:
 	{
 		//obtain the points
 		int x1, x2, y1, y2;
-		x1 = (int)round(a.v[0]);
-		y1 = (int)round(a.v[1]);
-		x2 = (int)round(b.v[0]);
-		y2 = (int)round(b.v[1]);
+		x1 = (int)floor(a.v[0]);
+		y1 = (int)floor(a.v[1]);
+		x2 = (int)floor(b.v[0]);
+		y2 = (int)floor(b.v[1]);
 	
 		int dx = abs(x2 - x1);
 		int dy = abs(y2 - y1);
@@ -288,9 +300,142 @@ public:
 		}
 	}
 
+	void setSymPixel(int x, int y, int xs, int ys)
+	{
+		int rx = x + xs;
+		int ry = y + ys;
+		int mrx = -x + xs;
+		int mry = -y + ys;
+		setPixel(rx, ry);
+		setPixel(rx, mry);
+		setPixel(mrx, ry);
+		setPixel(mrx, mry);
+		rx = x + ys;
+		ry = y + xs;
+		mrx = -x + ys;
+		mry = -y + xs;
+		setPixel(ry, rx);
+		setPixel(ry, mrx);
+		setPixel(mry, rx);
+		setPixel(mry, mrx);
+	}
+
+	void checkPMMatrix()
+	{
+		if (modelMatChanged || projMatChanged)
+		{
+			modelMatChanged = false;
+			projMatChanged = false;
+			PMMatrix = currentProjectionMatrix * currentModelviewMatrix;
+		}
+	}
+
+	void checkPMVMatrix()
+	{
+		checkPMMatrix();
+		if (viewport.viewportMatrixChanged)
+		{
+			viewport.viewportMatrixChanged = false;
+			PMVMatrix = PMMatrix * viewport.getViewportMatrix();
+		}
+	}
+
+	void transform(Vertex & v)
+	{
+		checkPMMatrix();
+		v = PMMatrix * v;
+	        v = viewport.getViewportMatrix() * v;	
+		//viewport.calculateWindowCoordinates(v);
+	}
+
+	float calculateRadiusScaleFactor()
+	{
+		checkPMVMatrix(); 
+		return sqrt((PMVMatrix.m[0] * PMVMatrix.m[5]) - (PMVMatrix.m[1] * PMVMatrix.m[4]));
+	}
+
+	void drawArc(float x, float y, float z, float r, float from, float to)
+	{
+		drawArc(x, y, z, r, r, from, to);
+	}
+
+	void drawArc(float x, float y, float z, float a, float b, float from, float to)
+	{
+		float x1 = a;
+		float y1 = 0;
+		float x2, y2;
+		float N = 40 * (to - from)/(2 * M_PI);
+		float alpha = (to - from) / N;
+		pushTypeState(SGL_LINE_STRIP);
+		float offset = from / alpha;
+		//setVertex2f(x1 + x, y1 + y);
+		for (int i = (int)floor(offset); i <= (int)round(N) + (int)round(offset); i++)
+		{
+			float ialpha = i * alpha; 
+			x2 = a * cos(ialpha);
+			y2 = b * sin(ialpha);
+			setVertex2f(x2 + x, y2 + y);
+			x1 = x2;
+			y1 = y2;
+		}
+		draw();
+	}
+
+	void drawCircle(float x, float y, float r)
+	{
+		Vertex v(x, y, 0.0f, 1.0f);
+		transform(v);
+		bresenham_circle((int)floor(v.v[0]), (int)floor(v.v[1]), (int)floor(r * calculateRadiusScaleFactor()));
+	}
+
+	void bresenham_circle(int xs, int ys, int r)
+	{
+		int x, y, p;
+		x = 0;
+		y = r;
+		p = 3 - (r << 1);
+		while (x < y)
+		{
+			setSymPixel(x, y, xs, ys);
+			if (p < 0)
+			{
+				p += (x << 2) + 6;
+			}
+			else
+			{
+				p += ((x - y) << 2) + 10;
+				y -= 1;
+			}
+			x += 1;
+		}
+		if (x == y)
+			setSymPixel(x, y, xs, ys);
+	}
+
+	void drawEllipse(float x, float y, float z, float a, float b)
+	{
+		float x1 = a;
+		float y1 = 0;
+		float x2, y2;
+		int N = 40;
+		float alpha = (2 * M_PI) / N;
+		pushTypeState(SGL_LINE_LOOP);
+	       	for (int i = 0; i < N; i++)
+		{
+			float ialpha = i * alpha; 
+			x2 = a * cos(ialpha);
+			y2 = b * sin(ialpha);
+			setVertex2f(x1 + x, y1 + y);
+			setVertex2f(x2 + x, y2 + y);
+			x1 = x2;
+			y1 = y2;
+		}
+		draw();
+	}
+
 	void setPixel(float x, float y)
 	{
-		setPixel((int)round(x), (int)round(y));				
+		setPixel((int)floor(x), (int)floor(y));				
 	}
 
 	void setPixel(int x, int y)
@@ -312,21 +457,7 @@ public:
 	void setVertex2f(float x, float y)
 	{
 		Vertex v(x, y, 0.0f, 1.0f);
-		v.print();
-		v = currentProjectionMatrix * currentModelviewMatrix * v;	
-		v.print();
-		//currentProjectionMatrix.print();
-		//currentModelviewMatrix.print();
-		if (viewport.isReadyToUse())
-		{
-			viewport.calculateWindowCoordinates(v);
-			//v.print();
-		}
-		else
-		{
-			v.v[0] = x;
-			v.v[1] = y;
-		}
+		transform(v);
 		vertices.push_back(v);
 	}	
 
@@ -342,39 +473,32 @@ public:
 		if (!beginEndCheck(err))
 			return;
 		if (matrixMode == SGL_MODELVIEW)
-			getCurrentMatrixStack().push_back(currentModelviewMatrix);
+			projectionStack.push_back(currentModelviewMatrix);
 		else 
-			getCurrentMatrixStack().push_back(currentProjectionMatrix);
+			projectionStack.push_back(currentProjectionMatrix);
 
 	}
 
 	void popMatrix(sglEErrorCode * err)
 	{
-		std::vector<Matrix4> matrixStack = getCurrentMatrixStack();
-		if (matrixStack.size() == 0)
+		if (projectionStack.size() == 0)
 		{
-			//TODO ask course teacher why in the docs is written
-			//that underflow should be generated in case one matrix is on the stack
-			//Now the error is generated when 0 matrices are on the stack - I think it is correct that way.
 			*err = SGL_STACK_UNDERFLOW;
 		       	return;
 		}	
-		if (matrixMode = SGL_MODELVIEW)
-			currentModelviewMatrix = matrixStack.back();
+		if (matrixMode == SGL_MODELVIEW)
+		{
+			modelMatChanged = true;
+			currentModelviewMatrix = projectionStack.back();
+		}
 		else
-			currentProjectionMatrix = matrixStack.back();
-		matrixStack.pop_back();
+		{
+			projMatChanged = true;
+			currentProjectionMatrix = projectionStack.back();
+		}
+		projectionStack.pop_back();
 	}
 		
-
-	std::vector<Matrix4> & getCurrentMatrixStack()
-	{
-		if (matrixMode == SGL_MODELVIEW)
-			return modelviewStack;
-		else if(matrixMode == SGL_PROJECTION)
-			return projectionStack;
-		else throw std::exception();
-	}
 
 	void setMatrixMode(sglEMatrixMode mode, sglEErrorCode * err)
 	{	
@@ -396,17 +520,31 @@ public:
 	{
 		beginEndCheck(err);
 		if (matrixMode == SGL_MODELVIEW)
+		{
+			modelMatChanged = true;	
 			currentModelviewMatrix = matrix;
-		else currentProjectionMatrix = matrix;
+		}
+		else
+		{
+			projMatChanged = true;
+			currentProjectionMatrix = matrix;
+		}
 	}
 
 	void multiplyCurrentMatrix(Matrix4 & m, sglEErrorCode * err)
 	{
 		beginEndCheck(err);
+		
 		if (matrixMode == SGL_MODELVIEW)
+		{
+			modelMatChanged = true;
 			currentModelviewMatrix = currentModelviewMatrix * m;
+		}
 		else
+		{
+			projMatChanged = true;
 			currentProjectionMatrix = currentProjectionMatrix * m;
+		}
 	}
 };
 

@@ -137,11 +137,48 @@ void sglVertex2f(float x, float y)
 	setErrCode(err);
 }
 
-void sglCircle(float x, float y, float z, float radius) {}
+void sglCircle(float x, float y, float z, float radius)
+{
+	if (radius < 0)
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
+	}
 
-void sglEllipse(float x, float y, float z, float a, float b) {}
+	sglEErrorCode err;
+	SGLContext c = ctx_mgr.getContext(&err);
+	setErrCode(err);
+	if (!c.beginEndCheck())
+		setErrCode(SGL_INVALID_OPERATION);
+	c.drawCircle(x, y, radius);
+}
 
-void sglArc(float x, float y, float z, float radius, float from, float to) {}
+void sglEllipse(float x, float y, float z, float a, float b)
+{
+	if (a < 0 || b < 0)
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
+	}
+	sglEErrorCode err;
+	SGLContext c = ctx_mgr.getContext(&err);
+	setErrCode(err);
+	if (!c.beginEndCheck())
+		setErrCode(SGL_INVALID_OPERATION);
+	c.drawEllipse(x, y, z, a, b);
+}
+
+void sglArc(float x, float y, float z, float radius, float from, float to)
+{
+	if (radius < 0)
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
+	}
+	sglEErrorCode err;
+	ctx_mgr.getContext(&err).drawArc(x, y, z, radius, from, to);
+	setErrCode(err);
+}
 
 //---------------------------------------------------------------------------
 // Transform functions
@@ -220,8 +257,10 @@ void sglScale(float scalex, float scaley, float scalez)
 void sglRotate2D(float angle, float centerx, float centery)
 {
 	sglEErrorCode err1, err2;
+	sglTranslate(centerx, centery, 0.0f);
 	Matrix4 rotate = Matrix4::makeRotation2D(angle, centerx, centery);
 	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(rotate, &err2);
+	sglTranslate(-centerx, -centery, 0.0f);
 	setErrCode(err1);
 	setErrCode(err2);
 

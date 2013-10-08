@@ -1,7 +1,9 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
+#include "Matrix4.h"
 #include "Vertex.h"
+#include <cmath>
 class Viewport
 {
 private:
@@ -12,7 +14,9 @@ private:
 	int x;
 	int y;
 	bool readyToUse;
+	Matrix4 viewportMatrix;
 public:
+	bool viewportMatrixChanged;
 	Viewport()
 	{
 		width = 0;
@@ -22,6 +26,7 @@ public:
 		x = 0;
 		y = 0;
 		readyToUse = false;
+		viewportMatrixChanged = true;
 	}
 
 	Viewport(int width, int height, int x, int y)
@@ -29,21 +34,36 @@ public:
 		changeViewport(width, height, x, y);
 	}
 
+	Matrix4 getViewportMatrix()
+	{
+		return viewportMatrix;
+	}
+
+	float calculateRatio()
+	{
+		return sqrt(width * width + height * height) / sqrt(8);
+	}
+
 	void calculateWindowCoordinates(Vertex & v)
 	{
-		v.v[0] = (v.v[0] + 1) * width_2_x;
-		v.v[1] = (v.v[1] + 1) * height_2_y;
+		if (readyToUse)
+		{
+			v.v[0] = (v.v[0] + 1) * width_2_x;
+			v.v[1] = (v.v[1] + 1) * height_2_y;
+		}
 	}	
 
 	void changeViewport(int width, int height, int x, int y)
 	{
 		this->width = width;
 		this->height = height;
-		this->width_2_x = (float)width/2 + x;
-		this->height_2_y = (float)height/2 + y;
+		this->width_2_x = ((float)width/2) + x;
+		this->height_2_y = ((float)height/2) + y;
 		this->x = x;
 		this->y = y;
+		viewportMatrix = Matrix4(width/2, 0.0f, 0.0f, 0.0f, 0.0f, height/2, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width/2 + x, height/2 + x, 0.0f, 1.0f);
 		readyToUse = true;
+		viewportMatrixChanged = true;
 	}
 
 	int getWidth() { return width; }
@@ -58,4 +78,4 @@ public:
 };
 
 
-#endif;
+#endif
