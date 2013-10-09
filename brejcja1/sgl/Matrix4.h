@@ -63,6 +63,7 @@
 		else
 			throw std::exception();
 	}
+	/*
 	Vertex operator*(const Vertex & other)const
 	{	
 		Vertex res;
@@ -74,9 +75,19 @@
 			}	
 		}	
 		return res;
+	}*/
+
+	Vertex operator*(const Vertex & other)
+	{
+		Vertex res;
+		res.v[0] = m[0] * other.v[0] + m[4] * other.v[1] + m[8] * other.v[2] + m[12] * other.v[3];	
+		res.v[1] = m[1] * other.v[0] + m[5] * other.v[1] + m[9] * other.v[2] + m[13] * other.v[3];	
+		res.v[2] = m[2] * other.v[0] + m[6] * other.v[1] + m[10] * other.v[2] + m[14] * other.v[3];	
+		res.v[3] = m[3] * other.v[0] + m[7] * other.v[1] + m[11] * other.v[2] + m[15] * other.v[3];	
+		return res;
 	}
 
-	Matrix4 operator*(const Matrix4 & other)const
+	/*Matrix4 operator*(const Matrix4 & other)const
 	{
 		Matrix4 result;
 		for (int k = 0; k < MATRIX4_LENGTH; ++k)
@@ -87,6 +98,31 @@
 			}
 		}
 		return result;
+	}*/
+
+	Matrix4 operator*(const Matrix4 & other) const
+	{
+		Matrix4 res;
+		res.m[0] = m[0] * other.m[0] + m[4] * other.m[1] + m[8] * other.m[2] + m[12] * other.m[3];
+		res.m[1] = m[1] * other.m[0] + m[5] * other.m[1] + m[9] * other.m[2] + m[13] * other.m[3];
+		res.m[2] = m[2] * other.m[0] + m[6] * other.m[1] + m[10] * other.m[2] + m[14] * other.m[3];
+		res.m[3] = m[3] * other.m[0] + m[7] * other.m[1] + m[11] * other.m[2] + m[15] * other.m[3];
+
+		res.m[4] = m[0] * other.m[4] + m[4] * other.m[5] + m[8] * other.m[6] + m[12] * other.m[7];
+		res.m[5] = m[1] * other.m[4] + m[5] * other.m[5] + m[9] * other.m[6] + m[13] * other.m[7];
+		res.m[6] = m[2] * other.m[4] + m[6] * other.m[5] + m[10] * other.m[6] + m[14] * other.m[7];
+		res.m[7] = m[3] * other.m[4] + m[7] * other.m[5] + m[11] * other.m[6] + m[15] * other.m[7];
+
+		res.m[8] = m[0] * other.m[8] + m[4] * other.m[9] + m[8] * other.m[10] + m[12] * other.m[11];
+		res.m[9] = m[1] * other.m[8] + m[5] * other.m[9] + m[9] * other.m[10] + m[13] * other.m[11];
+		res.m[10] = m[2] * other.m[8] + m[6] * other.m[9] + m[10] * other.m[10] + m[14] * other.m[11];
+		res.m[11] = m[3] * other.m[8] + m[7] * other.m[9] + m[11] * other.m[10] + m[15] * other.m[11];
+
+		res.m[12] = m[0] * other.m[12] + m[4] * other.m[13] + m[8] * other.m[14] + m[12] * other.m[15];
+		res.m[13] = m[1] * other.m[12] + m[5] * other.m[13] + m[9] * other.m[14] + m[13] * other.m[15];
+		res.m[14] = m[2] * other.m[12] + m[6] * other.m[13] + m[10] * other.m[14] + m[14] * other.m[15];
+		res.m[15] = m[3] * other.m[12] + m[7] * other.m[13] + m[11] * other.m[14] + m[15] * other.m[15];
+		return res;
 	}
 	
 	void operator=(const Matrix4 & other)

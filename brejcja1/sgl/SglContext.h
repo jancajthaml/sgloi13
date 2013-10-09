@@ -1,4 +1,4 @@
-#ifndef SGLCONTEXT_H 
+#ifndef SGLCONTEXT_H
 #define SGLCONTEXT_H
 
 #include "sgl.h"
@@ -6,6 +6,7 @@
 #include "Vertex.h"
 #include "Viewport.h"
 #include "Matrix4.h"
+#include "VertexStack.h"
 #include <cstdlib>
 #include <exception>
 #include <cstdio>
@@ -32,10 +33,16 @@ private:
 	sglEMatrixMode matrixMode;
 
 	unsigned int pointThickness;
-	std::vector<Vertex> vertices;	
+	VertexStack vertices;	
 	bool depthTest;
 
 	Viewport viewport;
+
+	int lastSetPixelIndex;
+	int w_h;
+
+	float ellipseCos[40];
+	float ellipseSin[40];
 
 	bool beginEndCheck(sglEErrorCode * err)
 	{
@@ -51,11 +58,15 @@ public:
 	{
 		projMatChanged = true;
 		modelMatChanged = true;
+		lastSetPixelIndex = 0;
+		w_h = 0;
+		prepareEllipseData();
 	};
 	SGLContext(int width, int height)
 	{
 		this->width = width;
 		this->height = height;
+		w_h = width * height;
 		framebuffer = (Color *)malloc(sizeof(Color) * width * height);
 		if (!framebuffer)
 			throw std::exception();
@@ -67,6 +78,8 @@ public:
 		pointThickness = 1;
 		projMatChanged = true;
 		modelMatChanged = true;
+		lastSetPixelIndex = 0;
+		prepareEllipseData();
 	}
 	bool beginEndCheck()
 	{
@@ -195,10 +208,10 @@ public:
 
 	void drawPoints2D()
 	{
-		for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
+		for (int i = 0; i < vertices.size(); ++i)
 		{
-			float x = v_it->v[0];
-			float y = v_it->v[1];
+			float x = vertices[i].v[0];
+			float y = vertices[i].v[1];
 			int offset = pointThickness >> 1;
 			for (int i = -offset; i <= offset; ++i)
 			{	
@@ -224,11 +237,11 @@ public:
 	{
 		//obtain the points
 		int x1, x2, y1, y2;
-		x1 = (int)floor(a.v[0]);
-		y1 = (int)floor(a.v[1]);
-		x2 = (int)floor(b.v[0]);
-		y2 = (int)floor(b.v[1]);
-	
+		x1 = (int)a.v[0];
+		y1 = (int)a.v[1];
+		x2 = (int)b.v[0];
+		y2 = (int)b.v[1];
+		
 		int dx = abs(x2 - x1);
 		int dy = abs(y2 - y1);
 		if (dx > dy)
@@ -241,42 +254,46 @@ public:
 				bresenham_y(y1, x1, y2, x2);
 			else
 				bresenham_y(y2, x2, y1, x1);
-
+		
 	}
 
 	void bresenham_x(int x1, int y1, int x2, int y2)
 	{
-			int dx = x2 - x1;
-			int dy = y2 - y1;
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+		int sign = 1;
+		if (dy < 0)
+			sign = -1;
+		int c0, c1, p;
+		c0 = (dy << 1) * sign;
+		c1 = c0 - (dx << 1);
+		p = c0 - dx;
 
-			int sign = 1;
-			if (dy < 0)
-				sign = -1;
-			int c0, c1, p;
-			c0 = (dy << 1) * sign;
-			c1 = c0 - (dx << 1);
-			p = c0 - dx;
-
-			setPixel(x1, y1);
-			for (int i = x1 + 1; i <= x2; ++i)
-			{
+		setPixel(x1, y1);
+		for (int i = x1 + 1; i <= x2; ++i)
+		{
 			if (p < 0)
+			{
 				p += c0;
+				setPixel_x();
+			
+			}
 			else
 			{
 				p += c1;
-				y1 += sign;
+				if (sign > 0)
+					setPixel_xy();
+				else
+					setPixel_xmy();
 			}
-
-			setPixel(i, y1);	
 		}
 	}
+
 
 	void bresenham_y(int x1, int y1, int x2, int y2)
 	{
 		int dx = x2 - x1;
 		int dy = y2 - y1;
-
 		int sign = 1;
 		if (dy < 0)
 			sign = -1;
@@ -289,16 +306,21 @@ public:
 		for (int i = x1 + 1; i <= x2; ++i)
 		{
 			if (p < 0)
+			{
 				p += c0;
+				setPixel_y();
+			}
 			else
 			{
 				p += c1;
-				y1 += sign;
+				if (sign > 0)
+					setPixel_xy();
+				else
+					setPixel_mxy();
 			}
-
-			setPixel(y1, i);	
 		}
 	}
+
 
 	void setSymPixel(int x, int y, int xs, int ys)
 	{
@@ -320,31 +342,34 @@ public:
 		setPixel(mry, mrx);
 	}
 
-	void checkPMMatrix()
+	bool checkPMMatrix()
 	{
 		if (modelMatChanged || projMatChanged)
 		{
 			modelMatChanged = false;
 			projMatChanged = false;
 			PMMatrix = currentProjectionMatrix * currentModelviewMatrix;
+			return true;
 		}
+		return false;
 	}
 
 	void checkPMVMatrix()
 	{
-		checkPMMatrix();
-		if (viewport.viewportMatrixChanged)
+		bool change = checkPMMatrix();
+		bool change2 = viewport.viewportMatrixChanged;
+		if (change || change2)
 		{
 			viewport.viewportMatrixChanged = false;
-			PMVMatrix = PMMatrix * viewport.getViewportMatrix();
+			PMVMatrix = viewport.getViewportMatrix() * PMMatrix;
 		}
 	}
 
 	void transform(Vertex & v)
 	{
-		checkPMMatrix();
-		v = PMMatrix * v;
-	        v = viewport.getViewportMatrix() * v;	
+		checkPMVMatrix();
+		v = PMVMatrix * v;
+	       	//v = viewport.getViewportMatrix() * v;	
 		//viewport.calculateWindowCoordinates(v);
 	}
 
@@ -356,9 +381,31 @@ public:
 
 	void drawArc(float x, float y, float z, float r, float from, float to)
 	{
-		drawArc(x, y, z, r, r, from, to);
-	}
+		float x2, y2;
+		float N = 40 * (to - from)/(2 * M_PI);
+		float alpha = (to - from) / N;
+		pushTypeState(SGL_LINE_STRIP);
+		float offset = from / alpha;
+		int fromOffset = (int)floor(offset) - 1;
+		float x1 = r * cos(fromOffset * alpha);
+		float y1 = r * sin(fromOffset * alpha);
+		float sa = sin(alpha);
+		float ca = cos(alpha);
+		for (int i = (int)floor(offset); i <= (int)round(N) + (int)round(offset); i++)
+		{
+			x2 = ca * x1 - sa*y1;
+			y2 = sa * x1 + ca*y1;
+			//x2 = r * cos(i * alpha);
+			//y2 = r * sin(i * alpha);	
+			setVertex2f(x2 + x, y2 + y);
+			x1 = x2;
+			y1 = y2;
+		}
+		draw();
 
+		//drawArc(x, y, z, r, r, from, to);
+	}
+/*
 	void drawArc(float x, float y, float z, float a, float b, float from, float to)
 	{
 		float x1 = a;
@@ -379,7 +426,7 @@ public:
 			y1 = y2;
 		}
 		draw();
-	}
+	}*/
 
 	void drawCircle(float x, float y, float r)
 	{
@@ -412,6 +459,19 @@ public:
 			setSymPixel(x, y, xs, ys);
 	}
 
+	void prepareEllipseData()
+	{
+		int N = 40;
+		float alpha = (2 * M_PI) / N;
+
+		for (int i = 0; i < N; i++)
+		{
+			float ialpha = i * alpha;
+			ellipseCos[i] = cos(ialpha);
+			ellipseSin[i] = sin(ialpha);
+		}
+	}
+
 	void drawEllipse(float x, float y, float z, float a, float b)
 	{
 		float x1 = a;
@@ -422,9 +482,8 @@ public:
 		pushTypeState(SGL_LINE_LOOP);
 	       	for (int i = 0; i < N; i++)
 		{
-			float ialpha = i * alpha; 
-			x2 = a * cos(ialpha);
-			y2 = b * sin(ialpha);
+			x2 = a * ellipseCos[i];
+			y2 = b * ellipseSin[i];
 			setVertex2f(x1 + x, y1 + y);
 			setVertex2f(x2 + x, y2 + y);
 			x1 = x2;
@@ -442,11 +501,46 @@ public:
 	{
 		if (x >= 0 && x < width && y >= 0 && y < height)
 		{
-			framebuffer[x + width * y] = color;				
+			lastSetPixelIndex = x + width * y;
+			framebuffer[lastSetPixelIndex] = color;				
 		}
 
 	}
 
+	void setPixel_x()
+	{
+		lastSetPixelIndex += 1;
+		if (lastSetPixelIndex < w_h)
+			framebuffer[lastSetPixelIndex] = color;
+	}
+
+	void setPixel_y()
+	{
+		lastSetPixelIndex += width;
+		if (lastSetPixelIndex < w_h)
+			framebuffer[lastSetPixelIndex] = color;
+	}
+
+	void setPixel_xy()
+	{
+		lastSetPixelIndex += width + 1;
+		if (lastSetPixelIndex < w_h)
+			framebuffer[lastSetPixelIndex] = color;
+	}
+
+	void setPixel_mxy()
+	{
+		lastSetPixelIndex += width - 1;
+		if (lastSetPixelIndex < w_h)
+			framebuffer[lastSetPixelIndex] = color;
+	}
+
+	void setPixel_xmy()
+	{
+		lastSetPixelIndex += 1 - width;
+		if (lastSetPixelIndex < w_h)
+			framebuffer[lastSetPixelIndex] = color;
+	}
 
 
 	float round(float number)
