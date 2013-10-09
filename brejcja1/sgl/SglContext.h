@@ -61,7 +61,8 @@ public:
 		lastSetPixelIndex = 0;
 		w_h = 0;
 		prepareEllipseData();
-	};
+		//vertices = new VertexStack;
+	}
 	SGLContext(int width, int height)
 	{
 		this->width = width;
@@ -80,7 +81,62 @@ public:
 		modelMatChanged = true;
 		lastSetPixelIndex = 0;
 		prepareEllipseData();
+		//vertices = new VertexStack;
 	}
+	/*
+	~SGLContext()
+	{
+		delete vertices;
+	}
+
+	SGLContext(const SGLContext& other)
+	{
+
+		printf("cc\n");
+		
+		this->width = other.width;
+		this->height = other.height;
+		w_h = width * height;
+		framebuffer = (Color *)malloc(sizeof(Color) * width * height);
+		if (!framebuffer)
+			throw std::exception();
+		memcpy(framebuffer, other.framebuffer, sizeof(Color) * width * height);
+		clearColor = other.clearColor;
+		color = other.color;
+		depthTest = other.depthTest;
+		currentModelviewMatrix = other.currentModelviewMatrix;
+		currentProjectionMatrix = other.currentProjectionMatrix;
+		pointThickness = other.pointThickness;
+		projMatChanged = other.projMatChanged;
+		modelMatChanged = other.modelMatChanged;
+		lastSetPixelIndex = other.lastSetPixelIndex;
+		prepareEllipseData();
+		this->vertices = new VertexStack(*(other.vertices)); 
+	}
+
+	SGLContext& operator=(const SGLContext& other)
+	{
+		this->width = other.width;
+		this->height = other.height;
+		w_h = width * height;
+		framebuffer = (Color *)malloc(sizeof(Color) * width * height);
+		if (!framebuffer)
+			throw std::exception();
+		memcpy(framebuffer, other.framebuffer, sizeof(Color) * width * height);
+		clearColor = other.clearColor;
+		color = other.color;
+		depthTest = other.depthTest;
+		currentModelviewMatrix = other.currentModelviewMatrix;
+		currentProjectionMatrix = other.currentProjectionMatrix;
+		pointThickness = other.pointThickness;
+		projMatChanged = other.projMatChanged;
+		modelMatChanged = other.modelMatChanged;
+		lastSetPixelIndex = other.lastSetPixelIndex;
+		prepareEllipseData();
+		this->vertices = new VertexStack; 
+		return *this;
+	}*/	
+
 	bool beginEndCheck()
 	{
 		return typeStack.size() == 0 ? true : false;
@@ -196,22 +252,22 @@ public:
 	{
 		for (int i = 0; i < (int)vertices.size() - 1; i++)
 		{
-			drawLine2D(vertices[i], vertices[i+1]);
+			drawLine2D((vertices)[i], (vertices)[i+1]);
 		}
 	}
 
 	void drawLineLoop2D()
 	{
 		drawLineStrip2D();
-		drawLine2D(vertices[vertices.size() - 1], vertices[0]);
+		drawLine2D((vertices)[vertices.size() - 1], (vertices)[0]);
 	}
 
 	void drawPoints2D()
 	{
 		for (int i = 0; i < vertices.size(); ++i)
 		{
-			float x = vertices[i].v[0];
-			float y = vertices[i].v[1];
+			float x = (vertices)[i].v[0];
+			float y = (vertices)[i].v[1];
 			int offset = pointThickness >> 1;
 			for (int i = -offset; i <= offset; ++i)
 			{	
@@ -228,7 +284,7 @@ public:
 	{
 		for (int i = 0; i < (int)vertices.size(); i += 2)
 		{
-			drawLine2D(vertices[i], vertices[i+1]);		
+			drawLine2D((vertices)[i], (vertices)[i+1]);		
 		}
 
 	}

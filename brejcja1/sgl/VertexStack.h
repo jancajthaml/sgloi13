@@ -2,7 +2,7 @@
 #define VERTEX_STACK_H
 
 #include "Vertex.h"
-#include <cstdlib>
+#include <stdlib.h>
 #define BASIC_STACK_SIZE 100000
 class VertexStack
 {
@@ -20,9 +20,30 @@ public:
 
 	~VertexStack()
 	{
-		//free(stack);
-		//stack = NULL;
+		if (this->stack != NULL)
+		{
+			free(this->stack);
+			stack = NULL;
+		}
 	}
+
+	VertexStack(const VertexStack& other)
+	{
+		this->index = other.index;
+		this->currentSize = other.currentSize;
+		this->stack = (Vertex *)malloc(sizeof(Vertex) * currentSize);
+		memcpy(this->stack, other.stack, sizeof(Vertex) * index);
+		
+	}
+
+	VertexStack& operator=(const VertexStack& other)
+	{
+		this->index = other.index;
+		this->currentSize = other.currentSize;
+		this->stack = (Vertex *)malloc(sizeof(Vertex) * currentSize);
+		memcpy(this->stack, other.stack, sizeof(Vertex) * index);
+		return *this;
+	}	
 
 	void push_back(Vertex v)
 	{
@@ -58,7 +79,7 @@ public:
 	}
 
 	void realloc()
-	{
+	{/*
 		long newSize = currentSize << 1;
 		Vertex * stack2 = (Vertex *)malloc(sizeof(Vertex) * newSize);
 		memcpy(stack2, stack, sizeof(Vertex) * currentSize);
@@ -66,7 +87,7 @@ public:
 		free(stack);
 		stack = stack2;
 		stack2 = NULL;
-	}	
+*/	}	
 
 
 
