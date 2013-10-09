@@ -2,8 +2,6 @@ package struct;
 
 public class Viewport
 {
-
-
 	int	width;
 	int	height;
 	float width_2_x;
@@ -35,16 +33,16 @@ public class Viewport
 
 	void calculateWindowCoordinates(Vertex v)
 	{
-		v.x = (v.x + 1) * width_2_x;
-		v.y = (v.y + 1) * height_2_y;
+		v.x = this.x+(v.x + 1) * width_2_x;
+		v.y = this.y+(v.y + 1) * height_2_y;
 	}
 
 	void changeViewport(int width, int height, int x, int y)
 	{
 		this.width			= width;
 		this.height			= height;
-		this.width_2_x		= (float)(width>>1) + x;
-		this.height_2_y		= (float)(height>>1) + y;
+		this.width_2_x		= (float)(width>>1);
+		this.height_2_y		= (float)(height>>1);
 		this.x				= x;
 		this.y				= y;
 		ready				= true;
