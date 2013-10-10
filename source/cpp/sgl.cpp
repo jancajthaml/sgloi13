@@ -41,13 +41,7 @@
  */
 
 #include "Context.h"
-#include "ContextManager.h"
 #include <vector>
-
-Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::I = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::T = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
@@ -57,6 +51,8 @@ bool in_range(unsigned number, unsigned low, unsigned high);
 Context* current();
 //void normalize(float &x, float &y);
 //void setPixel(int x, int y);
+
+void sglDrawLine(Vertex start, Vertex end);
 
 //---------------------------------------------------------------------------
 // SGL
@@ -127,25 +123,24 @@ void sglInit(void)
 void sglFinish(void)
 {
 	manager.contexts.clear();
-
-	//manager.contexts.clear();
 }
 
 //LongName Function
 int sglCreateContext(int width, int height)
 {
-	int size = manager.contexts.size();
+	int number_of_contexts = manager.contexts.size();
 
-//	if(c == NULL)
-	//{
-		//setErrCode(SGL_OUT_OF_MEMORY);
-		//return -1;
-	//}
+	Context *c = new Context(width, height);
 
-	manager.contexts.push_back(Context(width, height));
-	//manager.addContext(c);
+	if(c == NULL)
+	{
+		setErrCode(SGL_OUT_OF_MEMORY);
+		return -1;
+	}
 
-	return size;
+	manager.contexts.push_back(c);
+
+	return number_of_contexts;
 }
 
 //LongName Function
@@ -158,7 +153,8 @@ void sglDestroyContext(int id)
 		 return;
 	 }
 
-	 manager.deleteContext(id);
+	 delete manager.contexts[id]->buffer;
+	 delete manager.contexts[id];
 }
 
 //LongName Function
@@ -170,7 +166,7 @@ void sglSetContext(int id)
 		 return;
 	 }
 
-	 manager.setContext(id);
+	 manager.current = id;
 }
 
 //LongName Function
@@ -188,8 +184,7 @@ int sglGetContext(void)
 //LongName Function
 float *sglGetColorBufferPointer(void)
 {
-	return (float *)current()->buffer;
-    //return (float *) current()->buffer;
+    return (float *) current()->buffer;
 }
 
 //---------------------------------------------------------------------------
@@ -199,8 +194,6 @@ float *sglGetColorBufferPointer(void)
 //Clears buffer with given RGBA color value
 void sglClearColor (float r, float g, float b, float alpha)
 {
-	//current()->setClearColor(r, g, b);
-
 	current()->clear.r = r;
     current()->clear.g = g;
     current()->clear.b = b;
@@ -224,8 +217,6 @@ void sglClear(unsigned what)
 	if ((what & SGL_COLOR_BUFFER_BIT) == SGL_COLOR_BUFFER_BIT)
 	{
 		current()->clearBuffer(what);
-
-		//current()->clearBuffer(what);
 	}
 
 	if ((what & SGL_DEPTH_BUFFER_BIT) == SGL_DEPTH_BUFFER_BIT)
@@ -247,17 +238,11 @@ void sglBegin(sglEElementType mode)
 	}
 
 	current()->pushTypeState(mode);
-
-	//current()->pushTypeState(mode);
 }
 
 //LongName Function
 void sglEnd(void)
-{
-	current()->draw();
-
-	//current()->draw();
-}
+{ current()->draw(); }
 
 //Vertex with 3 float coords in homogenous coordinates
 //[x,y,z,w]
@@ -279,11 +264,7 @@ void sglVertex3f(float x, float y, float z)
 //Vertex with 2 float coords
 //[x,y]
 void sglVertex2f(float x, float y)
-{
-	current()->setVertex2f(x, y);
-
-	//current()->setVertex2f(x,y);
-}
+{ current()->setVertex2f(x,y); }
 
 //2D Circle
 //
@@ -294,23 +275,7 @@ void sglVertex2f(float x, float y)
 //
 // Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
-{
-	if (r < 0)
-	{
-		setErrCode(SGL_INVALID_VALUE);
-		return;
-	}
-
-		//sglEErrorCode err;
-		//SGLContext c = ctx_mgr.getContext(&err);
-	//Context c = ;
-		//setErrCode(err);
-	//if (!c.beginEndCheck())
-		//setErrCode(SGL_INVALID_OPERATION);
-	current()->drawCricle(x, y, z, r);
-
-//	current()->drawCricle(x,y,z,r);
-}
+{ current()->drawCricle(x,y,z,r); }
 
 //2D Ellipse
 //
@@ -325,28 +290,16 @@ void sglCircle(float x, float y, float z, float r)
 // - Bresenham Algorithm
 //
 //@see http://www.codeproject.com/Messages/2112010/A-Fast-Bresenham-Type-Algorithm-For-Drawing-Ellips.aspx
-void sglEllipse(float x, float y, float z, float a, float b)
+void sglEllipse(float x1, float y1, float z, float x2, float y2)
+{ current()->drawEllipse(x1,y1,z,x2,y2); }
+
+//Line
+//Breceanuv algoritmus
+//DDA algoritmus (jednoduzsi)
+//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
+void sglDrawLine(Vertex start, Vertex end)
 {
-	if (a < 0 || b < 0)
-	{
-		setErrCode(SGL_INVALID_VALUE);
-		return;
-	}
-
-
-
-	//SGLContext c = ctx_mgr.getContext(&err);
-	//setErrCode(err);
-
-	//if (!c.beginEndCheck())
-	//setErrCode(SGL_INVALID_OPERATION);
-
-	//setErrCode(err);
-	//if (!c.beginEndCheck())
-		//setErrCode(SGL_INVALID_OPERATION);
-	current()->drawEllipse(x, y, z, a, b);
-
-	//current()->drawEllipse(x, y, z, a, b);
+	current()->drawLine2D(start, end);
 }
 
 //Line
@@ -365,20 +318,9 @@ void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
 // to	- ?
 //
 // ? use circle subdivision ?
-void sglArc(float x, float y, float z, float radius, float from, float to)
+void sglArc(float x, float y, float z, float r, float from, float to)
 {
-	if (radius < 0)
-	{
-		setErrCode(SGL_INVALID_VALUE);
-		return;
-	}
-	//sglEErrorCode err;
-	//ctx_mgr.getContext(&err).drawArc(x, y, z, radius, from, to);
-	//setErrCode(err);
-
-	current()->drawArc2D(x, y, z, radius, from, to);
-
-//	current()->drawArc2D(x,y,z,radius,from,to);
+	current()->drawArc2D(x,y,z,r,from,to);
 }
 
 //---------------------------------------------------------------------------
@@ -400,8 +342,6 @@ void sglMatrixMode( sglEMatrixMode mode )
 		case SGL_PROJECTION	:
 		{
 			current()->setMatrixMode(mode);
-
-			//current()->setMatrixMode(mode);
 		}
 		break;
 
@@ -419,8 +359,6 @@ void sglPushMatrix(void)
 	}
 
 	current()->pushMatrix();
-
-	//current()->pushMatrix();
 }
 
 //Pop Matrix from transformation Stack
@@ -433,109 +371,86 @@ void sglPopMatrix(void)
 	}
 
 	current()->popMatrix();
-
-//	current()->popMatrix();
 }
 
 void sglLoadIdentity(void)
-{
-	//current().setCurrentMatrix(Matrix::identity());
-	current()->setCurrentMatrix(MatrixCache::identity());
-}
+{ current()->setCurrentMatrix(Matrix::identity()); }
 
 void sglLoadMatrix(const float* matrix)
-{
-	current()->setCurrentMatrix(Matrix(matrix));
-
-	//current()->setCurrentMatrix(Matrix(matrix));
-}
+{ current()->setCurrentMatrix(Matrix(matrix)); }
 
 //Multiply two matrices
 void sglMultMatrix(const float* matrix)
 {
-
-
 	Matrix mat = Matrix(matrix);
 	current()->multiplyCurrentMatrix(mat);
-	//current()->multiplyCurrentMatrix(mat);
 }
 
 //Translate coordinates
 void sglTranslate(float x, float y, float z)
 {
-	Matrix translate = MatrixCache::translate(x,y,z);
+	Matrix translate = Matrix::translate(x,y,z);
 	current()->multiplyCurrentMatrix(translate);
-
-	//current()->multiplyCurrentMatrix(translate);
 }
 
 //Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
-	Matrix scale = MatrixCache::scale(scalex, scaley, scalez);
+	Matrix scale = Matrix::scale(scalex, scaley, scalez);
 	current()->multiplyCurrentMatrix(scale);
-
-	//current()->multiplyCurrentMatrix(scale);
 }
 
 //Rotate **** around the centerx,centery axis with given angle
 void sglRotate2D(float angle, float centerx, float centery)
 {
-	//Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
-
-	sglTranslate(centerx, centery, 0.0f);
-	Matrix rotate = MatrixCache::rotate2D(angle, centerx, centery);
+	Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
 	current()->multiplyCurrentMatrix(rotate);
-	sglTranslate(-centerx, -centery, 0.0f);
-
-	//current()->multiplyCurrentMatrix(rotate);
 }
 
 // ? rotates what ? Context or scene ?
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
+	Matrix rotate = Matrix::rotateY(angle);
+	current()->multiplyCurrentMatrix(rotate);
 }
 
 // ?
 void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
 	Matrix ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
-	//current()->multiplyCurrentMatrix(ortho);
 	current()->multiplyCurrentMatrix(ortho);
 }
 
 // ?
 void sglFrustum(float left, float right, float bottom, float top, float near, float far)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
-	//Matrix frustum((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
-	//current()->multiplyCurrentMatrix(frustum);
+	Matrix frustum((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
+	current()->multiplyCurrentMatrix(frustum);
 }
 
 //Sets scene viewport
 void sglViewport(int x, int y, int width, int height)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
 	current()->setViewport(width, height, x, y);
-
-	//current()->setViewport(width, height, x, y);
 }
 
 //---------------------------------------------------------------------------
@@ -544,11 +459,7 @@ void sglViewport(int x, int y, int width, int height)
 
 //RGB Color
 void sglColor3f(float r, float g, float b)
-{
-	current()->color = Color(r, g, b);
-
-	//current()->color = Color(r, g, b);
-}
+{ current()->color = Color(r, g, b); }
 
 // ?
 void sglAreaMode(sglEAreaMode mode)
@@ -569,9 +480,7 @@ void sglPointSize(float size)
     	return;
     }
 
-    current()->size = size;//setPointSize(size);
-
-   // current()->size = size;
+    current()->size = size;
 }
 
 //Enable given flag
@@ -667,6 +576,9 @@ double round(double x)
 	return double((x>=0.5)?(int(x)+1):int(x));
 }
 
+
+
+
 Context* current()
-{ return &manager.contexts[manager.current]; }
+{ return manager.contexts[manager.current]; }
 

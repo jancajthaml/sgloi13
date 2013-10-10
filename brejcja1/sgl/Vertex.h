@@ -1,51 +1,33 @@
-/*
- * Vertex.h
- *
- *  Created on: 7.10.2013
- *      Author: jancajthaml
+#ifndef VERTEX_H
+#define VERTEX_H
+
+#include <cstdio>
+#define VERTEX4_LENGTH 4
+/** Vertex struct holds information about vertices
+ * \author Jan Brejcha
  */
-
-#ifndef VERTEX_H_
-#define VERTEX_H_
-
-
-//Vertex
 struct Vertex
 {
-	float x;
-	float y;
-	float z;
-	float w;
+	float v[VERTEX4_LENGTH]; 
 
 	Vertex()
 	{
-		x = y = z = 0.0f;
-		w = 1.0f;
+		v[0] = 0.0f; v[1] = 0.0f; v[2] = 0.0f; v[3] = 0.0f;
 	}
 
-	Vertex(float X, float Y)
+	Vertex(float x, float y)
 	{
-		x = X;
-		y = Y;
-		z = 0.0f;
-		w = 1.0f;
+		v[0] = x; v[1] = y; v[2] = 0.0f; v[3] = 0.0f;
+	}
+	Vertex(float x, float y, float z, float w)
+	{
+		v[0] = x; v[1] = y; v[2] = z; v[3] = w;
 	}
 
-	Vertex(float X, float Y, float Z)
+	void print()
 	{
-		x = X;
-		y = Y;
-		z = Z;
-		w = 1.0f;
-	}
-
-	Vertex(float X, float Y, float Z, float W)
-	{
-		x = X;
-		y = Y;
-		z = Z;
-		w = W;
+		printf("%f, %f, %f, %f\n", v[0], v[1], v[2], v[3]);
 	}
 };
 
-#endif /* VERTEX_H_ */
+#endif

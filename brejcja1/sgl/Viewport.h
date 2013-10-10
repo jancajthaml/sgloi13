@@ -1,28 +1,22 @@
-/*
- * Viewport.h
- *
- *  Created on: 7.10.2013
- *      Author: jancajthaml
- */
+#ifndef VIEWPORT_H
+#define VIEWPORT_H
 
-#ifndef VIEWPORT_H_
-#define VIEWPORT_H_
-
-
-struct Viewport
+#include "Matrix4.h"
+#include "Vertex.h"
+#include <cmath>
+class Viewport
 {
-
+private:
 	int width;
 	int height;
 	float width_2_x;
 	float height_2_y;
 	int x;
 	int y;
-	bool ready;
-
-	Matrix viewportMatrix;
+	bool readyToUse;
+	Matrix4 viewportMatrix;
+public:
 	bool viewportMatrixChanged;
-
 	Viewport()
 	{
 		width = 0;
@@ -31,13 +25,8 @@ struct Viewport
 		height_2_y = 0.0f;
 		x = 0;
 		y = 0;
-		ready = false;
+		readyToUse = false;
 		viewportMatrixChanged = true;
-	}
-
-	float calculateRatio()
-	{
-		return sqrt(width * width + height * height) / sqrt(8);
 	}
 
 	Viewport(int width, int height, int x, int y)
@@ -45,14 +34,24 @@ struct Viewport
 		changeViewport(width, height, x, y);
 	}
 
+	Matrix4 getViewportMatrix()
+	{
+		return viewportMatrix;
+	}
+
+	float calculateRatio()
+	{
+		return sqrt(width * width + height * height) / sqrt(8);
+	}
+
 	void calculateWindowCoordinates(Vertex & v)
 	{
-		if (ready)
+		if (readyToUse)
 		{
-			v.x = (v.x + 1) * width_2_x;
-			v.y = (v.y + 1) * height_2_y;
+			v.v[0] = (v.v[0] + 1) * width_2_x;
+			v.v[1] = (v.v[1] + 1) * height_2_y;
 		}
-	}
+	}	
 
 	void changeViewport(int width, int height, int x, int y)
 	{
@@ -62,18 +61,21 @@ struct Viewport
 		this->height_2_y = ((float)height/2) + y;
 		this->x = x;
 		this->y = y;
-		viewportMatrix = Matrix(width/2, 0.0f, 0.0f, 0.0f, 0.0f, height/2, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width/2 + x, height/2 + x, 0.0f, 1.0f);
-		ready = true;
+		viewportMatrix = Matrix4(width/2, 0.0f, 0.0f, 0.0f, 0.0f, height/2, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width/2 + x, height/2 + x, 0.0f, 1.0f);
+		readyToUse = true;
 		viewportMatrixChanged = true;
 	}
 
-	Matrix getViewportMatrix()
-	{
-		return viewportMatrix;
-	}
+	int getWidth() { return width; }
 
+	int getHeight() {return height; }
+
+	int getX() { return x; }
+
+	int getY() {return y; }
+
+	bool isReadyToUse() { return readyToUse; }
 };
 
 
-
-#endif /* VIEWPORT_H_ */
+#endif

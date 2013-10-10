@@ -20,9 +20,6 @@ struct Viewport
 	int y;
 	bool ready;
 
-	Matrix viewportMatrix;
-	bool viewportMatrixChanged;
-
 	Viewport()
 	{
 		width = 0;
@@ -32,12 +29,11 @@ struct Viewport
 		x = 0;
 		y = 0;
 		ready = false;
-		viewportMatrixChanged = true;
 	}
 
 	float calculateRatio()
 	{
-		return sqrt(width * width + height * height) / sqrt(8);
+		return sqrt(width * width + height * height)/sqrt(8);
 	}
 
 	Viewport(int width, int height, int x, int y)
@@ -47,31 +43,27 @@ struct Viewport
 
 	void calculateWindowCoordinates(Vertex & v)
 	{
-		if (ready)
-		{
-			v.x = (v.x + 1) * width_2_x;
-			v.y = (v.y + 1) * height_2_y;
-		}
+		v.x = (v.x + 1) * width_2_x;
+		v.y = (v.y + 1) * height_2_y;
 	}
 
 	void changeViewport(int width, int height, int x, int y)
 	{
-		this->width = width;
-		this->height = height;
-		this->width_2_x = ((float)width/2) + x;
-		this->height_2_y = ((float)height/2) + y;
-		this->x = x;
-		this->y = y;
-		viewportMatrix = Matrix(width/2, 0.0f, 0.0f, 0.0f, 0.0f, height/2, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width/2 + x, height/2 + x, 0.0f, 1.0f);
-		ready = true;
-		viewportMatrixChanged = true;
+		this->width			= width;
+		this->height		= height;
+		this->width_2_x		= (float)(width>>1) + x;
+		this->height_2_y	= (float)(height>>1) + y;
+		this->x				= x;
+		this->y				= y;
+		ready				= true;
 	}
 
-	Matrix getViewportMatrix()
+	//transform to window coordinates according to http://msdn.microsoft.com/en-us/library/dd374202(v=vs.85).aspx
+	void normalize(float &x, float &y)
 	{
-		return viewportMatrix;
+	    x = (x+1)*width_2_x;
+	    y = (y+1)*height_2_y;
 	}
-
 };
 
 
