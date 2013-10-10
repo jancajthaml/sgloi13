@@ -2,11 +2,7 @@ package struct;
 
 public class Matrix
 {
-	public float[] matrix	= new float[16];
-	static Matrix identity	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
-	static Matrix scale		= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
-	static Matrix translate	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
-	static Matrix rotate_2D	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
+	public float[] matrix = new float[16];
 	
 	public Matrix()
 	{
@@ -43,34 +39,37 @@ public class Matrix
 	}
 
 	public static Matrix identity()
-	{ return identity; }
+	{
+		return new Matrix(	1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
+	}
 
 	public static Matrix scale(float sc_x, float sc_y, float sc_z)
 	{
-		scale.matrix[0]		= sc_x;
-		scale.matrix[5]		= sc_y;
-		scale.matrix[10]	= sc_z;
-		return scale;
+		return new Matrix( sc_x, 0.0f, 0.0f, 0.0f,
+			       	0.0f, sc_y, 0.0f, 0.0f,
+			       	0.0f, 0.0f, sc_z, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f);
 	}
 	
 	public static Matrix translate(float t_x, float t_y, float t_z)
 	{
-		translate.matrix[12] = t_x;
-		translate.matrix[13] = t_y;
-		translate.matrix[14] = t_z;
-		return translate;
+		return new Matrix(	1.0f, 0.0f, 0.0f, 0.0f ,
+				0.0f, 1.0f, 0.0f, 0.0f ,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				t_x, t_y, t_z, 1.0f);
 	};
 
 	public static Matrix rotate2D(float angle, float c_x, float c_y)
 	{
 		float cos_a = (float)Math.cos(angle);
 		float sin_a = (float)Math.sin(angle);
-		
-		rotate_2D.matrix[0]=cos_a;
-		rotate_2D.matrix[1]=-sin_a;
-		rotate_2D.matrix[4]=sin_a;
-		rotate_2D.matrix[5]=cos_a;
-		return rotate_2D;
+		return new Matrix(	cos_a, -sin_a, 0.0f, 0.0f ,
+				sin_a, cos_a, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f ,
+				0.0f, 0.0f, 0.0f, 1.0f);
 
 	}
 

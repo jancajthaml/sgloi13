@@ -6,15 +6,12 @@ import static type.sglEErrorCode.SGL_INVALID_OPERATION;
 import static type.sglEErrorCode.SGL_INVALID_ENUM;
 import static type.sglEErrorCode.SGL_STACK_UNDERFLOW;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.image.MemoryImageSource;
 
 import static type.sglEAreaMode.SGL_FILL;
 import static type.sglEAreaMode.SGL_POINT;
 import static type.sglEAreaMode.SGL_LINE;
 
-import struct.Buffer;
 import struct.Color;
 import struct.Context;
 import struct.ContextManager;
@@ -117,7 +114,7 @@ public class Main
 	// ? destroy or flush or release ?
 	static void sglDestroyContext(int id)
 	{
-		 if(ContextManager.contexts.isEmpty() || in_range(id,0,ContextManager.contexts.size()-1))
+		 if(in_range(id,0,ContextManager.contexts.size()-1))
 		 {
 			 setErrCode(SGL_INVALID_VALUE);
 			 return;
@@ -153,40 +150,30 @@ public class Main
 		return ContextManager.current;
 	}
 
-	
 	//LongName Function
-	static MemoryImageSource sglGetColorBufferPointer()
-	{ return Context.buffer; }
+	static BufferedImage sglGetColorBufferPointer()
+	{ return current().buffer; }
 
 	//---------------------------------------------------------------------------
 	// Drawing functions
 	//---------------------------------------------------------------------------
 
 	//Clears buffer with given RGBA color value
-	static void sglClearColor (float r, float g, float b, float a)
+	static void sglClearColor (float r, float g, float b, float alpha)
 	{
-		int rgb = new Color(r,g,b).getRGB();
-		
-
-		for(int i=0; i<Context.clearbuff.length; i++)
-		{
-			Context.clearbuff[i]=rgb;
-		}
-			
-		//System.arraycopy(current, 0, arg2, arg3, arg4)
-		//current().clear.r = r;
-	    //current().clear.g = g;
-	    //current().clear.b = b;
+		current().clear.r = r;
+	    current().clear.g = g;
+	    current().clear.b = b;
 	}
 
 	//LongName Function
 	static void sglClear(byte ... what)
 	{
-		//if (current().invalidTypeStack())
-		//{
-			//setErrCode(SGL_INVALID_OPERATION);
-			//return;
-		//}
+		if (current().invalidTypeStack())
+		{
+			setErrCode(SGL_INVALID_OPERATION);
+			return;
+		}
 
 		/*
 		if (((what & SGL_COLOR_BUFFER_BIT) != SGL_COLOR_BUFFER_BIT) && ((what & SGL_DEPTH_BUFFER_BIT) != SGL_DEPTH_BUFFER_BIT))
@@ -431,13 +418,8 @@ public class Main
 			setErrCode(SGL_INVALID_OPERATION);
 			return;
 		}
-		
-		int w = x;
-		int h = y;
-		x = (width-x)>>1;
-		y = (height-y)>>1;
-		//,100,100
-		current().setViewport(w, h, x, y);
+
+		current().setViewport(width, height, x, y);
 	}
 
 	//---------------------------------------------------------------------------

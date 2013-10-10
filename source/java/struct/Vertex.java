@@ -1,7 +1,6 @@
 package struct;
 
-public class Vertex
-{
+public class Vertex {
 
 	float x;
 	float y;
