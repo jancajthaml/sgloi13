@@ -14,6 +14,7 @@
 #include "sgl.h"
 #include "Vertex.h";
 #include "VertexStack.h";
+#include "MatrixCache.h"
 #include "Matrix.h";
 #include "Viewport.h";
 #include "Color.h";
@@ -118,8 +119,8 @@ struct Context
 
 		if (!buffer) throw std::exception();
 
-		currentModelviewMatrix = Matrix::identity();
-		currentProjectionMatrix = Matrix::identity();
+		currentModelviewMatrix = MatrixCache::identity();
+		currentProjectionMatrix = MatrixCache::identity();
 
 		projMatChanged = true;
 		modelMatChanged = true;
@@ -691,36 +692,29 @@ struct Context
 
 
 	Matrix & getCurrentMatrix()
-		{
-			if (matrixMode == SGL_MODELVIEW)
-				return currentModelviewMatrix;
-			else return currentProjectionMatrix;
-		}
+	{ return (matrixMode == SGL_MODELVIEW)?currentModelviewMatrix:currentProjectionMatrix; }
 
 	void pushMatrix()
-		{
-		//	if (!beginEndCheck(err))
-			//	return;
-			if (matrixMode == SGL_MODELVIEW)
-				projectionStack.push_back(currentModelviewMatrix);
-			else
-				projectionStack.push_back(currentProjectionMatrix);
-
-		}
+	{
+		if (matrixMode == SGL_MODELVIEW)
+			projectionStack.push_back(currentModelviewMatrix);
+		else
+			projectionStack.push_back(currentProjectionMatrix);
+	}
 
 	void setCurrentMatrix(Matrix matrix)
+	{
+		if (matrixMode == SGL_MODELVIEW)
 		{
-			if (matrixMode == SGL_MODELVIEW)
-			{
-				modelMatChanged = true;
-				currentModelviewMatrix = matrix;
-			}
-			else
-			{
-				projMatChanged = true;
-				currentProjectionMatrix = matrix;
-			}
+			modelMatChanged = true;
+			currentModelviewMatrix = matrix;
 		}
+		else
+		{
+			projMatChanged = true;
+			currentProjectionMatrix = matrix;
+		}
+	}
 
 	void setMatrixMode(sglEMatrixMode mode)
 	{ matrixMode = mode; }
@@ -756,14 +750,16 @@ struct Context
 
 	void clearBuffer(unsigned what)
 	{
-		int size = w * h * 3;
+		buffer[0]	= clear.r;
+		buffer[1]	= clear.g;
+		buffer[2]	= clear.b;
+		int size	= w*h;
 
-		for(int i = 0; i<size; i += 3)
-		{
-			buffer[i]	= clear.r;
-			buffer[i+1]	= clear.g;
-			buffer[i+2]	= clear.b;
-		}
+		for (int offset = 0; offset < size; offset++)
+			memcpy(&buffer[3*offset], &buffer[0], 3 * sizeof(float));
+		//for(int offset=0; offset<size; offset++)
+			//memcpy(&buffer[offset*3], &buffer[offset], 3*sizeof(float));
+
 		return;
 	}
 

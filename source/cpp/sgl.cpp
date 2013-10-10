@@ -44,6 +44,11 @@
 #include "ContextManager.h"
 #include <vector>
 
+Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::I = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::T = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
 //---------------------------------------------------------------------------
@@ -52,8 +57,6 @@ bool in_range(unsigned number, unsigned low, unsigned high);
 Context* current();
 //void normalize(float &x, float &y);
 //void setPixel(int x, int y);
-
-void sglDrawLine(Vertex start, Vertex end);
 
 //---------------------------------------------------------------------------
 // SGL
@@ -123,7 +126,7 @@ void sglInit(void)
 //LongName Function "gloabl finalization ? run finalization ?"
 void sglFinish(void)
 {
-	manager.clearContexts();
+	manager.contexts.clear();
 
 	//manager.contexts.clear();
 }
@@ -131,7 +134,7 @@ void sglFinish(void)
 //LongName Function
 int sglCreateContext(int width, int height)
 {
-	Context c = Context(width, height);
+	int size = manager.contexts.size();
 
 //	if(c == NULL)
 	//{
@@ -139,9 +142,10 @@ int sglCreateContext(int width, int height)
 		//return -1;
 	//}
 
-	manager.addContext(c);
+	manager.contexts.push_back(Context(width, height));
+	//manager.addContext(c);
 
-	return manager.lastContextID();
+	return size;
 }
 
 //LongName Function
@@ -346,15 +350,6 @@ void sglEllipse(float x, float y, float z, float a, float b)
 }
 
 //Line
-//Breceanuv algoritmus
-//DDA algoritmus (jednoduzsi)
-//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
-void sglDrawLine(Vertex start, Vertex end)
-{
-	//current()->drawLine2D(start, end);
-}
-
-//Line
 void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
 {
 
@@ -445,7 +440,7 @@ void sglPopMatrix(void)
 void sglLoadIdentity(void)
 {
 	//current().setCurrentMatrix(Matrix::identity());
-	current()->setCurrentMatrix(Matrix::identity());
+	current()->setCurrentMatrix(MatrixCache::identity());
 }
 
 void sglLoadMatrix(const float* matrix)
@@ -468,7 +463,7 @@ void sglMultMatrix(const float* matrix)
 //Translate coordinates
 void sglTranslate(float x, float y, float z)
 {
-	Matrix translate = Matrix::translate(x,y,z);
+	Matrix translate = MatrixCache::translate(x,y,z);
 	current()->multiplyCurrentMatrix(translate);
 
 	//current()->multiplyCurrentMatrix(translate);
@@ -477,7 +472,7 @@ void sglTranslate(float x, float y, float z)
 //Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
-	Matrix scale = Matrix::scale(scalex, scaley, scalez);
+	Matrix scale = MatrixCache::scale(scalex, scaley, scalez);
 	current()->multiplyCurrentMatrix(scale);
 
 	//current()->multiplyCurrentMatrix(scale);
@@ -489,7 +484,7 @@ void sglRotate2D(float angle, float centerx, float centery)
 	//Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
 
 	sglTranslate(centerx, centery, 0.0f);
-	Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
+	Matrix rotate = MatrixCache::rotate2D(angle, centerx, centery);
 	current()->multiplyCurrentMatrix(rotate);
 	sglTranslate(-centerx, -centery, 0.0f);
 
@@ -671,9 +666,6 @@ double round(double x)
 {
 	return double((x>=0.5)?(int(x)+1):int(x));
 }
-
-
-
 
 Context* current()
 { return &manager.contexts[manager.current]; }
