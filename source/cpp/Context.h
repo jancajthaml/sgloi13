@@ -14,12 +14,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "sgl.h"
-#include "Vertex.h";
-#include "VertexStack.h";
+#include "Vertex.h"
+#include "VertexStack.h"
 #include "MatrixCache.h"
-#include "Matrix.h";
-#include "Viewport.h";
-#include "Color.h";
+#include "Matrix.h"
+#include "Viewport.h"
+#include "Color.h"
 #ifndef DATA_H_
 #define DATA_H_
 
@@ -337,9 +337,9 @@ struct Context
 
 	inline void drawPolygon()
 	{
-		int_fast32_t size = int_fast32_t(vertices.index-1);
+		uint_fast32_t size = uint_fast32_t(vertices.index-1);
 
-		for (int_fast32_t i = 0; i < size; i++)
+		for (uint_fast32_t i = 0; i < size; i++)
 			drawLine2D(vertices[i], vertices[i+1]);
 
 		drawLine2D(vertices[size], vertices[0]);
@@ -347,9 +347,9 @@ struct Context
 
 	inline void drawLines()
 	{
-		int_fast32_t size = int_fast16_t(vertices.index-1);
+		uint_fast32_t size = uint_fast16_t(vertices.index-1);
 
-		for (int_fast32_t i = 0; i < size; i += 2)
+		for (uint_fast32_t i = 0; i < size; i += 2)
 			drawLine2D(vertices[i], vertices[i+1]);
 	}
 
@@ -399,19 +399,7 @@ struct Context
 		}
 		draw();
 	}
-/*
-	inline float fsin(float x)
-	{
-		float y = 0.4052847345693511f * x * ( 3.141592653589793f - x );
-		return y * ( 0.775160898644006f  + y * 0.2248391013559941f );
-	}
 
-	inline float fcos(float x)
-	{
-		//temp
-		return cosf(x);
-	}
-*/
 	inline void bresenham_x(signed x1, signed y1, signed x2, signed y2)
 	{
 		signed dx = x2 - x1;
@@ -474,58 +462,55 @@ struct Context
 
 	inline void setPixel(signed x, signed y)
 	{
-		if (x >= 0 && x < w && y >= 0 && y < h)
-		{
+		//Condition not needed for now
+	//	if (x >= 0 && x < w && y >= 0 && y < h)
+		//{
 			lastSetPixelIndex = (x + w * y);
 			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-		}
+		//}
 	}
 
 	inline void setPixel_x()
 	{
 		lastSetPixelIndex += 1;
-		if (lastSetPixelIndex < w_h)
-		{
+
+		//Safety off
+		//if (lastSetPixelIndex < w_h)
 			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-		}
 	}
 
 	inline void setPixel_y()
 	{
 		lastSetPixelIndex += w;
-		if (lastSetPixelIndex < w_h)
-		{
+
+		//Safety off
+//		if (lastSetPixelIndex < w_h)
 			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-		}
 	}
 
 	inline void setPixel_xy()
 	{
 		lastSetPixelIndex += (w + 1);
 
-		if (lastSetPixelIndex < w_h)
-		{
+		//Safety off
+		//if (lastSetPixelIndex < w_h)
 			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-		}
 	}
 
 	inline void setPixel_mxy()
 	{
 		lastSetPixelIndex += (w - 1);
 
-		if (lastSetPixelIndex < w_h)
-		{
+		//Safety off
+		//if (lastSetPixelIndex < w_h)
 			*((__color*) (buffer + lastSetPixelIndex))		= *((__color*) &(color));
-		}
 	}
 
 	inline void setPixel_xmy()
 	{
 		lastSetPixelIndex += (1 - w);
-		if (lastSetPixelIndex < w_h)
-		{
+		//if (lastSetPixelIndex < w_h)
 			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-		}
 	}
 
 	inline void setSymPixel(signed x, signed y, signed xs, signed ys)
@@ -554,15 +539,17 @@ struct Context
 	inline void multiplyCurrentMatrix(Matrix & m)
 	{
 
-		if (matrixMode == SGL_MODELVIEW)
+		switch(matrixMode)
 		{
-			modelMatChanged			= true;
-			currentModelviewMatrix	= currentModelviewMatrix * m;
-		}
-		else
-		{
-			projMatChanged			= true;
-			currentProjectionMatrix	= currentProjectionMatrix * m;
+			case SGL_MODELVIEW :
+				modelMatChanged			= true;
+				currentModelviewMatrix	= currentModelviewMatrix * m;
+			break;
+
+			default:
+				projMatChanged			= true;
+				currentProjectionMatrix	= currentProjectionMatrix * m;
+			break;
 		}
 	}
 
@@ -649,9 +636,9 @@ struct Context
 	{
 		if (modelMatChanged || projMatChanged)
 		{
-			modelMatChanged = false;
-			projMatChanged = false;
-			PMMatrix = currentProjectionMatrix * currentModelviewMatrix;
+			modelMatChanged	= false;
+			projMatChanged	= false;
+			PMMatrix		= currentProjectionMatrix * currentModelviewMatrix;
 			return true;
 		}
 		return false;
@@ -674,10 +661,10 @@ struct Context
 		*((__color*) (clear))	= *((__color*) &c);	//1-3 RGB
 		*((__color*) (clear+2))	= *((__color*) &c);	//4-7 RGB
 
-		int_fast32_t l = 2;
+		uint_fast32_t l = 2;
 		int_fast8_t s = sizeof(Color);
 
-		for(int_fast32_t offset=l ; offset < w_h; offset <<= 1)
+		for(uint_fast32_t offset=l ; offset < w_h; offset <<= 1)
 		{
 			memcpy(&clear[offset], &clear[l], s);
 			l=offset;
