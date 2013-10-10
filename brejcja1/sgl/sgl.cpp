@@ -1,34 +1,85 @@
 //---------------------------------------------------------------------------
 // sgl.cpp
-// Empty implementation of the SGL (Simple Graphics Library)
-// Date:  2011/11/1
-// Author: Jaroslav Krivanek, Jiri Bittner CTU Prague
+//
+// Implementation of the SGL (Simple Graphics Library)
+// Year: 2013
+// Author: Jan Cajthaml, Jan Brejcha
+//
+//
+// based on:
+// ## Empty implementation of the SGL (Simple Graphics Library)
+// ## Date:  2011/11/1
+// ## Author: Jaroslav Krivanek, Jiri Bittner CTU Prague
 //---------------------------------------------------------------------------
-#include "sgl.h"	
-#include "SglContext.h"
-#include "Color.h"
-#include "ContextManager.h"
-#include "Matrix4.h"
-#include <cstdio>
-ContextManager ctx_mgr;
 
-/// Current error code.
+/*
+ * ChangeLog:
+ * 23.9.2013, Jan Cajthaml - GNU code style & condition shorthand refactor
+ *                         - Base comment of method function
+ *                         - Added data.h
+ * 24.9.2013, Jan Cajthaml - sglCircle proof of concept
+ * 25.9.2013, Jan Cajthaml - Helper methods:
+ *                                           in_range  - checks if(LOW<=x && x<=HIGH) withing one operation
+ *                                           round     - round double to a nearest non decimal number
+ *                                           current   - current Context pointer
+ *                                           normalize - normalize coords to viewport
+ *                                           setPixel  - sets pixel color
+ *
+ *                         - sglEllipse proof of concept based on fast Bresenham Type Algorithm
+ * 29.9.2013, Jan Cajthaml - added method sglDrawLine()
+ *                         - body of sglEnd and sglBegin
+ *
+ * 30.9.2013, Jan Cajthaml - added sglDrawLine Bresenham´s algorithm draw line implementation
+ *
+ * */
+
+/*
+ * useful links:
+ * Bresenham's line algorithm - http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+ * C++ Code optimalisation    - http://en.wikibooks.org/wiki/Optimizing_C%2B%2B/Code_optimization/Faster_operations
+ *
+ */
+
+#include "Context.h"
+#include "ContextManager.h"
+#include <vector>
+
+Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::I = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::T = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+//---------------------------------------------------------------------------
+// Helper functions forward declaration
+//---------------------------------------------------------------------------
+
+bool in_range(unsigned number, unsigned low, unsigned high);
+Context* current();
+//void normalize(float &x, float &y);
+//void setPixel(int x, int y);
+
+//---------------------------------------------------------------------------
+// SGL
+//---------------------------------------------------------------------------
+
+// Current error code
 static sglEErrorCode _libStatus = SGL_NO_ERROR;
 
-static inline void setErrCode(sglEErrorCode c) 
+// Global error code dispatch
+static inline void setErrCode(sglEErrorCode c)
 {
-  if(_libStatus==SGL_NO_ERROR)
-    _libStatus = c;
+	if(_libStatus==SGL_NO_ERROR)
+		_libStatus = c;
 }
 
 //---------------------------------------------------------------------------
 // sglGetError()
 //---------------------------------------------------------------------------
-sglEErrorCode sglGetError(void) 
+sglEErrorCode sglGetError(void)
 {
-  sglEErrorCode ret = _libStatus;
-  _libStatus = SGL_NO_ERROR;
-  return ret;
+	sglEErrorCode ret	= _libStatus;
+	_libStatus			= SGL_NO_ERROR;
+	return ret;
 }
 
 //---------------------------------------------------------------------------
@@ -36,123 +87,244 @@ sglEErrorCode sglGetError(void)
 //---------------------------------------------------------------------------
 const char* sglGetErrorString(sglEErrorCode error)
 {
-  static const char *errStrigTable[] = 
-  {
-      "Operation succeeded",
-      "Invalid argument(s) to a call",
-      "Invalid enumeration argument(s) to a call",
-      "Invalid call",
-      "Quota of internal resources exceeded",
-      "Internal library error",
-      "Matrix stack overflow",
-      "Matrix stack underflow",
-      "Insufficient memory to finish the requested operation"
-  };
+	static const char *errStrigTable[] =
+	{
+			"Operation succeeded",
+			"Invalid argument(s) to a call",
+			"Invalid enumeration argument(s) to a call",
+			"Invalid call",
+			"Quota of internal resources exceeded",
+			"Internal library error",
+			"Matrix stack overflow",
+			"Matrix stack underflow",
+			"Insufficient memory to finish the requested operation"
+	};
 
-  if((int)error<(int)SGL_NO_ERROR || (int)error>(int)SGL_OUT_OF_MEMORY ) {
-    return "Invalid value passed to sglGetErrorString()"; 
-  }
-
-  return errStrigTable[(int)error];
+	return (!in_range(error,SGL_NO_ERROR,SGL_OUT_OF_MEMORY))?"Invalid value passed to sglGetErrorString()":errStrigTable[int(error)];
 }
+
+//---------------------------------------------------------------------------
+// Data attributes
+//---------------------------------------------------------------------------
+
+static ContextManager	manager;
+//std::vector<Vertex>		VERTICES;
+//std::vector<Edge>		EDGES;
+//bool					isDrawing;
+
 
 //---------------------------------------------------------------------------
 // Initialization functions
 //---------------------------------------------------------------------------
 
-void sglInit(void) {}
-
-void sglFinish(void) 
+//LongName Function "global init ? run init ?"
+void sglInit(void)
 {
-	ctx_mgr.clearContexts();
+	//isDrawing = false;
 }
 
-int sglCreateContext(int width, int height) 
+//LongName Function "gloabl finalization ? run finalization ?"
+void sglFinish(void)
 {
-	ctx_mgr.addContext(SGLContext(width, height));
-	return ctx_mgr.lastContextID();
+	manager.contexts.clear();
+
+	//manager.contexts.clear();
 }
 
+//LongName Function
+int sglCreateContext(int width, int height)
+{
+	int size = manager.contexts.size();
+
+//	if(c == NULL)
+	//{
+		//setErrCode(SGL_OUT_OF_MEMORY);
+		//return -1;
+	//}
+
+	manager.contexts.push_back(Context(width, height));
+	//manager.addContext(c);
+
+	return size;
+}
+
+//LongName Function
+// ? destroy or flush or release ?
 void sglDestroyContext(int id)
 {
-	ctx_mgr.deleteContext(id);
+	 if(in_range(id,0,manager.contexts.size()-1))
+	 {
+		 setErrCode(SGL_INVALID_VALUE);
+		 return;
+	 }
+
+	 manager.deleteContext(id);
 }
 
+//LongName Function
 void sglSetContext(int id)
 {
-	ctx_mgr.setContext(id);
+	 if(!in_range(id,0,manager.contexts.size()-1))
+	 {
+		 setErrCode(SGL_INVALID_VALUE);
+		 return;
+	 }
+
+	 manager.setContext(id);
 }
 
+//LongName Function
 int sglGetContext(void)
 {
-	return ctx_mgr.getCurrentContextID();
+	if(manager.current < 0)
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return -1;
+	}
+
+	return manager.current;
 }
+
+//LongName Function
 float *sglGetColorBufferPointer(void)
 {
-	sglEErrorCode err;
-	float * fbuff = (float *)ctx_mgr.getContext(&err).getFramebuffer();
-	setErrCode(err);	
-	return fbuff;
+	return (float *)current()->buffer;
+    //return (float *) current()->buffer;
 }
+
 //---------------------------------------------------------------------------
 // Drawing functions
 //---------------------------------------------------------------------------
 
+//Clears buffer with given RGBA color value
 void sglClearColor (float r, float g, float b, float alpha)
 {
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).setClearColor(r, g, b);
-	setErrCode(err);
+	//current()->setClearColor(r, g, b);
+
+	current()->clear.r = r;
+    current()->clear.g = g;
+    current()->clear.b = b;
 }
 
+//LongName Function
 void sglClear(unsigned what)
 {
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).clear(what, &err);
-	setErrCode(err);
-}
+	if (current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
-void sglBegin(sglEElementType mode)
-{
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).pushTypeState(mode);
-	setErrCode(err);
-}
-
-void sglEnd(void)
-{
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).draw();
-	setErrCode(err);
-}
-
-void sglVertex4f(float x, float y, float z, float w) {}
-
-void sglVertex3f(float x, float y, float z) {}
-
-void sglVertex2f(float x, float y)
-{
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).setVertex2f(x, y);
-	setErrCode(err);
-}
-
-void sglCircle(float x, float y, float z, float radius)
-{
-	if (radius < 0)
+	if (((what & SGL_COLOR_BUFFER_BIT) != SGL_COLOR_BUFFER_BIT) && ((what & SGL_DEPTH_BUFFER_BIT) != SGL_DEPTH_BUFFER_BIT))
 	{
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
 
-	sglEErrorCode err;
-	SGLContext c = ctx_mgr.getContext(&err);
-	setErrCode(err);
-	if (!c.beginEndCheck())
-		setErrCode(SGL_INVALID_OPERATION);
-	c.drawCircle(x, y, radius);
+	if ((what & SGL_COLOR_BUFFER_BIT) == SGL_COLOR_BUFFER_BIT)
+	{
+		current()->clearBuffer(what);
+
+		//current()->clearBuffer(what);
+	}
+
+	if ((what & SGL_DEPTH_BUFFER_BIT) == SGL_DEPTH_BUFFER_BIT)
+	{
+			//TODO clear with depth buffer bit
+	}
+
+	setErrCode(SGL_NO_ERROR);
+
 }
 
+//LongName Function
+void sglBegin(sglEElementType mode)
+{
+	if(mode>SGL_LAST_ELEMENT_TYPE)
+	{
+		setErrCode(SGL_INVALID_ENUM);
+		return;
+	}
+
+	current()->pushTypeState(mode);
+
+	//current()->pushTypeState(mode);
+}
+
+//LongName Function
+void sglEnd(void)
+{
+	current()->draw();
+
+	//current()->draw();
+}
+
+//Vertex with 3 float coords in homogenous coordinates
+//[x,y,z,w]
+//
+void sglVertex4f(float x, float y, float z, float w)
+{
+	//normalize(x, y);
+	//VERTICES.push_back(Vertex (x, y, z, w));
+}
+
+//Vertex with 3 float coords
+//[x,y,z]
+void sglVertex3f(float x, float y, float z)
+{
+	//normalize(x, y);
+	//VERTICES.push_back(Vertex (x, y, z));
+}
+
+//Vertex with 2 float coords
+//[x,y]
+void sglVertex2f(float x, float y)
+{
+	current()->setVertex2f(x, y);
+
+	//current()->setVertex2f(x,y);
+}
+
+//2D Circle
+//
+// x	- center.x
+// y	- center.y
+// z	- ? IS IT 2D OR 3D CIRCLE ?
+// r	- radius
+//
+// Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+void sglCircle(float x, float y, float z, float r)
+{
+	if (r < 0)
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
+	}
+
+		//sglEErrorCode err;
+		//SGLContext c = ctx_mgr.getContext(&err);
+	//Context c = ;
+		//setErrCode(err);
+	//if (!c.beginEndCheck())
+		//setErrCode(SGL_INVALID_OPERATION);
+	current()->drawCricle(x, y, z, r);
+
+//	current()->drawCricle(x,y,z,r);
+}
+
+//2D Ellipse
+//
+// x	- center.x
+// y	- center.y
+// z	- ? IS IT 2D OR 3D ELLIPSE ?
+// a	- ? width ?
+// b	- ? height ?
+//
+// for adaptive fast Ellipse algorithm:
+// - Cholesky decomposition
+// - Bresenham Algorithm
+//
+//@see http://www.codeproject.com/Messages/2112010/A-Fast-Bresenham-Type-Algorithm-For-Drawing-Ellips.aspx
 void sglEllipse(float x, float y, float z, float a, float b)
 {
 	if (a < 0 || b < 0)
@@ -160,14 +332,39 @@ void sglEllipse(float x, float y, float z, float a, float b)
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
-	sglEErrorCode err;
-	SGLContext c = ctx_mgr.getContext(&err);
-	setErrCode(err);
-	if (!c.beginEndCheck())
-		setErrCode(SGL_INVALID_OPERATION);
-	c.drawEllipse(x, y, z, a, b);
+
+
+
+	//SGLContext c = ctx_mgr.getContext(&err);
+	//setErrCode(err);
+
+	//if (!c.beginEndCheck())
+	//setErrCode(SGL_INVALID_OPERATION);
+
+	//setErrCode(err);
+	//if (!c.beginEndCheck())
+		//setErrCode(SGL_INVALID_OPERATION);
+	current()->drawEllipse(x, y, z, a, b);
+
+	//current()->drawEllipse(x, y, z, a, b);
 }
 
+//Line
+void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
+{
+
+}
+
+
+//2D Arc
+//
+// x	- center.x
+// y	- center.y
+// r	- radius
+// from	- ?
+// to	- ?
+//
+// ? use circle subdivision ?
 void sglArc(float x, float y, float z, float radius, float from, float to)
 {
 	if (radius < 0)
@@ -175,191 +372,301 @@ void sglArc(float x, float y, float z, float radius, float from, float to)
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).drawArc(x, y, z, radius, from, to);
-	setErrCode(err);
+	//sglEErrorCode err;
+	//ctx_mgr.getContext(&err).drawArc(x, y, z, radius, from, to);
+	//setErrCode(err);
+
+	current()->drawArc2D(x, y, z, radius, from, to);
+
+//	current()->drawArc2D(x,y,z,radius,from,to);
 }
 
 //---------------------------------------------------------------------------
 // Transform functions
 //---------------------------------------------------------------------------
 
+// Function name here
+//
+// modes:
+//        SGL_MODELVIEW  - desc
+//        SGL_PROJECTION - desc
+//
+// ? we need something to hold on context ?
 void sglMatrixMode( sglEMatrixMode mode )
 {
-	
-	sglEErrorCode err1, err2;
-	ctx_mgr.getContext(&err1).setMatrixMode(mode, &err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	switch(mode)
+	{
+		case SGL_MODELVIEW	:
+		case SGL_PROJECTION	:
+		{
+			current()->setMatrixMode(mode);
 
+			//current()->setMatrixMode(mode);
+		}
+		break;
+
+		default				: setErrCode(SGL_INVALID_ENUM); break;
+	}
 }
 
+//Push Matrix into transformation Stack
 void sglPushMatrix(void)
 {
-	sglEErrorCode err1, err2;
-	ctx_mgr.getContext(&err1).pushMatrix(&err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	if(current()->invalidTypeStack())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+
+	current()->pushMatrix();
+
+	//current()->pushMatrix();
 }
 
+//Pop Matrix from transformation Stack
 void sglPopMatrix(void)
 {
-	sglEErrorCode err1, err2;
-	ctx_mgr.getContext(&err1).popMatrix(&err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	if (current()->stackEmpty())
+	{
+		setErrCode(SGL_STACK_UNDERFLOW);
+		return;
+	}
+
+	current()->popMatrix();
+
+//	current()->popMatrix();
 }
 
 void sglLoadIdentity(void)
 {
-	sglEErrorCode err1, err2;
-	ctx_mgr.getContext(&err1).setCurrentMatrix(Matrix4::makeIdentity(), &err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	//current().setCurrentMatrix(Matrix::identity());
+	current()->setCurrentMatrix(MatrixCache::identity());
 }
 
-void sglLoadMatrix(const float *matrix)
+void sglLoadMatrix(const float* matrix)
 {
-	sglEErrorCode err1, err2;
-	ctx_mgr.getContext(&err1).setCurrentMatrix(Matrix4(matrix), &err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	current()->setCurrentMatrix(Matrix(matrix));
+
+	//current()->setCurrentMatrix(Matrix(matrix));
 }
 
-void sglMultMatrix(const float *matrix)
+//Multiply two matrices
+void sglMultMatrix(const float* matrix)
 {
-	sglEErrorCode err1, err2;
-	Matrix4 mat(matrix);
-	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(mat, &err2);
-	setErrCode(err1);
-	setErrCode(err2);
+
+
+	Matrix mat = Matrix(matrix);
+	current()->multiplyCurrentMatrix(mat);
+	//current()->multiplyCurrentMatrix(mat);
 }
 
+//Translate coordinates
 void sglTranslate(float x, float y, float z)
 {
-	sglEErrorCode err1, err2;
-	Matrix4 translation = Matrix4::makeTranslation(x, y, z);
-	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(translation, &err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	Matrix translate = MatrixCache::translate(x,y,z);
+	current()->multiplyCurrentMatrix(translate);
+
+	//current()->multiplyCurrentMatrix(translate);
 }
 
+//Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
-	sglEErrorCode err1, err2;
-	Matrix4 scale = Matrix4::makeScale(scalex, scaley, scalez);
-	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(scale, &err2);
-	setErrCode(err1);
-	setErrCode(err2);
+	Matrix scale = MatrixCache::scale(scalex, scaley, scalez);
+	current()->multiplyCurrentMatrix(scale);
+
+	//current()->multiplyCurrentMatrix(scale);
 }
 
-
+//Rotate **** around the centerx,centery axis with given angle
 void sglRotate2D(float angle, float centerx, float centery)
 {
-	sglEErrorCode err1, err2;
-	sglTranslate(centerx, centery, 0.0f);
-	Matrix4 rotate = Matrix4::makeRotation2D(angle, centerx, centery);
-	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(rotate, &err2);
-	sglTranslate(-centerx, -centery, 0.0f);
-	setErrCode(err1);
-	setErrCode(err2);
+	//Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
 
+	sglTranslate(centerx, centery, 0.0f);
+	Matrix rotate = MatrixCache::rotate2D(angle, centerx, centery);
+	current()->multiplyCurrentMatrix(rotate);
+	sglTranslate(-centerx, -centery, 0.0f);
+
+	//current()->multiplyCurrentMatrix(rotate);
 }
 
-void sglRotateY(float angle) {}
+// ? rotates what ? Context or scene ?
+// ? around what Y axis? Base or context?
+void sglRotateY(float angle)
+{
+}
 
+// ?
 void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 {
-	//printf("multiplying with ortho matrix\n");
-	Matrix4 ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
-	//ortho.print();
-	sglEErrorCode err1, err2;
-	ctx_mgr.getContext(&err1).multiplyCurrentMatrix(ortho, &err2);
-	//ctx_mgr.getContext(&err1).getCurrentMatrix().print();
-	setErrCode(err1);
-	setErrCode(err2);
+//	if(current()->invalidTypeStack())
+	//{
+		//setErrCode(SGL_INVALID_OPERATION);
+		//return;
+	//}
+
+	Matrix ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
+	//current()->multiplyCurrentMatrix(ortho);
+	current()->multiplyCurrentMatrix(ortho);
 }
 
-void sglFrustum(float left, float right, float bottom, float top, float near, float far) {}
+// ?
+void sglFrustum(float left, float right, float bottom, float top, float near, float far)
+{
+//	if(current()->invalidTypeStack())
+	//{
+		//setErrCode(SGL_INVALID_OPERATION);
+		//return;
+	//}
 
+	//Matrix frustum((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
+	//current()->multiplyCurrentMatrix(frustum);
+}
+
+//Sets scene viewport
 void sglViewport(int x, int y, int width, int height)
 {
-	sglEErrorCode err;
-	sglEErrorCode err2;
-	ctx_mgr.getContext(&err).setViewport(width, height, x, y, &err2);
-	setErrCode(err);
-	setErrCode(err2);
+//	if(current()->invalidTypeStack())
+	//{
+		//setErrCode(SGL_INVALID_OPERATION);
+		//return;
+	//}
+
+	current()->setViewport(width, height, x, y);
+
+	//current()->setViewport(width, height, x, y);
 }
 
 //---------------------------------------------------------------------------
 // Attribute functions
 //---------------------------------------------------------------------------
 
+//RGB Color
 void sglColor3f(float r, float g, float b)
 {
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).setColor(Color(r, g, b));
-	setErrCode(err);
+	current()->color = Color(r, g, b);
+
+	//current()->color = Color(r, g, b);
 }
 
-void sglAreaMode(sglEAreaMode mode) {}
+// ?
+void sglAreaMode(sglEAreaMode mode)
+{
+	if(mode>SGL_FILL)
+	{
+		setErrCode(SGL_INVALID_ENUM);
+		return;
+	}
+}
 
+//Point "radius/diameter ?"
 void sglPointSize(float size)
 {
-	sglEErrorCode err;
-	ctx_mgr.getContext(&err).setPointSize(size);
-	setErrCode(err);
+    if(size <= 0.0f)
+    {
+    	setErrCode(SGL_INVALID_VALUE);
+    	return;
+    }
+
+    current()->size = size;//setPointSize(size);
+
+   // current()->size = size;
 }
 
-void sglEnable(sglEEnableFlags cap) {}
+//Enable given flag
+void sglEnable(sglEEnableFlags cap)
+{
 
-void sglDisable(sglEEnableFlags cap) {}
+}
+
+//Disable given flag
+void sglDisable(sglEEnableFlags cap)
+{
+
+}
 
 //---------------------------------------------------------------------------
 // RayTracing oriented functions
 //---------------------------------------------------------------------------
 
-void sglBeginScene() {}
+// ? Begin of what scene ? whole scene or sub scene ?
+void sglBeginScene()
+{
 
-void sglEndScene() {}
+}
 
-void sglSphere(const float x,
-			   const float y,
-			   const float z,
-			   const float radius) {}
+// ? End of what scene ? whole scene or sub scene ?
+void sglEndScene()
+{
 
-void sglMaterial(const float r,
-				 const float g,
-				 const float b,
-				 const float kd,
-				 const float ks,
-				 const float shine,
-				 const float T,
-				 const float ior) {}
+}
 
-void sglPointLight(const float x,
-				   const float y,
-				   const float z,
-				   const float r,
-				   const float g,
-				   const float b) {}
+//3D Sphere
+//
+// x	- center.x
+// y	- center.y
+// z	- center.z
+// r	- radius
+void sglSphere(const float x, const float y, const float z, const float r)
+{
 
-void sglRayTraceScene() {}
+}
 
-void sglRasterizeScene() {}
+//Material ******
+void sglMaterial(const float r, const float g, const float b, const float kd, const float ks, const float shine, const float T, const float ior)
+{
 
-void sglEnvironmentMap(const int width,
-					   const int height,
-					   float *texels)
-{}
+}
 
-void sglEmissiveMaterial(
-						 const float r,
-						 const float g,
-						 const float b,
-						 const float c0,
-						 const float c1,
-						 const float c2
-						 )
-{}
+//Point Light
+//
+// ? x,y,z base coords r,g,b color and where is the direction ?
+void sglPointLight(const float x, const float y, const float z, const float r, const float g, const float b)
+{
+
+}
+
+// ?
+void sglRayTraceScene()
+{
+
+}
+
+// ? fragmentation -> rasterization ? direct rasterization ? evaluation ? bad name for a function !
+void sglRasterizeScene()
+{
+
+}
+
+// ? image or fragment(s) ? or fragment set ?
+void sglEnvironmentMap(const int width, const int height, float *texels)
+{
+
+}
+
+// ?
+void sglEmissiveMaterial(const float r, const float g, const float b, const float c0, const float c1, const float c2)
+{
+
+}
+
+//---------------------------------------------------------------------------
+// Helper functions
+//---------------------------------------------------------------------------
+
+//Check if number is in range
+//@see http://stackoverflow.com/questions/17095324/fastest-way-in-c-to-determine-if-an-integer-is-between-two-integers-inclusive
+bool in_range(unsigned number, unsigned low, unsigned high)
+{ return ((unsigned)(number-low) <= (high-low)); }
+
+//Fast double round (3 times faster than std::round because of absence of EDOM)
+//Type safe
+double round(double x)
+{
+	return double((x>=0.5)?(int(x)+1):int(x));
+}
+
+Context* current()
+{ return &manager.contexts[manager.current]; }
 

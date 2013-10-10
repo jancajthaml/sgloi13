@@ -1,22 +1,28 @@
-#ifndef VIEWPORT_H
-#define VIEWPORT_H
+/*
+ * Viewport.h
+ *
+ *  Created on: 7.10.2013
+ *      Author: jancajthaml
+ */
 
-#include "Matrix4.h"
-#include "Vertex.h"
-#include <cmath>
-class Viewport
+#ifndef VIEWPORT_H_
+#define VIEWPORT_H_
+
+
+struct Viewport
 {
-private:
+
 	int width;
 	int height;
 	float width_2_x;
 	float height_2_y;
 	int x;
 	int y;
-	bool readyToUse;
-	Matrix4 viewportMatrix;
-public:
+	bool ready;
+
+	Matrix viewportMatrix;
 	bool viewportMatrixChanged;
+
 	Viewport()
 	{
 		width = 0;
@@ -25,18 +31,8 @@ public:
 		height_2_y = 0.0f;
 		x = 0;
 		y = 0;
-		readyToUse = false;
+		ready = false;
 		viewportMatrixChanged = true;
-	}
-
-	Viewport(int width, int height, int x, int y)
-	{
-		changeViewport(width, height, x, y);
-	}
-
-	Matrix4 getViewportMatrix()
-	{
-		return viewportMatrix;
 	}
 
 	float calculateRatio()
@@ -44,14 +40,19 @@ public:
 		return sqrt(width * width + height * height) / sqrt(8);
 	}
 
+	Viewport(int width, int height, int x, int y)
+	{
+		changeViewport(width, height, x, y);
+	}
+
 	void calculateWindowCoordinates(Vertex & v)
 	{
-		if (readyToUse)
+		if (ready)
 		{
-			v.v[0] = (v.v[0] + 1) * width_2_x;
-			v.v[1] = (v.v[1] + 1) * height_2_y;
+			v.x = (v.x + 1) * width_2_x;
+			v.y = (v.y + 1) * height_2_y;
 		}
-	}	
+	}
 
 	void changeViewport(int width, int height, int x, int y)
 	{
@@ -61,21 +62,18 @@ public:
 		this->height_2_y = ((float)height/2) + y;
 		this->x = x;
 		this->y = y;
-		viewportMatrix = Matrix4(width/2, 0.0f, 0.0f, 0.0f, 0.0f, height/2, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width/2 + x, height/2 + x, 0.0f, 1.0f);
-		readyToUse = true;
+		viewportMatrix = Matrix(width/2, 0.0f, 0.0f, 0.0f, 0.0f, height/2, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width/2 + x, height/2 + x, 0.0f, 1.0f);
+		ready = true;
 		viewportMatrixChanged = true;
 	}
 
-	int getWidth() { return width; }
+	Matrix getViewportMatrix()
+	{
+		return viewportMatrix;
+	}
 
-	int getHeight() {return height; }
-
-	int getX() { return x; }
-
-	int getY() {return y; }
-
-	bool isReadyToUse() { return readyToUse; }
 };
 
 
-#endif
+
+#endif /* VIEWPORT_H_ */
