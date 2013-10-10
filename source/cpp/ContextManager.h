@@ -3,6 +3,7 @@
 #include <exception>
 #include <vector>
 #include <cstdio>
+#include <stdint.h>
 #include "sgl.h"
 #include "Context.h"
 /**
@@ -13,23 +14,24 @@
  */
 struct ContextManager
 {
-	int current;
+	int_fast8_t current;			// Maximum of 256 contexts
 	std::vector<Context> contexts;
 
 	ContextManager()
 	{ current = 0; }
 
-	void setContext(int id)
+	inline void setContext(int_fast8_t id)
 	{
-		if ((id >= 0) && (id < (int)contexts.size()))
+		if ((id >= 0) && (id < int_fast32_t(contexts.size())))
 			current = id;
 		else throw std::exception();
 	}
 
-	void deleteContext(int id)
+	inline void deleteContext(int_fast8_t id)
 	{
-		if (id >= 0 && id < (int)contexts.size())
+		if (id >= 0 && id < (int_fast32_t)contexts.size())
 			contexts.erase(contexts.begin() + id);
 	}
+
 };
 #endif

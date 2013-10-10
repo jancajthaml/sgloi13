@@ -7,7 +7,7 @@
 
 #ifndef VERTEX_H_
 #define VERTEX_H_
-
+#include <stdint.h>
 
 //Vertex
 struct Vertex

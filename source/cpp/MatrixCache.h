@@ -1,18 +1,15 @@
 /*
- * Matrix.h
+ * MatrixCache.h
  *
- *  Created on: 7.10.2013
+ *  Created on: 10.10.2013
  *      Author: jancajthaml
  */
 
 #ifndef MATRIXCACHE_H_
 #define MATRIXCACHE_H_
-
+#include <stdint.h>
 #include "Matrix.h"
 
-//Matrix
-// vectors in columns
-//Attributes are slower
 struct MatrixCache
 {
 	static Matrix R;
@@ -20,10 +17,10 @@ struct MatrixCache
 	static Matrix I;
 	static Matrix S;
 
-	static Matrix identity()
+	static inline Matrix identity()
 	{ return I; }
 
-	static Matrix scale(float sc_x, float sc_y, float sc_z)
+	static inline Matrix scale(float sc_x, float sc_y, float sc_z)
 	{
 		S.matrix[0]		= sc_x;
 		S.matrix[5]		= sc_y;
@@ -31,7 +28,7 @@ struct MatrixCache
 		return S;
 	}
 
-	static Matrix translate(float t_x, float t_y, float t_z)
+	static inline Matrix translate(float t_x, float t_y, float t_z)
 	{
 		T.matrix[12]	= t_x;
 		T.matrix[13]	= t_y;
@@ -39,24 +36,23 @@ struct MatrixCache
 		return T;
 	};
 
-	static Matrix rotate2D(float angle, float c_x, float c_y)
+	static inline Matrix rotate2D(float angle, float c_x, float c_y)
 	{
-		float cos_a = cos(angle);
-		float sin_a = sin(angle);
+		float cos_a = cosf(angle);
+		float sin_a = sinf(angle);
 
 		R.matrix[0]	= cos_a;
-		R.matrix[1]	= -sin_a;
-		R.matrix[4]	= sin_a;
+		R.matrix[1]	= sin_a;
+		R.matrix[4]	= -sin_a;
 		R.matrix[5]	= cos_a;
 
 		return R;
 	}
 
-	static Matrix rotateY(float angle)
+	static inline Matrix rotateY(float angle)
 	{ return identity(); }
-
 };
 
 
 
-#endif /* MATRIX_H_ */
+#endif /* MATRIXCACHE_H_ */

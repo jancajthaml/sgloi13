@@ -11,6 +11,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <stdio.h>
+#include <stdint.h>
 #include "sgl.h"
 #include "Vertex.h";
 #include "VertexStack.h";
@@ -42,39 +44,39 @@
  * 30.9.2013, Jan Cajthaml - added Model,Projection,Current and MPV (Model-Projection-View pre-calculated) matricies to Context
  * */
 
+typedef struct { float f1; float f2; float f3;} __attribute__((packed)) __color;
+
 //Context
 struct Context
 {
-	int id;
+	int_fast8_t id;	//Maximum 256 contexts
+
 
     //Drawing
-	float *buffer;
-	int w;
-	int h;
-	Color clear;
+	Color *buffer;
+	Color* clear;
+
+	int_fast16_t w;	//maximum 65536
+	int_fast16_t h;	//maximum 65536
+
+
+
+	//Color clear;
 	Color color;
 
 	//State
 	bool depth;
 
 	//Pixel size
-	int size;
-
+	int_fast8_t size;	// maximum 256
 
 	//Transformation matrices
-
-	//Matrix model_view;
-	//Matrix projection;
-
-	//Matrix current_mv;
-	//Matrix current_p;
 
 	Matrix currentModelviewMatrix;
 	Matrix currentProjectionMatrix;
 	std::vector<Matrix> projectionStack;
 
 	VertexStack vertices;
-	//std::vector<Vertex> vertices;
 	Matrix PMMatrix;
 	Matrix PMVMatrix;
 	bool projMatChanged;
@@ -84,11 +86,10 @@ struct Context
 	Viewport viewport;
 	sglEMatrixMode matrixMode;
 
-	//std::vector<Matrix> transformStack;
-	int lastSetPixelIndex;
-	int w_h;
+	uint_fast32_t lastSetPixelIndex;	//	must be 32bit (16bit is too small)
+	uint_fast32_t w_h;					//	must be 32bit (16bit is too small)
 
-	Context(int width, int height)
+	Context(uint_fast16_t width, uint_fast16_t height)
 	{
 		//----------------------//
 
@@ -96,10 +97,11 @@ struct Context
 		w			= width;
 		h			= height;
 		id			= 0;
+		w_h			= width * height;
 		//matrixMode	= NULL;
 
 		// ? this shoud be static or const equivalent to NULL ?
-		clear	= Color(255,0,0);
+		//clear	= Color(255,0,0);
 
 		// ? this shoud be static or const equivalent to NULL ?
 		color	= Color(0,255,0);
@@ -115,25 +117,26 @@ struct Context
 
 		//this->width = width;
 		//this->height = height;
-		buffer = (float*) malloc(sizeof(float) * width * height * 3);
+		buffer	= (Color*) malloc(sizeof(Color) * w_h);
+		clear	= (Color*) malloc(sizeof(Color) * w_h);
 
 		if (!buffer) throw std::exception();
 
-		currentModelviewMatrix = MatrixCache::identity();
-		currentProjectionMatrix = MatrixCache::identity();
+		currentModelviewMatrix	= MatrixCache::identity();
+		currentProjectionMatrix	= MatrixCache::identity();
 
-		projMatChanged = true;
-		modelMatChanged = true;
+		projMatChanged	= true;
+		modelMatChanged	= true;
 	}
 
-	void setVertex2f(float x, float y)
+	inline void setVertex2f(float x, float y)
 	{
 		Vertex v(x, y, 0.0f, 1.0f);
 		transform(v);
 		vertices.push_back(v);
 	}
 
-	void draw()
+	inline void draw()
 	{
 		if (types.size() == 0) throw std::exception();
 
@@ -153,53 +156,52 @@ struct Context
 			default : break;
 		}
 
-		vertices.clear();
+		vertices.index = 0;
 	}
 
-	void drawPoints()
+	inline void drawPoints()
 	{
+		int_fast32_t s = int_fast32_t(vertices.index);
 
 		if(size==1)
 		{
-			for (int i = 0; i < (int)vertices.size(); i++)
+			for (int_fast32_t i = 0; i < s; i++)
 				setPixel((vertices)[i].x, (vertices)[i].y);
 		}
 		else
 		{
-			int thickness = size;
+			int_fast8_t thickness = size;
 
 			if((thickness%2)==0) thickness++;
 
 			thickness >>= 1;
 
-			for (int i = 0; i < (int)vertices.size(); i++)
+			for (int_fast32_t i = 0; i < s; i++)
 			{
 				Vertex v = (vertices)[i];
-				for(int i = -thickness; i<size-1; i++)
-				for(int j = -thickness; j<size-1; j++)
+				for(int_fast8_t i = -thickness; i<size-1; i++)
+				for(int_fast8_t j = -thickness; j<size-1; j++)
 					setPixel(v.x+j, v.y+i);
 			}
 		}
 	}
 
-	void transform(Vertex & v)
+	inline void transform(Vertex & v)
 	{
 		checkPMVMatrix();
 		v = PMVMatrix * v;
-	       	//v = viewport.getViewportMatrix() * v;
-		//viewport.calculateWindowCoordinates(v);
 	}
 
-	float calculateRadiusScaleFactor()
+	inline float calculateRadiusScaleFactor()
 	{
 		checkPMVMatrix();
 		return sqrt((PMVMatrix.matrix[0] * PMVMatrix.matrix[5]) - (PMVMatrix.matrix[1] * PMVMatrix.matrix[4]));
 	}
 
 
-	void bresenham_circle(int xs, int ys, int r)
+	inline void bresenham_circle(int_fast32_t xs, int_fast32_t ys, int_fast32_t r)
 	{
-		int x, y, p;
+		int_fast32_t x, y, p;
 		x = 0;
 		y = r;
 		p = 3 - (r << 1);
@@ -221,78 +223,14 @@ struct Context
 			setSymPixel(x, y, xs, ys);
 	}
 
-	void drawCricle(float x, float y, float z, float r)
+	inline void drawCricle(float x, float y, float z, float r)
 	{
-
 		Vertex v(x, y, 0.0f, 1.0f);
-			transform(v);
-			bresenham_circle(int(v.x), (int)(v.y), (int)floor(r * calculateRadiusScaleFactor()));
-
-	//	sglBegin(SGL_POLYGON);
-		//float diff = 0.15707963267f;
-
-		//float scaleR = calculateRadiusScaleFactor();
-					//axis_x *= scaleR;
-					//axis_y *= scaleR;
-		//r *= calculateRadiusScaleFactor();
-
-
-//		for(int i = 0; i < 40; ++i)
-	//	{
-		//	sglVertex2f(x+(r * sin(i*diff)), y+(r * cos(i*diff)));
-	//	}
-	//	sglEnd();
-
-/*
-		//fix
-		Vertex v(x, y, 0.0f, 0.0f);
 		transform(v);
-		x = v.x; y = v.y; z = v.z;
-		//calculate r scale factor
-		r = r * calculateRadiusScaleFactor(); 
-		int p	= 1 - (int)r;
-			int x0	= int(x);
-			int y0	= int(y);
-			int x1	= 0;
-			int y1	= int(r);
-			int x2	= 1;
-			int y2	= -2*r;
-
-			//4 points around center
-			setPixel(x0        , y0+int(r));
-			setPixel(x0        , y0-int(r));
-			setPixel(x0+int(r) , y0);
-			setPixel(x0-int(r) , y0);
-
-			while(x1<y1)
-			{
-				if(p>=0)
-				{
-					y1--;
-					y2 += 2;
-					p += y2;
-				}
-
-				x1++;
-
-				x2 += 2;
-				p += x2;
-
-				setPixel(x0+x1 , y0+y1);
-				setPixel(x0-x1 , y0+y1);
-				setPixel(x0+x1 , y0-y1);
-				setPixel(x0-x1 , y0-y1);
-
-				setPixel(x0+y1 , y0+x1);
-				setPixel(x0-y1 , y0+x1);
-				setPixel(x0+y1 , y0-x1);
-				setPixel(x0-y1 , y0-x1);
-
-			}
-*/
+		bresenham_circle(int_fast32_t(v.x), (int_fast32_t)(v.y), int_fast32_t(r * calculateRadiusScaleFactor()));
 	}
 
-	void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
+	inline void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
 		{
 		//	Vertex v(center_x, center_y, center_z, 0.0f);
 			//transform(v);
@@ -315,14 +253,18 @@ struct Context
 			{
 				sglBegin(SGL_POLYGON);
 
+				//Translate center_x,center_y
+
 				//float diff = 0.15707963267f;
 
-				//for(int i = 0; i < 40; ++i)
+				//for(int_fast32_t i = 0; i < 40; ++i)
 				//{
 				//sglVertex2f(center_x+(axis_x * sin(i*diff)), center_y+(axis_y * cos(i*diff)));
 				//}
 
-				//TRANSLATE!!!
+
+				// //Translate -center_x,-center_y
+				//TRANSLATE is slower than calculation
 
 				sglVertex2f( center_x										, center_y + axis_y								 );
 				sglVertex2f( center_x + (axis_x * 0.1564344693575539	)	, center_y + ( axis_y * 0.987688339911341		));
@@ -371,68 +313,43 @@ struct Context
 			}
 		}
 
-	void drawLineStrip()
+	inline void drawLineStrip()
 	{
-		for (int i = 0; i < (int)vertices.size()-1; i++)
+		uint_fast16_t size = uint_fast16_t(vertices.index-1);
+
+		for (uint_fast16_t i = 0; i < size; i++)
 			drawLine2D(vertices[i], vertices[i+1]);
-
-		//for(unsigned int i = 0; i<vertexVector.size()-1; i++)
-		  //          sglDrawLines(vertexVector[i], vertexVector[i+1]);
-
-		//for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			//setPixel(v_it->x, v_it->y);
 	}
 
 	void drawLineLoop()
 	{
-		for (int i = 0; i < (int)vertices.size()-1; i++)
-		{
+		uint_fast16_t size = uint_fast16_t(vertices.index-1);
+
+		for (uint_fast16_t i = 0; i < size; i++)
 			drawLine2D(vertices[i], vertices[i+1]);
 
-		}
-		drawLine2D(vertices[(int)vertices.size()-1], vertices[0]);
-
-		   //for(unsigned int i = 0; i<vertexVector.size()-1; i++){ //draw line strip, where one end point is start for second
-		     //       sglDrawLines(vertexVector[i], vertexVector[i+1]);
-		       // }
-		        //sglDrawLines(vertexVector[vertexVector.size()-1], vertexVector[0]); //line loop where begin point must be connected with last
-
-		//for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			//setPixel(v_it->x, v_it->y);
+		drawLine2D(vertices[size], vertices[0]);
 	}
 
-	void drawTriangles()
+	inline void drawTriangles()
 	{
-		//for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-	//		setPixel(v_it->x, v_it->y);
 	}
 
-	void drawPolygon()
+	inline void drawPolygon()
 	{
-		//if(SGL_LINE)
-		//{
-			for (int i = 0; i < (int)vertices.size()-1; i++)
-			{
-				drawLine2D(vertices[i], vertices[i+1]);
-			}
-		     //           sglDrawLines(vertexVector[i], vertexVector[i+1]);
-		       //     }
-			drawLine2D(vertices[(int)vertices.size()-1], vertices[0]);
+		int_fast32_t size = int_fast32_t(vertices.index-1);
 
-//		            sglDrawLines(vertexVector[vertexVector.size()-1], vertexVector[0]);
-		//}
+		for (int_fast32_t i = 0; i < size; i++)
+			drawLine2D(vertices[i], vertices[i+1]);
 
-		//if(currContext()->currentAreaMode==SGL_FILL)
-		//{
-			//sglDrawPolygon();
-		//}
-		//for (std::vector<Vertex>::iterator v_it = vertices.begin(); v_it != vertices.end(); ++v_it)
-			//setPixel(v_it->x, v_it->y);
+		drawLine2D(vertices[size], vertices[0]);
 	}
 
-	void drawLines()
+	inline void drawLines()
 	{
-		for (int i = 0; i < (int)vertices.size(); i += 2)
+		int_fast32_t size = int_fast16_t(vertices.index-1);
+
+		for (int_fast32_t i = 0; i < size; i += 2)
 			drawLine2D(vertices[i], vertices[i+1]);
 	}
 
@@ -440,11 +357,11 @@ struct Context
 	//Breceanuv algoritmus
 	//DDA algoritmus (jednoduzsi)
 	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
-	void drawLine2D(Vertex a, Vertex b)
+	inline void drawLine2D(Vertex a, Vertex b)
 	{
 		//bresenham(a.x,a.y,b.x,b.y);
-		int dx = abs(b.x - a.x);
-		int dy = abs(b.y - a.y);
+		int_fast32_t dx = abs(b.x - a.x);
+		int_fast32_t dy = abs(b.y - a.y);
 
 		if (dx > dy)
 			if (a.x < b.x)	bresenham_x(a.x, a.y, b.x, b.y);
@@ -455,204 +372,168 @@ struct Context
 	}
 
 
-	void drawArc2D(float x, float y, float z, float r, float from, float to)
+	inline void drawArc2D(float x, float y, float z, float r, float from, float to)
 	{
 		float x2, y2;
-			float N = 40 * (to - from)/(2 * M_PI);
-			float alpha = (to - from) / N;
-			pushTypeState(SGL_LINE_STRIP);
-			float offset = from / alpha;
-			int fromOffset = (int)floor(offset) - 1;
-			float x1 = r * cos(fromOffset * alpha);
-			float y1 = r * sin(fromOffset * alpha);
-			float sa = sin(alpha);
-			float ca = cos(alpha);
-			for (int i = (int)floor(offset); i <= (int)round(N) + (int)round(offset); i++)
-			{
-				x2 = ca * x1 - sa*y1;
-				y2 = sa * x1 + ca*y1;
-				//x2 = r * cos(i * alpha);
-				//y2 = r * sin(i * alpha);
-				setVertex2f(x2 + x, y2 + y);
-				x1 = x2;
-				y1 = y2;
-			}
-			draw();
+		float N		= 40 * (to - from)/6.283185307179586f;
+		float alpha	= (to - from) / N;
 
-			/*
-		float step		= ((to - from) / 40);
-		float circleX	= 0;
-		float circleY	= 0;
+		pushTypeState(SGL_LINE_STRIP);
 
-		if (from >= to) return;
+		int_fast32_t offset = from / alpha;
+		float fromOffset	= (offset - 1)*alpha;
+		float x1			= r * cosf(fromOffset);
+		float y1			= r * sinf(fromOffset);
+		float sa			= sinf(alpha);
+		float ca			= cosf(alpha);
 
-		sglBegin(SGL_LINE_STRIP);
+		int_fast32_t RR = __round(N)+offset;
 
-		for (float fi = from; fi < to; fi += step)
+		for (int_fast32_t i = offset; i <= RR; i++)
 		{
-			circleX = x + radius * cos(fi);
-			circleY = y + radius * sin(fi);
-			sglVertex2f(circleX, circleY);
+			x2 = ca * x1 - sa * y1;
+			y2 = sa * x1 + ca * y1;
+			setVertex2f(x2 + x, y2 + y);
+			x1 = x2;
+			y1 = y2;
 		}
-
-		sglVertex2f(x + radius * cos(to), y + radius * sin(to));
-		sglEnd();
-		*/
+		draw();
+	}
+/*
+	inline float fsin(float x)
+	{
+		float y = 0.4052847345693511f * x * ( 3.141592653589793f - x );
+		return y * ( 0.775160898644006f  + y * 0.2248391013559941f );
 	}
 
-	void bresenham_x(int x1, int y1, int x2, int y2)
+	inline float fcos(float x)
 	{
-			int dx = x2 - x1;
-			int dy = y2 - y1;
+		//temp
+		return cosf(x);
+	}
+*/
+	inline void bresenham_x(signed x1, signed y1, signed x2, signed y2)
+	{
+		signed dx = x2 - x1;
+		signed dy = y2 - y1;
+		signed sign = 1;
+		if (dy < 0) sign = -1;
+		signed c0 = (dy << 1) * sign;
+		signed c1 = c0 - (dx << 1);
+		signed p = c0 - dx;
 
-			int sign = 1;
-			if (dy < 0)
-				sign = -1;
-			int c0, c1, p;
-			c0 = (dy << 1) * sign;
-			c1 = c0 - (dx << 1);
-			p = c0 - dx;
-
-			setPixel(x1, y1);
-			for (int i = x1 + 1; i <= x2; ++i)
-			{
+		setPixel(x1, y1);
+		for (signed i = x1 + 1; i <= x2; ++i)
+		{
 			if (p < 0)
+			{
 				p += c0;
+				setPixel_x();
+			}
 			else
 			{
 				p += c1;
-				y1 += sign;
+				if (sign > 0)
+					setPixel_xy();
+				else
+					setPixel_xmy();
 			}
-
-			setPixel(i, y1);
 		}
 	}
 
-	void bresenham_y(int x1, int y1, int x2, int y2)
+	inline void bresenham_y(signed x1, signed y1, signed x2, signed y2)
 	{
-		int dx = x2 - x1;
-		int dy = y2 - y1;
-
-		int sign = 1;
+		signed dx = x2 - x1;
+		signed dy = y2 - y1;
+		signed sign = 1;
 		if (dy < 0)
 			sign = -1;
-		int c0, c1, p;
+		signed c0, c1, p;
 		c0 = (dy << 1) * sign;
 		c1 = c0 - (dx << 1);
 		p = c0 - dx;
 
 		setPixel(y1, x1);
-		for (int i = x1 + 1; i <= x2; ++i)
+		for (signed i = x1 + 1; i <= x2; ++i)
 		{
 			if (p < 0)
+			{
 				p += c0;
+				setPixel_y();
+			}
 			else
 			{
 				p += c1;
-				y1 += sign;
+				if (sign > 0)
+					setPixel_xy();
+				else
+					setPixel_mxy();
 			}
-
-			setPixel(y1, i);
 		}
 	}
 
-	float round(float number)
-	{ return floor(number + 0.5); }
-
-
-	void setPixel(int x, int y)
+	inline void setPixel(signed x, signed y)
 	{
 		if (x >= 0 && x < w && y >= 0 && y < h)
 		{
-			lastSetPixelIndex = (x + w * y)*3;
-			buffer[lastSetPixelIndex]		= color.r;
-			buffer[lastSetPixelIndex+1]	= color.g;
-			buffer[lastSetPixelIndex+2]	= color.b;
+			lastSetPixelIndex = (x + w * y);
+			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
 		}
 	}
 
-
-	void setPixel_x()
+	inline void setPixel_x()
 	{
-		lastSetPixelIndex += 3;
+		lastSetPixelIndex += 1;
 		if (lastSetPixelIndex < w_h)
 		{
-			buffer[lastSetPixelIndex]	= color.r;
-			buffer[lastSetPixelIndex+1]	= color.g;
-			buffer[lastSetPixelIndex+2]	= color.b;
+			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
 		}
-			//buffer[lastSetPixelIndex] = color;
 	}
 
-	void setPixel_y()
+	inline void setPixel_y()
 	{
-		lastSetPixelIndex += w+3;
+		lastSetPixelIndex += w;
 		if (lastSetPixelIndex < w_h)
 		{
-			buffer[lastSetPixelIndex]	= color.r;
-			buffer[lastSetPixelIndex+1]	= color.g;
-			buffer[lastSetPixelIndex+2]	= color.b;
+			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
 		}
-			//buffer[lastSetPixelIndex] = color;
 	}
 
-	void setPixel_xy()
+	inline void setPixel_xy()
 	{
-		lastSetPixelIndex += w + 3;
+		lastSetPixelIndex += (w + 1);
+
 		if (lastSetPixelIndex < w_h)
 		{
-			buffer[lastSetPixelIndex]	= color.r;
-			buffer[lastSetPixelIndex+1]	= color.g;
-			buffer[lastSetPixelIndex+2]	= color.b;
+			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
 		}
-			//buffer[lastSetPixelIndex] = color;
 	}
 
-	void setPixel_mxy()
+	inline void setPixel_mxy()
 	{
-		lastSetPixelIndex += w + 2;
+		lastSetPixelIndex += (w - 1);
+
 		if (lastSetPixelIndex < w_h)
 		{
-			buffer[lastSetPixelIndex]	= color.r;
-			buffer[lastSetPixelIndex+1]	= color.g;
-			buffer[lastSetPixelIndex+2]	= color.b;
+			*((__color*) (buffer + lastSetPixelIndex))		= *((__color*) &(color));
 		}
-			//buffer[lastSetPixelIndex] = color;
 	}
 
-	void setPixel_xmy()
+	inline void setPixel_xmy()
 	{
-		lastSetPixelIndex += 4 - w;
+		lastSetPixelIndex += (1 - w);
 		if (lastSetPixelIndex < w_h)
 		{
-			//int offset = (x+w*y)*3;
-
-			buffer[lastSetPixelIndex]	= color.r;
-			buffer[lastSetPixelIndex+1]	= color.g;
-			buffer[lastSetPixelIndex+2]	= color.b;
-		}
-			//buffer[lastSetPixelIndex] = color;
-	}
-/*
-	void setPixel(int x, int y)
-	{
-		if (x >= 0 && x < w && y >= 0 && y < h)
-		{
-			int offset = (x+w*y)*3;
-
-			buffer[offset]		= color.r;
-			buffer[offset+1]	= color.g;
-			buffer[offset+2]	= color.b;
+			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
 		}
 	}
-*/
 
-	void setSymPixel(int x, int y, int xs, int ys)
+	inline void setSymPixel(signed x, signed y, signed xs, signed ys)
 	{
-		int rx = x + xs;
-		int ry = y + ys;
-		int mrx = -x + xs;
-		int mry = -y + ys;
+		signed rx = x + xs;
+		signed ry = y + ys;
+		signed mrx = -x + xs;
+		signed mry = -y + ys;
 		setPixel(rx, ry);
 		setPixel(rx, mry);
 		setPixel(mrx, ry);
@@ -666,125 +547,145 @@ struct Context
 		setPixel(mry, rx);
 		setPixel(mry, mrx);
 	}
-	void setPixel(float x, float y)
-	{ setPixel(int(x), int(y)); }
 
-	int stackSize()
+	inline int_fast16_t stackSize()
 	{ return types.size(); }
 
-	void multiplyCurrentMatrix(Matrix & m)
+	inline void multiplyCurrentMatrix(Matrix & m)
 	{
 
 		if (matrixMode == SGL_MODELVIEW)
 		{
-			modelMatChanged = true;
-			currentModelviewMatrix = currentModelviewMatrix * m;
+			modelMatChanged			= true;
+			currentModelviewMatrix	= currentModelviewMatrix * m;
 		}
 		else
 		{
-			projMatChanged = true;
-			currentProjectionMatrix = currentProjectionMatrix * m;
+			projMatChanged			= true;
+			currentProjectionMatrix	= currentProjectionMatrix * m;
 		}
 	}
 
-	void setViewport(int width, int height, int x, int y)
+	inline void setViewport(signed width, signed height, signed x, signed y)
 	{ viewport.changeViewport(width, height, x, y); }
 
-
-	Matrix & getCurrentMatrix()
-	{ return (matrixMode == SGL_MODELVIEW)?currentModelviewMatrix:currentProjectionMatrix; }
-
-	void pushMatrix()
+	inline Matrix & getCurrentMatrix()
 	{
-		if (matrixMode == SGL_MODELVIEW)
-			projectionStack.push_back(currentModelviewMatrix);
-		else
-			projectionStack.push_back(currentProjectionMatrix);
-	}
-
-	void setCurrentMatrix(Matrix matrix)
-	{
-		if (matrixMode == SGL_MODELVIEW)
+		switch(matrixMode)
 		{
-			modelMatChanged = true;
-			currentModelviewMatrix = matrix;
-		}
-		else
-		{
-			projMatChanged = true;
-			currentProjectionMatrix = matrix;
+			case SGL_MODELVIEW	: return currentModelviewMatrix;
+			default				: return currentProjectionMatrix;
 		}
 	}
 
-	void setMatrixMode(sglEMatrixMode mode)
+	inline void pushMatrix()
+	{
+		switch(matrixMode)
+		{
+			case SGL_MODELVIEW	: projectionStack.push_back(currentModelviewMatrix); break;
+			default				: projectionStack.push_back(currentProjectionMatrix); break;
+		}
+	}
+
+	inline void setCurrentMatrix(Matrix matrix)
+	{
+		switch(matrixMode)
+		{
+			case SGL_MODELVIEW	:
+				modelMatChanged			= true;
+				currentModelviewMatrix	= matrix;
+			break;
+
+			default				:
+				projMatChanged			= true;
+				currentProjectionMatrix	= matrix;
+			break;
+		}
+	}
+
+	inline void setMatrixMode(sglEMatrixMode mode)
 	{ matrixMode = mode; }
 
-	bool invalidTypeStack()
+	inline bool invalidTypeStack()
 	{ return (types.size() > 0); }
 
-	bool stackEmpty()
+	inline bool stackEmpty()
 	{ return (projectionStack.size() == 0); }
 
-	void popMatrix()
+	inline void popMatrix()
 	{
 		if (projectionStack.size() == 0)
 		{
 			//*err = SGL_STACK_UNDERFLOW;
 		       	return;
 		}
-		if (matrixMode == SGL_MODELVIEW)
+
+		switch(matrixMode)
 		{
-			modelMatChanged = true;
-			currentModelviewMatrix = projectionStack.back();
+			case SGL_MODELVIEW	:
+				modelMatChanged = true;
+				currentModelviewMatrix = projectionStack.back();
+			break;
+
+			default				:
+				projMatChanged = true;
+				currentProjectionMatrix = projectionStack.back();
+			break;
 		}
-		else
-		{
-			projMatChanged = true;
-			currentProjectionMatrix = projectionStack.back();
-		}
+
 		projectionStack.pop_back();
 	}
 
-	void pushTypeState(sglEElementType type)
+	inline void pushTypeState(sglEElementType type)
 	{ types.push_back(type); }
 
-	void clearBuffer(unsigned what)
+	inline void clearBuffer(unsigned what)
 	{
-		buffer[0]	= clear.r;
-		buffer[1]	= clear.g;
-		buffer[2]	= clear.b;
-		int size	= w*h;
-
-		for (int offset = 0; offset < size; offset++)
-			memcpy(&buffer[3*offset], &buffer[0], 3 * sizeof(float));
-		//for(int offset=0; offset<size; offset++)
-			//memcpy(&buffer[offset*3], &buffer[offset], 3*sizeof(float));
-
+		memcpy(buffer, clear, w_h);
 		return;
 	}
 
-	bool checkPMMatrix()
+	inline bool checkPMMatrix()
+	{
+		if (modelMatChanged || projMatChanged)
 		{
-			if (modelMatChanged || projMatChanged)
-			{
-				modelMatChanged = false;
-				projMatChanged = false;
-				PMMatrix = currentProjectionMatrix * currentModelviewMatrix;
-				return true;
-			}
-			return false;
+			modelMatChanged = false;
+			projMatChanged = false;
+			PMMatrix = currentProjectionMatrix * currentModelviewMatrix;
+			return true;
 		}
+		return false;
+	}
 
-		void checkPMVMatrix()
+	inline void checkPMVMatrix()
+	{
+		if (checkPMMatrix() || viewport.viewportMatrixChanged)
 		{
-			bool change = checkPMMatrix();
-			bool change2 = viewport.viewportMatrixChanged;
-			if (change || change2)
-			{
-				viewport.viewportMatrixChanged = false;
-				PMVMatrix = viewport.getViewportMatrix() * PMMatrix;
-			}
+			viewport.viewportMatrixChanged = false;
+			PMVMatrix = viewport.viewportMatrix * PMMatrix;
 		}
+	}
+
+
+	inline void cacheClear(float r, float g, float b, float a)
+	{
+		Color c = Color(r,g,b);
+		//1-6 = RGB RGB
+		*((__color*) (clear))	= *((__color*) &c);	//1-3 RGB
+		*((__color*) (clear+2))	= *((__color*) &c);	//4-7 RGB
+
+		int_fast32_t l = 2;
+		int_fast8_t s = sizeof(Color);
+
+		for(int_fast32_t offset=l ; offset < w_h; offset <<= 1)
+		{
+			memcpy(&clear[offset], &clear[l], s);
+			l=offset;
+		}
+	}
+
+	inline int_fast32_t __round(float x)
+	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 };
 
 

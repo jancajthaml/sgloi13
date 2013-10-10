@@ -554,10 +554,13 @@ void DrawTestScene1B(void)
 
   sglColor3f(0,1,0);
   sglTranslate(-3,0,0);
+  sglRotate2D(-M_PI*1/8,0,0);
+
   box();
 
   sglColor3f(1,0,0);
-  sglTranslate(-3,0,0);
+  sglLoadIdentity();
+  sglTranslate(-6,0,0);
   sglRotate2D(M_PI*1/8,0,0);
   box();
 
@@ -781,7 +784,6 @@ void DrawTestScene1A(void)
   offsety = 6;
 
   sglColor3f(1,1,0);
-
   for(float rr=r/5; rr<=r; rr+=r/5) {
     sglCircle(offsetx-1,offsety,0,0.5*rr);
     sglCircle(offsetx+3,offsety,0,1.5*rr);

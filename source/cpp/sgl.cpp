@@ -43,6 +43,7 @@
 #include "Context.h"
 #include "ContextManager.h"
 #include <vector>
+#include <stdint.h>
 
 Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -108,9 +109,6 @@ const char* sglGetErrorString(sglEErrorCode error)
 //---------------------------------------------------------------------------
 
 static ContextManager	manager;
-//std::vector<Vertex>		VERTICES;
-//std::vector<Edge>		EDGES;
-//bool					isDrawing;
 
 
 //---------------------------------------------------------------------------
@@ -134,16 +132,9 @@ void sglFinish(void)
 //LongName Function
 int sglCreateContext(int width, int height)
 {
-	int size = manager.contexts.size();
-
-//	if(c == NULL)
-	//{
-		//setErrCode(SGL_OUT_OF_MEMORY);
-		//return -1;
-	//}
+	int_fast8_t size = manager.contexts.size();
 
 	manager.contexts.push_back(Context(width, height));
-	//manager.addContext(c);
 
 	return size;
 }
@@ -186,9 +177,9 @@ int sglGetContext(void)
 }
 
 //LongName Function
-float *sglGetColorBufferPointer(void)
+float* sglGetColorBufferPointer(void)
 {
-	return (float *)current()->buffer;
+	return (float*)current()->buffer;
     //return (float *) current()->buffer;
 }
 
@@ -197,14 +188,8 @@ float *sglGetColorBufferPointer(void)
 //---------------------------------------------------------------------------
 
 //Clears buffer with given RGBA color value
-void sglClearColor (float r, float g, float b, float alpha)
-{
-	//current()->setClearColor(r, g, b);
-
-	current()->clear.r = r;
-    current()->clear.g = g;
-    current()->clear.b = b;
-}
+void sglClearColor (float r, float g, float b, float a)
+{ current()->cacheClear(r,g,b,a); }
 
 //LongName Function
 void sglClear(unsigned what)
@@ -255,8 +240,6 @@ void sglBegin(sglEElementType mode)
 void sglEnd(void)
 {
 	current()->draw();
-
-	//current()->draw();
 }
 
 //Vertex with 3 float coords in homogenous coordinates
@@ -570,8 +553,6 @@ void sglPointSize(float size)
     }
 
     current()->size = size;//setPointSize(size);
-
-   // current()->size = size;
 }
 
 //Enable given flag
@@ -660,12 +641,6 @@ void sglEmissiveMaterial(const float r, const float g, const float b, const floa
 bool in_range(unsigned number, unsigned low, unsigned high)
 { return ((unsigned)(number-low) <= (high-low)); }
 
-//Fast double round (3 times faster than std::round because of absence of EDOM)
-//Type safe
-double round(double x)
-{
-	return double((x>=0.5)?(int(x)+1):int(x));
-}
 
 Context* current()
 { return &manager.contexts[manager.current]; }

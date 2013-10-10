@@ -21,8 +21,8 @@
 
 #ifdef TEST1
 #define TEST_1A
-//#define TEST_1B
-//#define TEST_1C
+#define TEST_1B
+#define TEST_1C
 #endif
 
 #ifdef TEST2
@@ -55,7 +55,7 @@
 #if !defined(USE_GUI) && defined(_MSC_VER)
 #define USE_GUI 1
 #endif
-
+#define USE_GUI 1
 #ifdef TEST_0A
 #define USE_VIEWPORT 0
 #endif
@@ -554,10 +554,13 @@ void DrawTestScene1B(void)
 
   sglColor3f(0,1,0);
   sglTranslate(-3,0,0);
+  sglRotate2D(-M_PI*1/8,0,0);
+
   box();
 
   sglColor3f(1,0,0);
-  sglTranslate(-3,0,0);
+  sglLoadIdentity();
+  sglTranslate(-6,0,0);
   sglRotate2D(M_PI*1/8,0,0);
   box();
 
@@ -651,7 +654,7 @@ void DrawTestScene0A(void)
   float r = radiusStep;
   for(int j=0; j < numCircles; j++, r+=radiusStep) {
     // point test
-    sglColor3f(j/(float)numCircles,j/(float)numCircles,j/(float)numCircles);
+    sglColor3f((float)j/numCircles, 1.0f - (float)j/numCircles,1.0);
     sglPointSize(1);
     sglBegin(SGL_POINTS);
     {
@@ -668,16 +671,17 @@ void DrawTestScene0B(void)
 {
   sglDisable(SGL_DEPTH_TEST);
 
-  float centerX=0, centerY=0;
+  float centerX=WIDTH/2, centerY=HEIGHT/2;
   //	float centerX=0, centerY=0;
   int numSegments = 64;
-  float angleStep = 0.25f*M_PI/(float)numSegments;
-  float r=HEIGHT;
+  float angleStep = 2.0f*M_PI/(float)numSegments;
+  float r=HEIGHT/4;
   //float r=0.5f;
   // line test
   sglPointSize(1);
   for(int i=0; i<numSegments; i++) {
-	sglColor3f(i/(float)numSegments,i/(float)numSegments,i/(float)numSegments);
+	//sglColor3f(i/(float)numSegments,i/(float)numSegments,i/(float)numSegments);
+	sglColor3f(1.0f, 1.0f, 0.5f);
 	float angle = angleStep*(float)i;
 	sglBegin(SGL_LINES);
 	sglVertex2f(centerX, centerY );
@@ -697,7 +701,7 @@ void DrawTestScene1A(void)
   // set the projection matrix
   sglMatrixMode(SGL_PROJECTION);
   sglLoadIdentity();
-  sglOrtho(-10*WIDTH/HEIGHT, 10*WIDTH/HEIGHT, -10, 10, -1, 1);
+  sglOrtho(-10*WIDTH/(float)HEIGHT, 10*WIDTH/(float)HEIGHT, -10, 10, -1, 1);
 
   // set the modelview matrix
   sglMatrixMode(SGL_MODELVIEW);
@@ -723,9 +727,8 @@ void DrawTestScene1A(void)
       }
     }
     sglEnd();
-
+    
     offsetx += 5;
-
     // line test
     sglColor3f(1,0,0);
     sglBegin(SGL_LINES);
@@ -757,7 +760,7 @@ void DrawTestScene1A(void)
       sglVertex2f(offsetx+r*cos(angle),offsety+r*sin(angle));
     }
     sglEnd();
-
+ 
   } // for r...
 
   offsety += 2.5*r;
@@ -781,7 +784,6 @@ void DrawTestScene1A(void)
   offsety = 6;
 
   sglColor3f(1,1,0);
-
   for(float rr=r/5; rr<=r; rr+=r/5) {
     sglCircle(offsetx-1,offsety,0,0.5*rr);
     sglCircle(offsetx+3,offsety,0,1.5*rr);
@@ -795,7 +797,6 @@ void DrawTestScene1A(void)
     sglArc(offsetx,offsety,  0,rr,0,M_PI/2);
     sglArc(offsetx+4,offsety,0,rr,M_PI*2/2,M_PI*3/2);
   }
-
 }
 
  
@@ -1160,6 +1161,7 @@ int main(int argc, char **argv)
   sglClearColor(0, 0, 0, 1);
   sglClear(SGL_COLOR_BUFFER_BIT);
   DrawTestScene0A();
+  WriteTGA("results/test0a.tga");
   cout << "done in " << timer.UserTime() << " sec." << endl;
   totalTime += timer.UserTime();
 #endif
@@ -1171,6 +1173,7 @@ int main(int argc, char **argv)
   sglClearColor(0, 0, 0, 1);
   sglClear(SGL_COLOR_BUFFER_BIT);
   DrawTestScene0B();
+  WriteTGA("results/test0b.tga");
   cout << "done in " << timer.UserTime() << " sec." << endl;
   totalTime += timer.UserTime();
 #endif
@@ -1180,7 +1183,7 @@ int main(int argc, char **argv)
   timer.Restart();
 
   sglSetContext(_contexts[0]);
-  sglClearColor(0, 0, 0, 1);
+  sglClearColor(0.0, 0, 0, 1);
   sglClear(SGL_COLOR_BUFFER_BIT);
   for(int i=0; i<1000; i++) {
 	DrawTestScene1A();
