@@ -1,4 +1,4 @@
-package type;
+package rabbit.gl.type.copy;
 
 public enum sglEAreaMode {
 

@@ -1,6 +1,9 @@
-package struct;
+package rabbit.gl.struct;
 
 import java.util.LinkedList;
+
+import rabbit.gl.engine.Context;
+
 
 public class ContextManager
 {

@@ -1,4 +1,4 @@
-package struct;
+package rabbit.gl.struct;
 
 public class Color
 {
@@ -43,5 +43,11 @@ public class Color
 	
 	 public int getRGB()
 	 { return ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | ((int)(b * 255)); }
+
+		public byte getRed()	{ return (byte)(r * 255 % 256); }
+
+		public byte getGreen()	{ return (byte)(g * 255 % 256); }
+
+		public byte getBlue()	{ return (byte)(b * 255 % 256); }
 	 
 }
