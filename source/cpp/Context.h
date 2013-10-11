@@ -354,8 +354,7 @@ struct Context
 	}
 
 	//Line
-	//Breceanuv algoritmus
-	//DDA algoritmus (jednoduzsi)
+	//Bresenhamuv algoritmus
 	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
 	inline void drawLine2D(Vertex a, Vertex b)
 	{

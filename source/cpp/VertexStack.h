@@ -79,6 +79,7 @@ class VertexStack
 		Vertex* tmp = this->stack;
 		this->stack			= (Vertex *)malloc(sizeof(Vertex) * currentSize);
 		memcpy(this->stack, tmp, sizeof(Vertex) * index);
+		free(tmp);
 	}
 };
 
