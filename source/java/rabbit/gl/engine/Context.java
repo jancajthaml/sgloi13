@@ -7,16 +7,15 @@ import static rabbit.gl.type.sglEElementType.SGL_LINE_STRIP;
 import static rabbit.gl.type.sglEElementType.SGL_POLYGON;
 import static rabbit.gl.type.sglEMatrixMode.SGL_MODELVIEW;
 
-
 import java.awt.GraphicsEnvironment;
 import java.awt.image.MemoryImageSource;
 import java.util.ArrayDeque;
-import java.util.LinkedList;
 
 import rabbit.gl.math.SimpleMath;
 import rabbit.gl.struct.Color;
 import rabbit.gl.struct.Matrix;
 import rabbit.gl.struct.Vertex;
+import rabbit.gl.struct.VertexStack;
 import rabbit.gl.struct.Viewport;
 import rabbit.gl.type.sglEElementType;
 import rabbit.gl.type.sglEMatrixMode;
@@ -85,7 +84,9 @@ public class Context
 	public Matrix PMVMatrix;
 
 	
-	public LinkedList <Vertex> vertices = new LinkedList<Vertex>();
+	public VertexStack vertices = new VertexStack();
+
+	//public LinkedList <Vertex> vertices = new LinkedList<Vertex>();
 	public ArrayDeque <sglEElementType> types = new ArrayDeque<sglEElementType>();
 	
 	public Viewport viewport = new Viewport();
@@ -138,14 +139,15 @@ public class Context
 	}
 	
 	public void setVertex2f(float x, float y)
-	{ vertices.add(transform(new Vertex(x,y))); }
+	{ vertices.push(transform(new Vertex(x,y))); }
 
 	public void draw()
 	{
-		if (types.size() == 0);//throw std::exception();
+		try
+		{
+		if (types.size() == 0);
 
-		sglEElementType type = types.peekFirst();//.back();
-		//types.pop_back();
+		sglEElementType type = types.peekFirst();
 		
 		if(type==null) return;
 		
@@ -162,10 +164,10 @@ public class Context
 			default : break;
 		}
 		
-		try
-		{
+		
 			vertices.clear();
-		}catch(Throwable t){/*ignore*/}
+		}
+		catch(Throwable t){System.err.println(t.getMessage());}
 	}
 
 	public void drawPoints()
@@ -208,8 +210,8 @@ public class Context
 			} break;
 			default :
 			{
-				int thickness	= (((size%2)==0)?((size+1)):(size))>>1;
-				int s			= size-1;
+				byte thickness	= (byte)((((size%2)==0)?((size+1)):(size))>>1);
+				byte s			= (byte)(size-1);
 				
 				for(Vertex v_it : vertices)
 				for(int i = -thickness; i<s; i++)
@@ -218,7 +220,7 @@ public class Context
 			} break;
 		
 		}
-		}catch(Throwable t){/*ignore*/}
+		}catch(Throwable t){ System.err.println(t.getMessage()); }
 	}
 
 	public Vertex transform(Vertex v)
@@ -230,7 +232,7 @@ public class Context
 	public float calculateRadiusScaleFactor()
 	{
 		checkPMVMatrix();
-		return (float) (Math.sqrt((PMVMatrix.matrix[0] * PMVMatrix.matrix[5]) - (PMVMatrix.matrix[1] * PMVMatrix.matrix[4])));
+		return SimpleMath.sqrt(((PMVMatrix.matrix[0] * PMVMatrix.matrix[5]) - (PMVMatrix.matrix[1] * PMVMatrix.matrix[4])));
 	}
 	
 	void bresenham_circle(int xs, int ys, int r)
@@ -265,7 +267,8 @@ public class Context
 			vertex_calculation_helper.y = y;
 			Vertex v = transform(vertex_calculation_helper);
 			bresenham_circle((int)(v.x), (int)(v.y), (int)SimpleMath.floor(r * calculateRadiusScaleFactor()));
-		}catch(Throwable t){/*ignore*/}
+		}
+		catch(Throwable t){System.err.println(t.getMessage()); }
 	}
 
 	public void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
@@ -340,18 +343,17 @@ public class Context
 		float y1 = r * SimpleMath.sin(fromOffset * alpha);
 		float sa = SimpleMath.sin(alpha);
 		float ca = SimpleMath.cos(alpha);
-		for (int i = (int)SimpleMath.floor(offset); i <= (int)round(N) + (int)round(offset); i++)
+		for (int i = (int)(offset); i <= SimpleMath.round(N) + SimpleMath.round(offset); i++)
 		{
 			x2 = ca * x1 - sa*y1;
 			y2 = sa * x1 + ca*y1;
-			//x2 = r * cos(i * alpha);
-			//y2 = r * sin(i * alpha);
 			setVertex2f(x2 + x, y2 + y);
 			x1 = x2;
 			y1 = y2;
 		}
 		draw();
-		}catch(Throwable t){/*ignore*/}
+		}
+		catch(Throwable t){ System.err.println(t.getMessage()); }
 	}
 	
 	public void drawLineStrip()
@@ -363,7 +365,7 @@ public class Context
 			for (int i = 0; i < size; i++)
 				drawLine2D(vertices.get(i), vertices.get(i+1));
 			
-		}catch(Throwable t){/*ignore*/}
+		}catch(Throwable t){ System.err.println(t.getMessage()); }
 	}
 
 	public void drawLineLoop()
@@ -433,10 +435,10 @@ public class Context
 		
 		//obtain the points
 		int x1, x2, y1, y2;
-		x1 = (int)round(a.x);
-		y1 = (int)round(a.y);
-		x2 = (int)round(b.x);
-		y2 = (int)round(b.y);
+		x1 = SimpleMath.round(a.x);
+		y1 = SimpleMath.round(a.y);
+		x2 = SimpleMath.round(b.x);
+		y2 = SimpleMath.round(b.y);
 
 		int dx = SimpleMath.abs(x2 - x1);
 		int dy = SimpleMath.abs(y2 - y1);
@@ -451,30 +453,30 @@ public class Context
 
 	public void bresenham_x(int x1, int y1, int x2, int y2)
 	{
-			int dx = x2 - x1;
-			int dy = y2 - y1;
+		int dx = x2 - x1;
+		int dy = y2 - y1;
 
-			int sign = 1;
-			if (dy < 0)
-				sign = -1;
-			int c0, c1, p;
-			c0 = (dy << 1) * sign;
-			c1 = c0 - (dx << 1);
-			p = c0 - dx;
+		int sign = 1;
+		if (dy < 0)
+			sign = -1;
+		int c0, c1, p;
+		c0 = (dy << 1) * sign;
+		c1 = c0 - (dx << 1);
+		p = c0 - dx;
 
-			setPixel(x1, y1);
-			for (int i = x1 + 1; i <= x2; ++i)
-			{
-			if (p < 0)
-				p += c0;
-			else
-			{
-				p += c1;
-				y1 += sign;
-			}
-
-			setPixel(i, y1);
+		setPixel(x1, y1);
+		for (int i = x1 + 1; i <= x2; ++i)
+		{
+		if (p < 0)
+			p += c0;
+		else
+		{
+			p += c1;
+			y1 += sign;
 		}
+
+		setPixel(i, y1);
+	}
 	}
 
 	void bresenham_y(int x1, int y1, int x2, int y2)
@@ -504,9 +506,6 @@ public class Context
 			setPixel(y1, i);
 		}
 	}
-
-	float round(float number)
-	{ return (float) Math.floor(number + 0.5); }
 	
 	void setPixel(int x, int y)
 	{
@@ -522,52 +521,52 @@ public class Context
 	void setPixel_x()
 	{
 		lastSetPixelIndex += 1;
-		if (lastSetPixelIndex < w_h)
-		{
+		if (lastSetPixelIndex > w_h) return;
+	//	{
 			_pixels[lastSetPixelIndex]	= color.getRGB();
-		}
+		//}
 			//buffer[lastSetPixelIndex] = color;
 	}
 
 	void setPixel_y()
 	{
 		lastSetPixelIndex += w;
-		if (lastSetPixelIndex < w_h)
-		{
+		if (lastSetPixelIndex > w_h) return;
+		//{
 			_pixels[lastSetPixelIndex]	= color.getRGB();
-		}
+		//}
 			//buffer[lastSetPixelIndex] = color;
 	}
 
 	void setPixel_xy()
 	{
-		lastSetPixelIndex += w;
-		if (lastSetPixelIndex < w_h)
-		{
+		lastSetPixelIndex += (w + 1);
+		if (lastSetPixelIndex > w_h) return;
+		//{
 			_pixels[lastSetPixelIndex]	= color.getRGB();
-		}
+		//}
 			//buffer[lastSetPixelIndex] = color;
 	}
 
 	void setPixel_mxy()
 	{
-		lastSetPixelIndex += w;
-		if (lastSetPixelIndex < w_h)
-		{
+		lastSetPixelIndex += (w - 1);
+		if (lastSetPixelIndex > w_h) return;
+	//	{
 			_pixels[lastSetPixelIndex]	= color.getRGB();
-		}
+		//}
 			//buffer[lastSetPixelIndex] = color;
 	}
 
 	void setPixel_xmy()
 	{
-		lastSetPixelIndex += 1 - w;
-		if (lastSetPixelIndex < w_h)
-		{
+		lastSetPixelIndex += (1 - w);
+		if (lastSetPixelIndex > w_h) return;
+	//	{
 			//int offset = (x+w*y)*3;
 
 			_pixels[lastSetPixelIndex]	= color.getRGB();
-		}
+		//}
 			//buffer[lastSetPixelIndex] = color;
 	}
 
@@ -599,6 +598,7 @@ public class Context
 
 	public void pushMatrix()
 	{
+		if(matrixMode==null) return;
 		//switch is faster than if 
 		switch(matrixMode)
 		{
@@ -611,15 +611,18 @@ public class Context
 
 	public void setCurrentMatrix(Matrix matrix)
 	{
-		if (matrixMode == SGL_MODELVIEW)
+		if(matrixMode==null) return;
+		switch(matrixMode)
 		{
-			modelMatChanged = true;
-			currentModelviewMatrix = matrix;
-		}
-		else
-		{
-			projMatChanged = true;
-			currentProjectionMatrix = matrix;
+			case SGL_MODELVIEW :
+				modelMatChanged = true;
+				currentModelviewMatrix = matrix;
+			break;
+			
+			default :
+				projMatChanged = true;
+				currentProjectionMatrix = matrix;
+			break;
 		}
 	}
 
@@ -634,33 +637,34 @@ public class Context
 
 	public void popMatrix()
 	{
-		if (projectionStack.size() == 0)
+		try
 		{
+			if (projectionStack.size() == 0)
+			{
 			//*err = SGL_STACK_UNDERFLOW;
 		       	return;
+			}
+			if (matrixMode == SGL_MODELVIEW)
+			{
+				modelMatChanged			= true;
+				currentModelviewMatrix	= projectionStack.pop();
+			}
+			else
+			{
+				projMatChanged			= true;
+				currentProjectionMatrix	= projectionStack.pop();
+			}
 		}
-		if (matrixMode == SGL_MODELVIEW)
+		catch(Throwable t)
 		{
-			modelMatChanged			= true;
-			currentModelviewMatrix	= projectionStack.pop();
+			System.err.println(t.getMessage());
 		}
-		else
-		{
-			projMatChanged			= true;
-			currentProjectionMatrix	= projectionStack.pop();
-		}
-		//projectionStack.pop_back();
-		
-		//if (matrixMode == SGL_MODELVIEW)	current_mv	= transformStack.peekFirst();//.back();
-		//else								current_p	= transformStack.peekFirst();//
-
-		//transformStack.pop_back();
 	}
 
 	public void pushTypeState(sglEElementType type)
-	{ types.push(type);/*.push_back(type);*/ }
+	{ types.push(type); }
 
-	public void clearBuffer(byte ... what)
+	public void clearColorBuffer()
 	{
 		System.arraycopy(clearbuff, 0, _pixels, 0, max_w*max_h);
 		buffer.newPixels(0,0, w,h);

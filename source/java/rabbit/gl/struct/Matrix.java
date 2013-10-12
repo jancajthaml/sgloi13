@@ -116,4 +116,5 @@ public class Matrix implements Cloneable
 
 	public Matrix clone()
 	{ return new Matrix(matrix); }
+
 }
