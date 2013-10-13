@@ -61,6 +61,10 @@ public class SimpleMath {
 
 	  public static final float abs(final float x)
 	  { return (FAST_ABS)?(x > 0 ? x : -x):Math.abs(x); }
+	  
+	  public static final int iabs(float x)
+	  { return x > 0 ? (int)x : (int)-x; }
+	  
 
 	  public static final int abs(int x)
 	  {

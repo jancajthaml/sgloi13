@@ -2,9 +2,6 @@ package rabbit.gl.engine;
 
 import java.awt.image.MemoryImageSource;
 
-import static rabbit.gl.type.sglEAreaMode.SGL_FILL;
-import static rabbit.gl.type.sglEAreaMode.SGL_LINE;
-import static rabbit.gl.type.sglEAreaMode.SGL_POINT;
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_ENUM;
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_OPERATION;
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_VALUE;
@@ -21,6 +18,9 @@ import rabbit.gl.type.sglEElementType;
 import rabbit.gl.type.sglEEnableFlags;
 import rabbit.gl.type.sglEErrorCode;
 import rabbit.gl.type.sglEMatrixMode;
+import rabbit.gl.type.sglEClearBit;
+import rabbit.gl.util.ReferenceManager;
+
 
 public class HUB
 {
@@ -88,7 +88,7 @@ public class HUB
 	//LongName Function "gloabl finalization ? run finalization ?"
 	static void sglFinish()
 	{
-		ContextManager.contexts.clear();
+		ContextManager.delete();//.contexts.clear();
 	}
 
 	//LongName Function
@@ -97,7 +97,7 @@ public class HUB
 		int number_of_contexts = ContextManager.contexts.size();
 		
 		
-		ContextManager.contexts.push(new Context(width, height));//.push_back(c);
+		ContextManager.contexts.push(ReferenceManager.create(new Context(width, height)));//.push_back(c);
 
 		return number_of_contexts;
 	}
@@ -112,7 +112,7 @@ public class HUB
 			 return;
 		 }
 
-		 ContextManager.contexts.remove(id);
+		 ContextManager.deleteContext(id);
 		 
 		// delete manager.contexts[id]->buffer;
 		 //delete manager.contexts[id];
@@ -126,8 +126,9 @@ public class HUB
 			 setErrCode(SGL_INVALID_VALUE);
 			 return;
 		 }
+		 ContextManager.setContext(id);
 
-		 ContextManager.current = id;
+		 //ContextManager.current = id;
 	}
 
 	//LongName Function
@@ -154,6 +155,8 @@ public class HUB
 	//Clears buffer with given RGBA color value
 	public static void sglClearColor (float r, float g, float b, float a)
 	{
+		//current()->cacheClear(r,g,b,a);
+		
 		int rgb = new Color(r,g,b).getRGB();
 		
 
@@ -169,37 +172,23 @@ public class HUB
 	}
 
 	//LongName Function
-	public static void sglClear(byte ... what)
+	public static void sglClear(sglEClearBit what)
 	{
-		//if (current().invalidTypeStack())
-		//{
-			//setErrCode(SGL_INVALID_OPERATION);
-			//return;
-		//}
-
-		/*
-		if (((what & SGL_COLOR_BUFFER_BIT) != SGL_COLOR_BUFFER_BIT) && ((what & SGL_DEPTH_BUFFER_BIT) != SGL_DEPTH_BUFFER_BIT))
+		switch(what)
 		{
+			case SGL_COLOR_BUFFER_BIT :
+				current().clearColorBuffer();
+			break;
+			
+			case SGL_DEPTH_BUFFER_BIT :
+			break;
+			
+			default :
 			setErrCode(SGL_INVALID_VALUE);
 			return;
 		}
 
-		if ((what & SGL_COLOR_BUFFER_BIT) == SGL_COLOR_BUFFER_BIT)
-		{
-		*/
-			current().clearBuffer(what);
-			/*
-		}
-
-		if ((what & SGL_DEPTH_BUFFER_BIT) == SGL_DEPTH_BUFFER_BIT)
-		{
-				//TODO clear with depth buffer bit
-		}
-
-*/
 		setErrCode(SGL_NO_ERROR);
-		
-
 	}
 
 	//LongName Function
@@ -253,7 +242,10 @@ public class HUB
 	//Vertex with 2 float coords
 	//[x,y]
 	public static void sglVertex2f(float x, float y)
-	{ current().setVertex2f(x,y); }
+	{
+		try{ current().setVertex2f(x,y); }
+		catch(Throwable t){/*ignore*/}
+	}
 
 	//2D Circle
 	//
@@ -264,7 +256,15 @@ public class HUB
 	//
 	// Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 	public static void sglCircle(float x, float y, float z, float r)
-	{ current().drawCricle(x,y,z,r); }
+	{
+		if (r < 0)
+		{
+			setErrCode(SGL_INVALID_VALUE);
+			return;
+		}
+		
+		current().drawCricle(x,y,z,r);
+	}
 
 	//2D Ellipse
 	//
@@ -279,8 +279,16 @@ public class HUB
 	// - Bresenham Algorithm
 	//
 	//@see http://www.codeproject.com/Messages/2112010/A-Fast-Bresenham-Type-Algorithm-For-Drawing-Ellips.aspx
-	public static void sglEllipse(float x1, float y1, float z, float x2, float y2)
-	{ current().drawEllipse(x1,y1,z,x2,y2); }
+	public static void sglEllipse(float x, float y, float z, float a, float b)
+	{
+		if (a < 0 || b < 0)
+		{
+			setErrCode(SGL_INVALID_VALUE);
+			return;
+		}
+		
+		current().drawEllipse(x, y, z, a, b);
+	}
 
 	//Line
 	//Breceanuv algoritmus
@@ -307,6 +315,12 @@ public class HUB
 	// ? use circle subdivision ?
 	public static void sglArc(float x, float y, float z, float r, float from, float to)
 	{
+		if (r < 0)
+		{
+			setErrCode(SGL_INVALID_VALUE);
+			return;
+		}
+		
 		current().drawArc2D(x,y,z,r,from,to);
 	}
 
@@ -327,9 +341,7 @@ public class HUB
 		{
 			case SGL_MODELVIEW	:
 			case SGL_PROJECTION	:
-			{
 				current().setMatrixMode(mode);
-			}
 			break;
 
 			default				: setErrCode(SGL_INVALID_ENUM); break;
@@ -339,7 +351,6 @@ public class HUB
 	//Push Matrix into transformation Stack
 	public static void sglPushMatrix()
 	{
-		
 		//if(current().invalidTypeStack())
 		//{
 			//setErrCode(SGL_INVALID_OPERATION);
@@ -352,6 +363,11 @@ public class HUB
 	//Pop Matrix from transformation Stack
 	public static void sglPopMatrix()
 	{
+		if (current().stackEmpty())
+		{
+			setErrCode(SGL_STACK_UNDERFLOW);
+			return;
+		}
 		//System.out.println("matrix poped");
 		//if (current().stackEmpty())
 		//{
@@ -391,16 +407,11 @@ public class HUB
 	// ? rotates what ? Context or scene ?
 	// ? around what Y axis? Base or context?
 	static void sglRotateY(float angle)
-	{ current().multiplyCurrentMatrix(Matrix.rotateY(angle)); }
+	{ }
 
 	// ?
 	public static void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 	{
-		if(current().invalidTypeStack())
-		{
-			setErrCode(SGL_INVALID_OPERATION);
-			return;
-		}
 
 		Matrix ortho = new Matrix(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
 		current().multiplyCurrentMatrix(ortho);
@@ -422,14 +433,8 @@ public class HUB
 	//Sets scene viewport
 	public static void sglViewport(int x, int y, int width, int height)
 	{
-		if(current().invalidTypeStack())
-		{
-			setErrCode(SGL_INVALID_OPERATION);
-			return;
-		}
 		
 		
-		//,100,100
 		current().setViewport(width, height, x, y);
 	}
 
@@ -444,10 +449,12 @@ public class HUB
 	// ?
 	public static void sglAreaMode(sglEAreaMode mode)
 	{
-		if(mode!=SGL_FILL && mode!=SGL_LINE && mode!=SGL_POINT)
+		switch(mode)
 		{
-			setErrCode(SGL_INVALID_ENUM);
-			return;
+			case SGL_FILL : case SGL_LINE : case SGL_POINT : break;
+			default :
+				setErrCode(SGL_INVALID_ENUM);
+				return;
 		}
 	}
 
@@ -549,12 +556,7 @@ public class HUB
 	static boolean in_range(int number, int low, int high)
 	{ return ((int)(number-low) <= (high-low)); }
 
-	//Fast double round (3 times faster than std::round because of absence of EDOM)
-	//Type safe
-	static double round(double x)
-	{ return (double)((x>=0.5)?((int)(x)+1):(int)(x)); }
-
 	static Context current()
-	{ return ContextManager.contexts.get(ContextManager.current); }
+	{ return ContextManager.contexts.get(ContextManager.current).get(); }
 
 }
