@@ -53,12 +53,12 @@ struct Viewport
 	{
 		if (ready)
 		{
-			v.x = (v.x + 1) * width_2_x;
-			v.y = (v.y + 1) * height_2_y;
+			v.x = x + (v.x + 1) * width_2_x;
+			v.y = y + (v.y + 1) * height_2_y;
 		}
 	}
 
-	inline void changeViewport(int_fast16_t width, int_fast16_t height, int_fast16_t x, int_fast16_t y)
+	inline void changeViewport(int_fast16_t x, int_fast16_t y, int_fast16_t width, int_fast16_t height)
 	{
 		this->width					=  width;
 		this->height				=  height;
@@ -66,11 +66,18 @@ struct Viewport
 		this->height_2_y			=  height>>1;
 		this->x						=  x;
 		this->y						=  y;
-		this->viewportMatrix		=  Matrix(width_2_x, 0.0f, 0.0f, 0.0f, 0.0f, height_2_y, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, width_2_x + x, height_2_y + x, 0.0f, 1.0f);
+
+		this->viewportMatrix		=  Matrix
+				(
+						width_2_x, 0.0f, 0.0f, 0.0f,
+						0.0f, height_2_y, 0.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f,
+						width_2_x + x, height_2_y + x, 0.0f, 1.0f
+				);
 		this->ready					=  true;
 		this->viewportMatrixChanged	=  true;
-		this->width_2_x				+= x;
-		this->height_2_y			+= y;
+	//	this->width_2_x				+= x;
+//		this->height_2_y			+= y;
 	}
 
 };

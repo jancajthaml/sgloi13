@@ -42,6 +42,10 @@
  * 30.9.2013, Jan Cajthaml - added operator overload for aritmetic operations on Matrix
  * 30.9.2013, Jan Cajthaml - added operator overload for aritmetic operations on Color
  * 30.9.2013, Jan Cajthaml - added Model,Projection,Current and MPV (Model-Projection-View pre-calculated) matricies to Context
+ *
+ * -----
+ *
+ * 15.10.2013, Jan Cajthaml - added "begin" flag to determine is sglBegin and sglEnd were called
  * */
 
 typedef struct { float f1; float f2; float f3;} __attribute__((packed)) __color;
@@ -66,6 +70,8 @@ struct Context
 
 	//State
 	bool depth;
+
+	bool BEGIN;
 
 	//Pixel size
 	int_fast8_t size;	// maximum 256
@@ -110,6 +116,7 @@ struct Context
 
 		//Initialise Flags
 		depth	= false;
+		BEGIN	= false;
 
 		//----------------------//
 
@@ -354,7 +361,8 @@ struct Context
 	}
 
 	//Line
-	//Bresenhamuv algoritmus
+	//Breceanuv algoritmus
+	//DDA algoritmus (jednoduzsi)
 	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
 	inline void drawLine2D(Vertex a, Vertex b)
 	{
@@ -552,8 +560,8 @@ struct Context
 		}
 	}
 
-	inline void setViewport(signed width, signed height, signed x, signed y)
-	{ viewport.changeViewport(width, height, x, y); }
+	inline void setViewport(signed x, signed y, signed width, signed height)
+	{ viewport.changeViewport(x, y, width, height); }
 
 	inline Matrix & getCurrentMatrix()
 	{
@@ -592,8 +600,15 @@ struct Context
 	inline void setMatrixMode(sglEMatrixMode mode)
 	{ matrixMode = mode; }
 
-	inline bool invalidTypeStack()
-	{ return (types.size() > 0); }
+	inline bool BeginBeforeEnd()
+	{ return BEGIN;//(types.size() > 0);
+	}
+
+	inline void begin()
+	{ BEGIN=true; }
+
+	inline void end()
+	{ BEGIN=false; }
 
 	inline bool stackEmpty()
 	{ return (projectionStack.size() == 0); }
@@ -625,9 +640,15 @@ struct Context
 	inline void pushTypeState(sglEElementType type)
 	{ types.push_back(type); }
 
-	inline void clearBuffer(unsigned what)
+	inline void clearColorBuffer()
 	{
 		memcpy(buffer, clear, w_h);
+		return;
+	}
+
+	inline void clearDepthBuffer()
+	{
+		//memcpy(buffer, clear, w_h);
 		return;
 	}
 

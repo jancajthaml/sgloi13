@@ -495,7 +495,7 @@ void DrawTestScene1C(void)
   sglDisable(SGL_DEPTH_TEST);
 
   // set viewport
-  sglViewport(0, 0, WIDTH, HEIGHT);
+  sglViewport(100,100, HEIGHT/2, WIDTH/2);
 
   // set the projection matrix
   sglMatrixMode(SGL_PROJECTION);
