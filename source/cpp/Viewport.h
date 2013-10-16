@@ -2,7 +2,7 @@
  * Viewport.h
  *
  *  Created on: 7.10.2013
- *      Author: jancajthaml
+ *      Author: Jan Brejcha
  */
 
 #ifndef VIEWPORT_H_

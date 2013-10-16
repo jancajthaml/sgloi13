@@ -2,7 +2,7 @@
  * VertexStack.h
  *
  *  Created on: 9.10.2013
- *      Author: jancajthaml
+ *      Author: Jan Brejcha
  */
 
 #ifndef VERTEXSTACK_H_
@@ -77,8 +77,9 @@ class VertexStack
 	{
 		currentSize <<= 1;
 		Vertex* tmp = this->stack;
-		this->stack			= (Vertex *)malloc(sizeof(Vertex) * currentSize);
+		this->stack = (Vertex *)malloc(sizeof(Vertex) * currentSize);
 		memcpy(this->stack, tmp, sizeof(Vertex) * index);
+		free(tmp);
 	}
 };
 
