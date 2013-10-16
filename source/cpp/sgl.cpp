@@ -31,6 +31,19 @@
  *
  * 30.9.2013, Jan Cajthaml - added sglDrawLine Bresenham´s algorithm draw line implementation
  *
+ * 14.10.2013 ------- FIRST MILESTONE
+ * bugs:
+ *       - conditioning skip
+ *       - viewport wrong calculation
+ *       - padding in typedef (Visual studio)
+ *
+ * ---------------------------------------------------------------------------------------------------------
+ *
+ * 15.10.2013, Jan Cajthaml - refactor of Viewport coords & matrix calculations
+ *                          - conditioning of ERROR CODES by sgl.h specification
+ *                          - "if" rewritten to "switch" as needed
+ *                          - added current()–>begin() and current()->end() to check sglBegin and sglEnd of Context
+ *
  * */
 
 /*
@@ -194,52 +207,58 @@ void sglClearColor (float r, float g, float b, float a)
 //LongName Function
 void sglClear(unsigned what)
 {
-	if (current()->invalidTypeStack())
+	if (current()->BeginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
 
-	if (((what & SGL_COLOR_BUFFER_BIT) != SGL_COLOR_BUFFER_BIT) && ((what & SGL_DEPTH_BUFFER_BIT) != SGL_DEPTH_BUFFER_BIT))
+	switch(what)
 	{
-		setErrCode(SGL_INVALID_VALUE);
-		return;
-	}
-
-	if ((what & SGL_COLOR_BUFFER_BIT) == SGL_COLOR_BUFFER_BIT)
-	{
-		current()->clearBuffer(what);
-
-		//current()->clearBuffer(what);
-	}
-
-	if ((what & SGL_DEPTH_BUFFER_BIT) == SGL_DEPTH_BUFFER_BIT)
-	{
-			//TODO clear with depth buffer bit
+		case SGL_COLOR_BUFFER_BIT :  current()->clearColorBuffer();  break;
+		case SGL_DEPTH_BUFFER_BIT :  current()->clearDepthBuffer();  break;
+		default                   :  setErrCode(SGL_INVALID_VALUE);  return;
 	}
 
 	setErrCode(SGL_NO_ERROR);
-
 }
 
 //LongName Function
 void sglBegin(sglEElementType mode)
 {
-	if(mode>SGL_LAST_ELEMENT_TYPE)
-	{
-		setErrCode(SGL_INVALID_ENUM);
-		return;
-	}
+    switch(mode)
+    {
+    	case SGL_POINTS		: 			/// Points
+    	case SGL_LINES		: 			/// Lines
+    	case SGL_LINE_STRIP	: 			/// Line strip
+    	case SGL_LINE_LOOP	: 			/// Closed line strip
+    	case SGL_TRIANGLES	: 			/// Triangle list
+    	case SGL_POLYGON	: 			/// General, non-convex polygon
+    	case SGL_AREA_LIGHT	: break;	/// Area light - restricted to a quad for simplicity
+    	default				: setErrCode(SGL_INVALID_ENUM); break;
+    }
 
+    if(current()->BeginBeforeEnd())
+    {
+    	setErrCode(SGL_INVALID_OPERATION);
+    	return;
+    }
+
+	current()->begin();
 	current()->pushTypeState(mode);
-
-	//current()->pushTypeState(mode);
 }
 
 //LongName Function
 void sglEnd(void)
 {
-	current()->draw();
+	 if(!current()->BeginBeforeEnd())
+	 {
+		 setErrCode(SGL_INVALID_OPERATION);
+		 return;
+	 }
+
+	 current()->end();
+	 current()->draw();
 }
 
 //Vertex with 3 float coords in homogenous coordinates
@@ -395,7 +414,7 @@ void sglMatrixMode( sglEMatrixMode mode )
 //Push Matrix into transformation Stack
 void sglPushMatrix(void)
 {
-	if(current()->invalidTypeStack())
+	if(current()->BeginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -409,6 +428,11 @@ void sglPushMatrix(void)
 //Pop Matrix from transformation Stack
 void sglPopMatrix(void)
 {
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 	if (current()->stackEmpty())
 	{
 		setErrCode(SGL_STACK_UNDERFLOW);
@@ -422,12 +446,25 @@ void sglPopMatrix(void)
 
 void sglLoadIdentity(void)
 {
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+	//ERROR HERE
+
 	//current().setCurrentMatrix(Matrix::identity());
 	current()->setCurrentMatrix(MatrixCache::identity());
 }
 
 void sglLoadMatrix(const float* matrix)
 {
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+	//ERROR HERE
 	current()->setCurrentMatrix(Matrix(matrix));
 
 	//current()->setCurrentMatrix(Matrix(matrix));
@@ -510,13 +547,19 @@ void sglFrustum(float left, float right, float bottom, float top, float near, fl
 //Sets scene viewport
 void sglViewport(int x, int y, int width, int height)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
 
-	current()->setViewport(width, height, x, y);
+	if(width<0 || height<0)
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
+	}
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
+	current()->setViewport(x, y, width, height);
 
 	//current()->setViewport(width, height, x, y);
 }
@@ -536,9 +579,20 @@ void sglColor3f(float r, float g, float b)
 // ?
 void sglAreaMode(sglEAreaMode mode)
 {
-	if(mode>SGL_FILL)
+	if(current()->BeginBeforeEnd())
 	{
-		setErrCode(SGL_INVALID_ENUM);
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+
+	switch(mode)
+	{
+		case SGL_POINT: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
+		case SGL_LINE: //Draw only borders of graphics elements (lines)
+		case SGL_FILL : //Draw filled elements, default.
+		break;
+		default:
+			setErrCode(SGL_INVALID_ENUM);
 		return;
 	}
 }
@@ -546,25 +600,52 @@ void sglAreaMode(sglEAreaMode mode)
 //Point "radius/diameter ?"
 void sglPointSize(float size)
 {
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
     if(size <= 0.0f)
     {
     	setErrCode(SGL_INVALID_VALUE);
     	return;
     }
 
-    current()->size = size;//setPointSize(size);
+    current()->size = size;
 }
 
 //Enable given flag
-void sglEnable(sglEEnableFlags cap)
+void sglEnable(sglEEnableFlags flag)
 {
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+	switch(flag)
+	{
+		case SGL_DEPTH_TEST : break;//depth test is off by default
 
+		setErrCode(SGL_INVALID_ENUM);
+		return;
+	}
 }
 
 //Disable given flag
-void sglDisable(sglEEnableFlags cap)
+void sglDisable(sglEEnableFlags flag)
 {
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+	switch(flag)
+	{
+		case SGL_DEPTH_TEST : break;//depth test is off by default
 
+		setErrCode(SGL_INVALID_ENUM);
+		return;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -574,13 +655,21 @@ void sglDisable(sglEEnableFlags cap)
 // ? Begin of what scene ? whole scene or sub scene ?
 void sglBeginScene()
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 }
 
 // ? End of what scene ? whole scene or sub scene ?
 void sglEndScene()
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 }
 
 //3D Sphere
@@ -591,13 +680,21 @@ void sglEndScene()
 // r	- radius
 void sglSphere(const float x, const float y, const float z, const float r)
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 }
 
 //Material ******
 void sglMaterial(const float r, const float g, const float b, const float kd, const float ks, const float shine, const float T, const float ior)
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 }
 
 //Point Light
@@ -605,7 +702,11 @@ void sglMaterial(const float r, const float g, const float b, const float kd, co
 // ? x,y,z base coords r,g,b color and where is the direction ?
 void sglPointLight(const float x, const float y, const float z, const float r, const float g, const float b)
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 }
 
 // ?
@@ -623,7 +724,11 @@ void sglRasterizeScene()
 // ? image or fragment(s) ? or fragment set ?
 void sglEnvironmentMap(const int width, const int height, float *texels)
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 }
 
 // ?
