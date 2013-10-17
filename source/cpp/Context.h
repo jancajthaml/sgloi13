@@ -5,24 +5,20 @@
  *      Author: jancajthaml
  */
 
-#include <vector>
-#include <list>
-#include <cmath>
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
-#include <stdio.h>
-#include <stdint.h>
-#include "sgl.h"
-#include "Vertex.h"
-#include "VertexStack.h"
-#include "MatrixCache.h"
-#include "Matrix.h"
-#include "Viewport.h"
-#include "Color.h"
 #ifndef DATA_H_
 #define DATA_H_
 
+#include "CrossReferenceDispatcher.h"
+#include "Color.h"
+#include "Vertex.h"
+#include "Edge.h"
+#include "Matrix.h"
+#include "EdgeStack.h"
+#include "VertexStack.h"
+#include "MatrixCache.h"
+#include "Viewport.h"
+#include "DrawingLibrary.h"
+#include "ContextChunk.h"
 
 /*
  * Side-notes:
@@ -46,71 +42,62 @@
  * -----
  *
  * 15.10.2013, Jan Cajthaml - added "begin" flag to determine is sglBegin and sglEnd were called
+ * 17.10.2013, Jan Cajthaml - added ContextChunk for data hold bridge
+ *                          - added CrossReferenceDispatcher (temporary)
+ *                          - added DrawingLibrary helper
+ *                          - added Edge
+ *                          - added EdgeStack
+ *                          - added Helpers for helper functions (like sort)
  * */
 
-typedef struct { float f1; float f2; float f3;} __attribute__((packed)) __color;
 
+//TODO COMMENT !!!!!!!
 //Context
-struct Context
+typedef struct Context
 {
+
 	int_fast8_t id;	//Maximum 256 contexts
 
+	Chunk storage;			// Graphic dependent data storage
+	Viewport viewport;
 
-    //Drawing
-	Color *buffer;
-	Color* clear;
-
-	int_fast16_t w;	//maximum 65536
-	int_fast16_t h;	//maximum 65536
-
-
-
-	//Color clear;
-	Color color;
+	sglEAreaMode drawType;	// Drawing mode
+	sglEMatrixMode matrixMode;
 
 	//State
 	bool depth;
-
 	bool BEGIN;
 
-	//Pixel size
-	int_fast8_t size;	// maximum 256
-
 	//Transformation matrices
+	Matrix current_MV;
+	Matrix current_P;
 
-	Matrix currentModelviewMatrix;
-	Matrix currentProjectionMatrix;
-	std::vector<Matrix> projectionStack;
+	Matrix MP;
+	Matrix MVP;
 
-	VertexStack vertices;
-	Matrix PMMatrix;
-	Matrix PMVMatrix;
-	bool projMatChanged;
-	bool modelMatChanged;
+	bool P_changed;
+	bool M_changed;
 
+	//FIXME don't use a std::vector stack for this, implement custom
 	std::vector<sglEElementType> types;
-	Viewport viewport;
-	sglEMatrixMode matrixMode;
 
-	uint_fast32_t lastSetPixelIndex;	//	must be 32bit (16bit is too small)
-	uint_fast32_t w_h;					//	must be 32bit (16bit is too small)
+	//FIXME don't use a std::vector stack for this, implement custom
+	std::vector<Matrix> P_stack;
+
 
 	Context(uint_fast16_t width, uint_fast16_t height)
 	{
+
+		storage = Chunk();
+		storage.w=width;
+		storage.h=height;
+		storage.w_h=width * height;
+		storage.color=Color(0,255,0);
+
 		//----------------------//
 
 		//Initialise Drawing
-		w			= width;
-		h			= height;
 		id			= 0;
-		w_h			= width * height;
-		//matrixMode	= NULL;
-
-		// ? this shoud be static or const equivalent to NULL ?
-		//clear	= Color(255,0,0);
-
-		// ? this shoud be static or const equivalent to NULL ?
-		color	= Color(0,255,0);
 
 		//----------------------//
 
@@ -120,28 +107,29 @@ struct Context
 
 		//----------------------//
 
-		size	= 1;
+		storage.size	= 1;
+		storage.buffer =(Color*) malloc(sizeof(Color) * storage.w_h);
+		storage.clear =(Color*) malloc(sizeof(Color) * storage.w_h);
 
-		//this->width = width;
-		//this->height = height;
-		buffer	= (Color*) malloc(sizeof(Color) * w_h);
-		clear	= (Color*) malloc(sizeof(Color) * w_h);
 
-		if (!buffer) throw std::exception();
+		if (!storage.buffer) throw std::exception();
 
-		currentModelviewMatrix	= MatrixCache::identity();
-		currentProjectionMatrix	= MatrixCache::identity();
+		current_MV	= MatrixCache::identity();
+		current_P	= MatrixCache::identity();
 
-		projMatChanged	= true;
-		modelMatChanged	= true;
+		P_changed	= true;
+		M_changed	= true;
+		drawType	= SGL_FILL;
 	}
 
 	inline void setVertex2f(float x, float y)
-	{
-		Vertex v(x, y, 0.0f, 1.0f);
-		transform(v);
-		vertices.push_back(v);
-	}
+	{ storage.vertices.push_back(create(x, y, 0.0f, 1.0f)); }
+
+	inline void setVertex3f(float x, float y, float z)
+	{ storage.vertices.push_back(create(x, y, z, 1.0f)); }
+
+	inline void setVertex4f(float x, float y, float z, float w)
+	{ storage.vertices.push_back(create(x, y, z, w)); }
 
 	inline void draw()
 	{
@@ -150,106 +138,68 @@ struct Context
 		sglEElementType type = types.back();
 		types.pop_back();
 
-		switch(type)
-		{
-			case SGL_POINTS				: drawPoints()		; break;
-			case SGL_LINES				: drawLines()		; break;
-			case SGL_LINE_STRIP			: drawLineStrip()	; break;
-			case SGL_LINE_LOOP			: drawLineLoop()	; break;
-			case SGL_TRIANGLES			: drawTriangles()	; break;
-			case SGL_POLYGON			: drawPolygon()		; break;
-			case SGL_AREA_LIGHT			: 					; break;
-			case SGL_LAST_ELEMENT_TYPE	: 					; break;
-			default : break;
-		}
+        switch( drawType )
+        {
+            case SGL_POINT          : DrawingLibrary::drawPoints ( storage )    ; break;
 
-		vertices.index = 0;
+            default                 : switch( type )	//LINES of FILLING
+            {
+                case SGL_POINTS     : DrawingLibrary::drawPoints    ( storage ) ; break;
+                case SGL_LINES      : DrawingLibrary::drawLines     ( storage ) ; break;
+                case SGL_LINE_STRIP : DrawingLibrary::drawLineStrip ( storage ) ; break;
+                case SGL_LINE_LOOP  : DrawingLibrary::drawLineLoop  ( storage ) ; break;
+                case SGL_TRIANGLES  : DrawingLibrary::drawTriangles (         ) ; break;
+
+                case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
+                {
+                    case SGL_LINE   : DrawingLibrary::drawPolygon   ( storage ) ; break;
+                    default         : DrawingLibrary::fillPolygon   ( storage ) ; break;
+                }
+                break;
+
+                case SGL_AREA_LIGHT        : 					              ; break;
+                case SGL_LAST_ELEMENT_TYPE : 					              ; break;
+                default                    :                                    break;
+            }
+            break;
+        }
+
+        storage.vertices.index = 0;
 	}
 
-	inline void drawPoints()
+	inline Vertex& create(float x, float y, float z, float w)
 	{
-		int_fast32_t s = int_fast32_t(vertices.index);
-
-		if(size==1)
-		{
-			for (int_fast32_t i = 0; i < s; i++)
-				setPixel((vertices)[i].x, (vertices)[i].y);
-		}
-		else
-		{
-			int_fast8_t thickness = size;
-
-			if((thickness%2)==0) thickness++;
-
-			thickness >>= 1;
-
-			for (int_fast32_t i = 0; i < s; i++)
-			{
-				Vertex v = (vertices)[i];
-				for(int_fast8_t i = -thickness; i<size-1; i++)
-				for(int_fast8_t j = -thickness; j<size-1; j++)
-					setPixel(v.x+j, v.y+i);
-			}
-		}
+		//FIXME how?
+		Vertex v(x, y, z, w);
+		transform(v);
+		return v;
 	}
 
 	inline void transform(Vertex & v)
 	{
-		checkPMVMatrix();
-		v = PMVMatrix * v;
+		check_MVP();
+		v = MVP * v;
 	}
 
 	inline float calculateRadiusScaleFactor()
 	{
-		checkPMVMatrix();
-		return sqrt((PMVMatrix.matrix[0] * PMVMatrix.matrix[5]) - (PMVMatrix.matrix[1] * PMVMatrix.matrix[4]));
+		check_MVP();
+		return sqrt((MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]));
 	}
 
-
-	inline void bresenham_circle(int_fast32_t xs, int_fast32_t ys, int_fast32_t r)
+	inline void drawCricle( float x, float y, float z, float r )
 	{
-		int_fast32_t x, y, p;
-		x = 0;
-		y = r;
-		p = 3 - (r << 1);
-		while (x < y)
+		switch( drawType )
 		{
-			setSymPixel(x, y, xs, ys);
-			if (p < 0)
-			{
-				p += (x << 2) + 6;
-			}
-			else
-			{
-				p += ((x - y) << 2) + 10;
-				y -= 1;
-			}
-			x += 1;
+			case SGL_POINT  : DrawingLibrary::drawPoints ( storage                                                            ) ; break;
+			case SGL_LINE   : DrawingLibrary::drawCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
+			default         : DrawingLibrary::fillCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
 		}
-		if (x == y)
-			setSymPixel(x, y, xs, ys);
-	}
 
-	inline void drawCricle(float x, float y, float z, float r)
-	{
-		Vertex v(x, y, 0.0f, 1.0f);
-		transform(v);
-		bresenham_circle(int_fast32_t(v.x), (int_fast32_t)(v.y), int_fast32_t(r * calculateRadiusScaleFactor()));
 	}
 
 	inline void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
-		{
-		//	Vertex v(center_x, center_y, center_z, 0.0f);
-			//transform(v);
-			//center_x = v.x;
-			//center_y = v.y;
-			//center_z = v.z;
-
-			//calculate r scale factor
-		//	float scaleR = calculateRadiusScaleFactor();
-			//axis_x *= scaleR;
-			//axis_y *= scaleR;
-
+	{
 			bool ellipse_adaptive = false;
 
 			if(ellipse_adaptive)
@@ -320,64 +270,6 @@ struct Context
 			}
 		}
 
-	inline void drawLineStrip()
-	{
-		uint_fast16_t size = uint_fast16_t(vertices.index-1);
-
-		for (uint_fast16_t i = 0; i < size; i++)
-			drawLine2D(vertices[i], vertices[i+1]);
-	}
-
-	void drawLineLoop()
-	{
-		uint_fast16_t size = uint_fast16_t(vertices.index-1);
-
-		for (uint_fast16_t i = 0; i < size; i++)
-			drawLine2D(vertices[i], vertices[i+1]);
-
-		drawLine2D(vertices[size], vertices[0]);
-	}
-
-	inline void drawTriangles()
-	{
-	}
-
-	inline void drawPolygon()
-	{
-		uint_fast32_t size = uint_fast32_t(vertices.index-1);
-
-		for (uint_fast32_t i = 0; i < size; i++)
-			drawLine2D(vertices[i], vertices[i+1]);
-
-		drawLine2D(vertices[size], vertices[0]);
-	}
-
-	inline void drawLines()
-	{
-		uint_fast32_t size = uint_fast16_t(vertices.index-1);
-
-		for (uint_fast32_t i = 0; i < size; i += 2)
-			drawLine2D(vertices[i], vertices[i+1]);
-	}
-
-	//Line
-	//Breceanuv algoritmus
-	//DDA algoritmus (jednoduzsi)
-	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
-	inline void drawLine2D(Vertex a, Vertex b)
-	{
-		//bresenham(a.x,a.y,b.x,b.y);
-		int_fast32_t dx = abs(b.x - a.x);
-		int_fast32_t dy = abs(b.y - a.y);
-
-		if (dx > dy)
-			if (a.x < b.x)	bresenham_x(a.x, a.y, b.x, b.y);
-			else			bresenham_x(b.x, b.y, a.x, a.y);
-		else
-			if (a.y < b.y)	bresenham_y(a.y, a.x, b.y, b.x);
-			else			bresenham_y(b.y, b.x, a.y, a.x);
-	}
-
 
 	inline void drawArc2D(float x, float y, float z, float r, float from, float to)
 	{
@@ -404,140 +296,9 @@ struct Context
 			x1 = x2;
 			y1 = y2;
 		}
+
+		//FIXME draw should be at "End" in rasterisation phase
 		draw();
-	}
-
-	inline void bresenham_x(signed x1, signed y1, signed x2, signed y2)
-	{
-		signed dx = x2 - x1;
-		signed dy = y2 - y1;
-		signed sign = 1;
-		if (dy < 0) sign = -1;
-		signed c0 = (dy << 1) * sign;
-		signed c1 = c0 - (dx << 1);
-		signed p = c0 - dx;
-
-		setPixel(x1, y1);
-		for (signed i = x1 + 1; i <= x2; ++i)
-		{
-			if (p < 0)
-			{
-				p += c0;
-				setPixel_x();
-			}
-			else
-			{
-				p += c1;
-				if (sign > 0)
-					setPixel_xy();
-				else
-					setPixel_xmy();
-			}
-		}
-	}
-
-	inline void bresenham_y(signed x1, signed y1, signed x2, signed y2)
-	{
-		signed dx = x2 - x1;
-		signed dy = y2 - y1;
-		signed sign = 1;
-		if (dy < 0)
-			sign = -1;
-		signed c0, c1, p;
-		c0 = (dy << 1) * sign;
-		c1 = c0 - (dx << 1);
-		p = c0 - dx;
-
-		setPixel(y1, x1);
-		for (signed i = x1 + 1; i <= x2; ++i)
-		{
-			if (p < 0)
-			{
-				p += c0;
-				setPixel_y();
-			}
-			else
-			{
-				p += c1;
-				if (sign > 0)
-					setPixel_xy();
-				else
-					setPixel_mxy();
-			}
-		}
-	}
-
-	inline void setPixel(signed x, signed y)
-	{
-		//Condition not needed for now
-	//	if (x >= 0 && x < w && y >= 0 && y < h)
-		//{
-			lastSetPixelIndex = (x + w * y);
-			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-		//}
-	}
-
-	inline void setPixel_x()
-	{
-		lastSetPixelIndex += 1;
-
-		//Safety off
-		//if (lastSetPixelIndex < w_h)
-			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-	}
-
-	inline void setPixel_y()
-	{
-		lastSetPixelIndex += w;
-
-		//Safety off
-//		if (lastSetPixelIndex < w_h)
-			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-	}
-
-	inline void setPixel_xy()
-	{
-		lastSetPixelIndex += (w + 1);
-
-		//Safety off
-		//if (lastSetPixelIndex < w_h)
-			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-	}
-
-	inline void setPixel_mxy()
-	{
-		lastSetPixelIndex += (w - 1);
-
-		//Safety off
-		//if (lastSetPixelIndex < w_h)
-			*((__color*) (buffer + lastSetPixelIndex))		= *((__color*) &(color));
-	}
-
-	inline void setPixel_xmy()
-	{
-		lastSetPixelIndex += (1 - w);
-		//if (lastSetPixelIndex < w_h)
-			*((__color*) (buffer + lastSetPixelIndex))	= *((__color*) &(color));
-	}
-
-	inline void setSymPixel(signed x, signed y, signed xs, signed ys)
-	{
-		signed rx = x + xs;
-		signed ry = y + ys;
-		signed mrx = -x + xs;
-		signed mry = -y + ys;
-		setPixel(rx, ry);
-		setPixel(rx, mry);
-		setPixel(mrx, ry);
-		setPixel(mrx, mry);
-		rx = x + ys;
-		ry = y + xs;
-		mrx = -x + ys;
-		mry = -y + xs;
-		setPixel(ry, rx);
-		setPixel(ry, mrx);
-		setPixel(mry, rx);
-		setPixel(mry, mrx);
 	}
 
 	inline int_fast16_t stackSize()
@@ -549,13 +310,13 @@ struct Context
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW :
-				modelMatChanged			= true;
-				currentModelviewMatrix	= currentModelviewMatrix * m;
+				M_changed			= true;
+				current_MV	= current_MV * m;
 			break;
 
 			default:
-				projMatChanged			= true;
-				currentProjectionMatrix	= currentProjectionMatrix * m;
+				P_changed			= true;
+				current_P	= current_P * m;
 			break;
 		}
 	}
@@ -567,8 +328,8 @@ struct Context
 	{
 		switch(matrixMode)
 		{
-			case SGL_MODELVIEW	: return currentModelviewMatrix;
-			default				: return currentProjectionMatrix;
+			case SGL_MODELVIEW	: return current_MV;
+			default				: return current_P;
 		}
 	}
 
@@ -576,8 +337,8 @@ struct Context
 	{
 		switch(matrixMode)
 		{
-			case SGL_MODELVIEW	: projectionStack.push_back(currentModelviewMatrix); break;
-			default				: projectionStack.push_back(currentProjectionMatrix); break;
+			case SGL_MODELVIEW	: P_stack.push_back( current_MV ); break;
+			default				: P_stack.push_back( current_P  ); break;
 		}
 	}
 
@@ -586,13 +347,13 @@ struct Context
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW	:
-				modelMatChanged			= true;
-				currentModelviewMatrix	= matrix;
+				M_changed			= true;
+				current_MV	= matrix;
 			break;
 
 			default				:
-				projMatChanged			= true;
-				currentProjectionMatrix	= matrix;
+				P_changed			= true;
+				current_P	= matrix;
 			break;
 		}
 	}
@@ -611,11 +372,11 @@ struct Context
 	{ BEGIN=false; }
 
 	inline bool stackEmpty()
-	{ return (projectionStack.size() == 0); }
+	{ return (P_stack.size() == 0); }
 
 	inline void popMatrix()
 	{
-		if (projectionStack.size() == 0)
+		if (P_stack.size() == 0)
 		{
 			//*err = SGL_STACK_UNDERFLOW;
 		       	return;
@@ -624,17 +385,17 @@ struct Context
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW	:
-				modelMatChanged = true;
-				currentModelviewMatrix = projectionStack.back();
+				M_changed = true;
+				current_MV = P_stack.back();
 			break;
 
 			default				:
-				projMatChanged = true;
-				currentProjectionMatrix = projectionStack.back();
+				P_changed = true;
+				current_P = P_stack.back();
 			break;
 		}
 
-		projectionStack.pop_back();
+		P_stack.pop_back();
 	}
 
 	inline void pushTypeState(sglEElementType type)
@@ -642,7 +403,9 @@ struct Context
 
 	inline void clearColorBuffer()
 	{
-		memcpy(buffer, clear, w_h);
+		//memcpy(&storage.clear[offset], &storage.clear[l], s);
+
+		memcpy(storage.buffer, storage.clear, storage.w_h);
 		return;
 	}
 
@@ -652,45 +415,46 @@ struct Context
 		return;
 	}
 
-	inline bool checkPMMatrix()
+	inline bool check_MP()
 	{
-		if (modelMatChanged || projMatChanged)
+		if (M_changed || P_changed)
 		{
-			modelMatChanged	= false;
-			projMatChanged	= false;
-			PMMatrix		= currentProjectionMatrix * currentModelviewMatrix;
+			M_changed	= false;
+			P_changed	= false;
+			MP		= current_P * current_MV;
 			return true;
 		}
 		return false;
 	}
 
-	inline void checkPMVMatrix()
+	inline void check_MVP()
 	{
-		if (checkPMMatrix() || viewport.viewportMatrixChanged)
+		if (check_MP() || viewport.V_changed)
 		{
-			viewport.viewportMatrixChanged = false;
-			PMVMatrix = viewport.viewportMatrix * PMMatrix;
+			viewport.V_changed	= false;
+			MVP					= viewport.V * MP;
 		}
 	}
 
-
+	//FIXME rethink this again and make it faster
 	inline void cacheClear(float r, float g, float b, float a)
 	{
 		Color c = Color(r,g,b);
 		//1-6 = RGB RGB
-		*((__color*) (clear))	= *((__color*) &c);	//1-3 RGB
-		*((__color*) (clear+2))	= *((__color*) &c);	//4-7 RGB
+		*((__color*) (storage.clear))	= *((__color*) &c);	//1-3 RGB
+		*((__color*) (storage.clear+2))	= *((__color*) &c);	//4-7 RGB
 
 		uint_fast32_t l = 2;
 		int_fast8_t s = sizeof(Color);
 
-		for(uint_fast32_t offset=l ; offset < w_h; offset <<= 1)
+		for(uint_fast32_t offset=l ; offset < storage.w_h; offset <<= 1)
 		{
-			memcpy(&clear[offset], &clear[l], s);
-			l=offset;
+			memcpy(&storage.clear[offset], &storage.clear[l], s);
+			l = offset;
 		}
 	}
 
+	//FIXME this is a example of a HELPER ... move to Helpers.h
 	inline int_fast32_t __round(float x)
 	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 };

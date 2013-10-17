@@ -53,10 +53,10 @@
  *
  */
 
+#include "CrossReferenceDispatcher.h"
 #include "Context.h"
 #include "ContextManager.h"
-#include <vector>
-#include <stdint.h>
+
 
 Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -192,7 +192,7 @@ int sglGetContext(void)
 //LongName Function
 float* sglGetColorBufferPointer(void)
 {
-	return (float*)current()->buffer;
+	return (float*)current()->storage.buffer;
     //return (float *) current()->buffer;
 }
 
@@ -571,7 +571,7 @@ void sglViewport(int x, int y, int width, int height)
 //RGB Color
 void sglColor3f(float r, float g, float b)
 {
-	current()->color = Color(r, g, b);
+	current()->storage.color = Color(r, g, b);
 
 	//current()->color = Color(r, g, b);
 }
@@ -587,9 +587,10 @@ void sglAreaMode(sglEAreaMode mode)
 
 	switch(mode)
 	{
-		case SGL_POINT: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
-		case SGL_LINE: //Draw only borders of graphics elements (lines)
-		case SGL_FILL : //Draw filled elements, default.
+		case SGL_POINT	: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
+		case SGL_LINE	: //Draw only borders of graphics elements (lines)
+		case SGL_FILL	: //Draw filled elements, default.
+			current()->drawType = mode;
 		break;
 		default:
 			setErrCode(SGL_INVALID_ENUM);
@@ -611,7 +612,7 @@ void sglPointSize(float size)
     	return;
     }
 
-    current()->size = size;
+    current()->storage.size = size;
 }
 
 //Enable given flag

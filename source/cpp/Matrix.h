@@ -7,11 +7,12 @@
 
 #ifndef MATRIX_H_
 #define MATRIX_H_
-#include <stdint.h>
-//typedef struct { float f1; float f2; float f3; float f4; float f5; float f6; float f7; float f8; float f9; float f10; float f11; float f12; } __attribute__((packed)) __matrix;
+
+#include "CrossReferenceDispatcher.h"
 
 static const int SIZE_FLOAT = sizeof(float) << 4;
 
+//TODO COMMENT !!!!!!!
 //Matrix
 // vectors in columns
 //Attributes are slower

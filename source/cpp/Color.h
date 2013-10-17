@@ -9,7 +9,6 @@
 #define COLOR_H_
 
 
-
 //Color
 struct Color
 {

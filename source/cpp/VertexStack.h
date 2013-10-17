@@ -2,17 +2,15 @@
  * VertexStack.h
  *
  *  Created on: 9.10.2013
- *      Author: jancajthaml
+ *      Author: Jan Brejcha
  */
 
 #ifndef VERTEXSTACK_H_
 #define VERTEXSTACK_H_
-#include "Vertex.h"
-#include <stdlib.h>
-#include <cstdio>
-#include <stdint.h>
 
-#define BASIC_STACK_SIZE 500
+#include "Edge.h"
+
+//TODO COMMENT !!!!!!!
 class VertexStack
 {
 	private:
@@ -24,9 +22,9 @@ class VertexStack
 
 	VertexStack()
 	{
-		currentSize	= BASIC_STACK_SIZE;
-		index		= 0;
-		stack		= (Vertex*)(malloc(sizeof(Vertex) * currentSize));
+		currentSize  =  BASIC_STACK_SIZE;
+		index        =  0;
+		stack        =  (Vertex*)(malloc(sizeof(Vertex) * currentSize));
 	}
 
 	~VertexStack()
@@ -77,8 +75,9 @@ class VertexStack
 	{
 		currentSize <<= 1;
 		Vertex* tmp = this->stack;
-		this->stack			= (Vertex *)malloc(sizeof(Vertex) * currentSize);
+		this->stack = (Vertex *)malloc(sizeof(Vertex) * currentSize);
 		memcpy(this->stack, tmp, sizeof(Vertex) * index);
+		free(tmp);
 	}
 };
 

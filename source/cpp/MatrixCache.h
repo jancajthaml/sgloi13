@@ -7,9 +7,10 @@
 
 #ifndef MATRIXCACHE_H_
 #define MATRIXCACHE_H_
-#include <stdint.h>
-#include "Matrix.h"
 
+#include "CrossReferenceDispatcher.h"
+
+//TODO COMMENT !!!!!!!
 struct MatrixCache
 {
 	static Matrix R;

@@ -7,9 +7,13 @@
 
 #ifndef VERTEX_H_
 #define VERTEX_H_
-#include <stdint.h>
 
-//Vertex
+#ifndef LIBRARIES
+#define LIBRARIES
+#include "CrossReferenceDispatcher.h"
+#endif
+
+//TODO COMMENT !!!!!!!
 struct Vertex
 {
 	float x;

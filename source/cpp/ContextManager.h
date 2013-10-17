@@ -1,11 +1,11 @@
 #ifndef CONTEXTMANAGER_H
 #define CONTEXTMANAGER_H
-#include <exception>
-#include <vector>
-#include <cstdio>
-#include <stdint.h>
-#include "sgl.h"
+
+#include "CrossReferenceDispatcher.h"
 #include "Context.h"
+
+//TODO COMMENT !!!!!!!
+
 /**
  * Context manager
  * \author Jan Brejcha
