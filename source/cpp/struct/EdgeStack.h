@@ -8,7 +8,7 @@
 #ifndef EDGESTACK_H
 #define EDGESTACK_H
 
-#include "Edge.h"
+#include "./Edge.h"
 
 //TODO COMMENT !!!!!!!
 class EdgeStack

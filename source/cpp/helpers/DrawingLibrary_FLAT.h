@@ -1,39 +1,24 @@
 /*
- * DrawingLibrary.h
+ * DrawingLibrary_FLAT.h
  *
- *  Created on: 17.10.2013
+ *  Created on: 21.10.2013
  *      Author: jancajthaml
  */
 
-#ifndef DRAWINGLIBRARY_H_
-#define DRAWINGLIBRARY_H_
+#ifndef DRAWINGLIBRARYFLAT_H_
+#define DRAWINGLIBRARYFLAT_H_
 
-#include <stdint.h>
-#include "Helpers.h"
-#include "Color.h"
-#include "Vertex.h"
-#include "Edge.h"
-#include "EdgeStack.h"
-#include "VertexStack.h"
-#include "ContextChunk.h"
 
-//TODO COMMENT !!!!!!!
-class DrawingLibrary
+class DrawingLibraryFlat : public DrawingLibraryInterface
 {
 
 	private:
 
-	//Buffer Manipulation methods
+	DrawingLibraryFlat() : DrawingLibraryInterface()	{}
+	~DrawingLibraryFlat()								{}
 
 
-		DrawingLibrary()
-		{
-		}
-
-		~DrawingLibrary()
-		{}
-
-		static inline void setPixel(signed x, signed y, Chunk &context)
+	inline void setPixel(signed x, signed y, Chunk &context)
 		{
 			//Condition not needed for now
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
@@ -43,7 +28,7 @@ class DrawingLibrary
 			}
 		}
 
-		static inline void setPixel_x( Chunk &context )
+	inline void setPixel_x( Chunk &context )
 		{
 			context.lastSetPixelIndex += 1;
 
@@ -52,7 +37,7 @@ class DrawingLibrary
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		static inline void setPixel_y(Chunk &context)
+	inline void setPixel_y(Chunk &context)
 		{
 			context.lastSetPixelIndex += context.w;
 
@@ -61,7 +46,7 @@ class DrawingLibrary
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		static inline void setPixel_xy(Chunk &context)
+	inline void setPixel_xy(Chunk &context)
 		{
 			context.lastSetPixelIndex += (context.w + 1);
 
@@ -70,7 +55,8 @@ class DrawingLibrary
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		static inline void setPixel_mxy(Chunk &context)
+
+	inline void setPixel_mxy(Chunk &context)
 		{
 			context.lastSetPixelIndex += context.w - 1;
 
@@ -79,14 +65,14 @@ class DrawingLibrary
 				*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
 		}
 
-		static inline void setPixel_xmy(Chunk &context)
+	inline void setPixel_xmy(Chunk &context)
 		{
 			context.lastSetPixelIndex += (1 - context.w);
 			//if (lastSetPixelIndex < w_h)
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		static inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
+	inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
 			signed to	= center_x+x;
 			signed from	= center_x-x;
@@ -112,7 +98,7 @@ class DrawingLibrary
 			}
 		}
 
-		static inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
+	inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
 		{
 			signed rx = x + xs;
 			signed ry = y + ys;
@@ -132,7 +118,7 @@ class DrawingLibrary
 			setPixel(mry, mrx, context);
 		}
 
-		static inline void bresenham_x(signed x1, signed y1, signed x2, signed y2, Chunk &context)
+	inline void bresenham_x(signed x1, signed y1, signed x2, signed y2, Chunk &context)
 		{
 			signed dx	= x2 - x1;
 			signed dy	= y2 - y1;
@@ -162,7 +148,7 @@ class DrawingLibrary
 			}
 		}
 
-		static inline void bresenham_y(signed x1, signed y1, signed x2, signed y2, Chunk &context)
+	inline void bresenham_y(signed x1, signed y1, signed x2, signed y2, Chunk &context)
 		{
 			signed dx	= x2 - x1;
 			signed dy	= y2 - y1;
@@ -192,7 +178,7 @@ class DrawingLibrary
 			}
 		}
 
-		static inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
+	inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
 		{
 			int_fast32_t dx = abs(b.x - a.x);
 			int_fast32_t dy = abs(b.y - a.y);
@@ -208,10 +194,16 @@ class DrawingLibrary
 	///######### API STARTS HERE ###############################################################
 
 	public:
+		static DrawingLibraryFlat& instance()
+		{
+			static DrawingLibraryFlat * theInstance = new DrawingLibraryFlat(); // only initialized once!
+			return *theInstance;
+		}
+
 
 	//POINTS
 
-		static void drawPoints( Chunk &context )
+	inline void drawPoints( Chunk &context )
 		{
 			int_fast32_t s = int_fast32_t(context.vertices.index);
 
@@ -242,7 +234,7 @@ class DrawingLibrary
 
 	//LINES
 
-		static void drawLines( Chunk &context )
+	inline void drawLines( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -250,7 +242,7 @@ class DrawingLibrary
 				drawLine2D(context.vertices[i], context.vertices[i+1], context);
 		}
 
-		static void drawLineStrip( Chunk &context )
+	inline void drawLineStrip( Chunk &context )
 		{
 			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -258,7 +250,7 @@ class DrawingLibrary
 				drawLine2D(context.vertices[i], context.vertices[i+1], context);
 		}
 
-		static void drawLineLoop( Chunk &context )
+	inline void drawLineLoop( Chunk &context )
 		{
 			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -269,7 +261,7 @@ class DrawingLibrary
 		}
 
 
-		static void drawPolygon( Chunk &context )
+	inline void drawPolygon( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast32_t(context.vertices.index-1);
 
@@ -279,12 +271,7 @@ class DrawingLibrary
 			drawLine2D( context.vertices[size], context.vertices[0], context );
 		}
 
-		static void drawTriangles()
-		{
-
-		}
-
-		static void drawCircle( Vertex v,float r, Chunk &context)
+		inline void drawCircle( Vertex v,float r, Chunk &context)
 		{
 			int_fast32_t x = 0;
 			int_fast32_t y = r;
@@ -312,7 +299,7 @@ class DrawingLibrary
 
 	//FILL
 
-		static void fillCircle( Vertex v,float r,Chunk &context )
+		inline void fillCircle( Vertex v,float r,Chunk &context )
 		{
 			int_fast32_t x = 0;
 			int_fast32_t y = r;
@@ -337,9 +324,9 @@ class DrawingLibrary
 			}
 		}
 
-		static void fillPolygon( Chunk &context )
+		inline void fillPolygon( Chunk &context )
 		{
-			bool depth	= context.depth;
+			bool depth	= false;
 
 		    EdgeStack* tableEdges = new EdgeStack[context.h];
 
@@ -421,5 +408,4 @@ class DrawingLibrary
 
 };
 
-
-#endif /* DRAWINGLIBRARY_H_ */
+#endif /* DRAWINGLIBRARYFLAT_H_ */

@@ -8,17 +8,19 @@
 #ifndef DATA_H_
 #define DATA_H_
 
-#include "CrossReferenceDispatcher.h"
-#include "Color.h"
-#include "Vertex.h"
-#include "Edge.h"
-#include "Matrix.h"
-#include "EdgeStack.h"
-#include "VertexStack.h"
-#include "MatrixCache.h"
-#include "Viewport.h"
-#include "DrawingLibrary.h"
-#include "ContextChunk.h"
+#include "./CrossReferenceDispatcher.h"
+#include "./../struct/Color.h"
+#include "./../struct/Vertex.h"
+#include "./../struct/Edge.h"
+#include "./../struct/Matrix.h"
+#include "./../struct/EdgeStack.h"
+#include "./../struct/VertexStack.h"
+#include "./../struct/MatrixCache.h"
+#include "./Viewport.h"
+#include "./../helpers/DrawingLibraryBase.h"
+#include "./../helpers/DrawingLibrary_FLAT.h"
+#include "./../helpers/DrawingLibrary_DEPTH.h"
+#include "./ContextChunk.h"
 
 /*
  * Side-notes:
@@ -53,7 +55,7 @@
 
 //TODO COMMENT !!!!!!!
 //Context
-typedef struct Context
+struct Context
 {
 
 	int_fast8_t id;	//Maximum 256 contexts
@@ -63,6 +65,10 @@ typedef struct Context
 
 	sglEAreaMode drawType;	// Drawing mode
 	sglEMatrixMode matrixMode;
+
+	static DrawingLibraryBase g;
+	static DrawingLibraryFlat flat;
+	static DrawingLibraryDepth depth;
 
 	//State
 	bool BEGIN;
@@ -100,7 +106,7 @@ typedef struct Context
 		//----------------------//
 
 		//Initialise Flags
-		storage.depth  = false;
+		//storage.depth  = false;
 		BEGIN		   = false;
 
 		//----------------------//
@@ -115,6 +121,8 @@ typedef struct Context
 		P_changed      = true;
 		M_changed      = true;
 		drawType       = SGL_FILL;
+
+		this->enableDepthTest();
 	}
 
 	inline void setVertex2f(float x, float y)
@@ -135,20 +143,20 @@ typedef struct Context
 
         switch( drawType )
         {
-            case SGL_POINT          : DrawingLibrary::drawPoints ( storage )    ; break;
+            case SGL_POINT          : g.drawPoints ( storage )    ; break;
 
             default                 : switch( type )	//LINES of FILLING
             {
-                case SGL_POINTS     : DrawingLibrary::drawPoints    ( storage ) ; break;
-                case SGL_LINES      : DrawingLibrary::drawLines     ( storage ) ; break;
-                case SGL_LINE_STRIP : DrawingLibrary::drawLineStrip ( storage ) ; break;
-                case SGL_LINE_LOOP  : DrawingLibrary::drawLineLoop  ( storage ) ; break;
-                case SGL_TRIANGLES  : DrawingLibrary::drawTriangles (         ) ; break;
+                case SGL_POINTS     : g.drawPoints    ( storage ) ; break;
+                case SGL_LINES      : g.drawLines     ( storage ) ; break;
+                case SGL_LINE_STRIP : g.drawLineStrip ( storage ) ; break;
+                case SGL_LINE_LOOP  : g.drawLineLoop  ( storage ) ; break;
+                case SGL_TRIANGLES  : /*DrawingLibraryBase::drawTriangles (         )*/ ; break;
 
                 case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
                 {
-                    case SGL_LINE   : DrawingLibrary::drawPolygon   ( storage ) ; break;
-                    default         : DrawingLibrary::fillPolygon   ( storage ) ; break;
+                    case SGL_LINE   : g.drawPolygon   ( storage ) ; break;
+                    default         : g.fillPolygon   ( storage ) ; break;
                 }
                 break;
 
@@ -186,9 +194,9 @@ typedef struct Context
 	{
 		switch( drawType )
 		{
-			case SGL_POINT  : DrawingLibrary::drawPoints ( storage                                                            ) ; break;
-			case SGL_LINE   : DrawingLibrary::drawCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
-			default         : DrawingLibrary::fillCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
+			case SGL_POINT  : g.drawPoints ( storage                                                            ) ; break;
+			case SGL_LINE   : g.drawCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
+			default         : g.fillCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
 		}
 
 	}
@@ -452,7 +460,17 @@ typedef struct Context
 	//FIXME this is a example of a HELPER ... move to Helpers.h
 	inline int_fast32_t __round(float x)
 	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
+
+	void enableDepthTest()
+	{ g.set(&DrawingLibraryDepth::instance()); }
+
+	void disableDepthTest()
+	{ g.set(&DrawingLibraryFlat::instance()); }
+
 };
+
+
+DrawingLibraryBase Context::g = DrawingLibraryBase();
 
 
 #endif /* DATA_H_ */

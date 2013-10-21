@@ -8,7 +8,7 @@
 #ifndef MATRIXCACHE_H_
 #define MATRIXCACHE_H_
 
-#include "CrossReferenceDispatcher.h"
+#include "./Matrix.h"
 
 //TODO COMMENT !!!!!!!
 struct MatrixCache

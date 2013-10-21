@@ -53,9 +53,9 @@
  *
  */
 
-#include "CrossReferenceDispatcher.h"
-#include "Context.h"
-#include "ContextManager.h"
+#include "core/CrossReferenceDispatcher.h"
+#include "core/Context.h"
+#include "core/ContextManager.h"
 
 
 Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -612,7 +612,7 @@ void sglEnable(sglEEnableFlags flag)
 	}
 	switch(flag)
 	{
-		case SGL_DEPTH_TEST : break;//depth test is off by default
+		case SGL_DEPTH_TEST : current()->enableDepthTest(); break;//depth test is off by default
 
 		setErrCode(SGL_INVALID_ENUM);
 		return;
@@ -629,7 +629,7 @@ void sglDisable(sglEEnableFlags flag)
 	}
 	switch(flag)
 	{
-		case SGL_DEPTH_TEST : break;//depth test is off by default
+		case SGL_DEPTH_TEST : current()->disableDepthTest(); break;//depth test is off by default
 
 		setErrCode(SGL_INVALID_ENUM);
 		return;

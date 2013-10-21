@@ -8,10 +8,6 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
-#ifndef LIBRARIES
-#define LIBRARIES
-#include "CrossReferenceDispatcher.h"
-#endif
 
 //TODO COMMENT !!!!!!!
 struct Vertex

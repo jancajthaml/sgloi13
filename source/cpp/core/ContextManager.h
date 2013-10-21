@@ -1,8 +1,8 @@
 #ifndef CONTEXTMANAGER_H
 #define CONTEXTMANAGER_H
 
-#include "CrossReferenceDispatcher.h"
-#include "Context.h"
+#include "./CrossReferenceDispatcher.h"
+#include "./Context.h"
 
 //TODO COMMENT !!!!!!!
 

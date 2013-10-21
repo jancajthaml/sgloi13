@@ -8,10 +8,10 @@
 #ifndef CHUNK_H_
 #define CHUNK_H_
 
-#include "CrossReferenceDispatcher.h"
-#include "Color.h"
-#include "EdgeStack.h"
-#include "VertexStack.h"
+#include "./CrossReferenceDispatcher.h"
+#include "./../struct/Color.h"
+#include "./../struct/EdgeStack.h"
+#include "./../struct/VertexStack.h"
 
 //A brige between DrawingLibrary.h and Context.h
 //C++ does not allow cross referencing and forwarding more than 3 parameters in a method call is evil
@@ -34,7 +34,7 @@ struct Chunk
 
 	uint_fast32_t lastSetPixelIndex	;	//CACHE OF setPixel(int,int) METHOD
 
-	bool depth						;	//DEPTH TEST
+	//bool depth						;	//DEPTH TEST
 };
 
 #endif /* CHUNK_H_ */

@@ -8,7 +8,7 @@
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
-#include "CrossReferenceDispatcher.h"
+#include "./../core/CrossReferenceDispatcher.h"
 
 static const int SIZE_FLOAT = sizeof(float) << 4;
 

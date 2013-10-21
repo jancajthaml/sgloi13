@@ -8,7 +8,7 @@
 #ifndef VIEWPORT_H_
 #define VIEWPORT_H_
 
-#include "Matrix.h"
+#include "./../struct/Matrix.h"
 
 //TODO COMMENT !!!!!!!
 struct Viewport

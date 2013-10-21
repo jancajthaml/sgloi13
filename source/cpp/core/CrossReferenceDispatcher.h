@@ -25,7 +25,7 @@ typedef struct { float f1; float f2; float f3;} __attribute__((packed)) __color;
 #include <cstdio>
 #include <stdint.h>
 
-#include "sgl.h"
+#include "./../sgl.h"
 
 
 #endif /* CROSSREFERENCEDISPATCHER_H_ */

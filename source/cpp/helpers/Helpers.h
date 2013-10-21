@@ -8,14 +8,10 @@
 #ifndef HELPERS_H_
 #define HELPERS_H_
 
-
-//#include "Helpers.h"
-//#include "Color.h"
-#include "Vertex.h"
-#include "Edge.h"
-//#include "Matrix.h"
-#include "EdgeStack.h"
-#include "VertexStack.h"
+#include "./../struct/Vertex.h"
+#include "./../struct/Edge.h"
+#include "./../struct/EdgeStack.h"
+#include "./../struct/VertexStack.h"
 
 //TODO COMMENT !!!!!!!
 struct Helper

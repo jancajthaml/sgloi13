@@ -8,7 +8,7 @@
 #ifndef VERTEXSTACK_H_
 #define VERTEXSTACK_H_
 
-#include "Edge.h"
+#include "./Vertex.h"
 
 //TODO COMMENT !!!!!!!
 class VertexStack
