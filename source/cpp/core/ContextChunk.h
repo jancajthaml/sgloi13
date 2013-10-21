@@ -19,6 +19,7 @@ struct Chunk
 {
 
 	Color* buffer					;	// COLOR BUFFER
+	float* depth					;	// DEPTH BUFFER
 	Color* clear					;	// CLEAR COLOR CACHE
 
 	int_fast16_t w					;	// CONTEXT WIDTH  (maximum 65536)

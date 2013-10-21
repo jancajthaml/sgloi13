@@ -143,21 +143,20 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 		}
 
 		inline void setPixel(signed x, signed y, Chunk &context)
-				{
-					//Condition not needed for now
-					if (x >= 0 && x < context.w && y >= 0 && y < context.h)
-					{
-						context.lastSetPixelIndex = (x + context.w * y);
-						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-					}
-				}
+		{
+			//Condition not needed for now
+			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
+			{
+				context.lastSetPixelIndex = (x + context.w * y);
+				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+			}
+		}
 
 				inline void setPixel_x( Chunk &context )
 				{
 					context.lastSetPixelIndex += 1;
 
-					//Safety off
-					//if (lastSetPixelIndex < w_h)
+					if( context.lastSetPixelIndex < context.w_h )
 						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 				}
 
@@ -165,8 +164,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				{
 					context.lastSetPixelIndex += context.w;
 
-					//Safety off
-				//		if (lastSetPixelIndex < w_h)
+					if( context.lastSetPixelIndex < context.w_h )
 						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 				}
 
@@ -174,8 +172,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				{
 					context.lastSetPixelIndex += (context.w + 1);
 
-					//Safety off
-					//if (lastSetPixelIndex < w_h)
+					if( context.lastSetPixelIndex < context.w_h )
 						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 				}
 
@@ -183,15 +180,15 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				{
 					context.lastSetPixelIndex += context.w - 1;
 
-					//Safety off
-					//if (lastSetPixelIndex < w_h)
+					if( context.lastSetPixelIndex < context.w_h )
 						*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
 				}
 
 				inline void setPixel_xmy(Chunk &context)
 				{
 					context.lastSetPixelIndex += (1 - context.w);
-					//if (lastSetPixelIndex < w_h)
+
+					if( context.lastSetPixelIndex < context.w_h )
 						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 				}
 		static DrawingLibraryFlat& instance()

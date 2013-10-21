@@ -49,9 +49,17 @@ struct Matrix
 		matrix[15] = m44;	//15
 	}
 
-	inline Vertex operator*(const Vertex & other)
+	inline Vertex operator<(const Vertex & other)
 	{
-		Vertex res(matrix[0] * other.x + matrix[4] * other.y + matrix[8] * other.z + matrix[12] * other.w,matrix[1] * other.x + matrix[5] * other.y + matrix[9] * other.z + matrix[13] * other.w,matrix[2] * other.x + matrix[6] * other.y + matrix[10] * other.z + matrix[14] * other.w,matrix[3] * other.x + matrix[7] * other.y + matrix[11] * other.z + matrix[15] * other.w);
+		float weight = (matrix[3]*other.x + matrix[7]*other.y +matrix[15]);
+		Vertex res((matrix[0]*other.x + matrix[4]*other.y +matrix[12])/weight  ,(matrix[1]*other.x + matrix[5]*other.y +matrix[13])/weight, 0.0f, 1.0f);
+		return res;
+	}
+
+	inline Vertex operator<<(const Vertex & other)
+	{
+		float weight = (matrix[3]*other.x + matrix[7]*other.y + matrix[11]*other.z +matrix[15]) ;
+		Vertex res((matrix[0]*other.x + matrix[4]*other.y + matrix[8]*other.z +matrix[12])/weight  ,(matrix[1]*other.x + matrix[5]*other.y + matrix[9]*other.z +matrix[13])/weight  ,(matrix[2]*other.x + matrix[6]*other.y + matrix[10]*other.z +matrix[14])/weight , other.w);
 		return res;
 	}
 

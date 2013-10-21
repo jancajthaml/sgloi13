@@ -28,13 +28,6 @@ class DrawingLibraryInterface
 {
 	public:
 
-
-		virtual void setPixel		( signed x, signed y, Chunk &context) = 0;
-		virtual void setPixel_x		( Chunk &context ) = 0;
-		virtual void setPixel_y		( Chunk &context) = 0;
-		virtual void setPixel_xmy	( Chunk &context) = 0;
-		virtual void setPixel_xy	( Chunk &context) = 0;
-		virtual void setPixel_mxy	( Chunk &context) = 0;
 		virtual void fillSymPixel	( signed x, signed y, signed center_x, signed center_y, Chunk &context) = 0;
 		virtual void setSymPixel	( signed x, signed y, signed xs, signed ys, Chunk &context) = 0;
 		virtual void drawLine2D		( Vertex a, Vertex b, Chunk &context) = 0;
@@ -85,12 +78,6 @@ class DrawingLibraryBase
     	DrawingLibraryInterface* state;
 };
 
-void DrawingLibraryBase::setPixel		( signed x, signed y, Chunk &context)										{ state->setPixel(x,y,context);	}
-void DrawingLibraryBase::setPixel_x		( Chunk &context)															{ state->setPixel_x(context);	}
-void DrawingLibraryBase::setPixel_y		( Chunk &context)															{ state->setPixel_y(context);	}
-void DrawingLibraryBase::setPixel_xy	( Chunk &context)															{ state->setPixel_xy(context);	}
-void DrawingLibraryBase::setPixel_xmy	( Chunk &context)															{ state->setPixel_xy(context);	}
-void DrawingLibraryBase::setPixel_mxy	( Chunk &context)															{ state->setPixel_xy(context);	}
 void DrawingLibraryBase::fillSymPixel	( signed x, signed y, signed center_x, signed center_y, Chunk &context)		{ state->fillSymPixel(x, y, center_x, center_y, context);	}
 void DrawingLibraryBase::setSymPixel	( signed x, signed y, signed xs, signed ys, Chunk &context)					{ state->setSymPixel(x, y, xs, ys, context);				}
 void DrawingLibraryBase::drawLine2D		( Vertex a, Vertex b, Chunk &context)										{ state->drawLine2D(a, b, context);				}

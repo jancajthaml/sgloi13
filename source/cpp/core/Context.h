@@ -72,6 +72,7 @@ struct Context
 
 	//State
 	bool BEGIN;
+	bool Z_TEST;
 
 	//Transformation matrices
 	Matrix current_MV;
@@ -113,6 +114,7 @@ struct Context
 
 		storage.size   = 1;
 		storage.buffer = (Color*) malloc(sizeof(Color) * storage.w_h);
+		storage.depth  = (float*) malloc(sizeof(float) * storage.w_h);
 		storage.clear  = (Color*) malloc(sizeof(Color) * storage.w_h);
 
 		current_MV	   = MatrixCache::identity();
@@ -122,7 +124,7 @@ struct Context
 		M_changed      = true;
 		drawType       = SGL_FILL;
 
-		this->enableDepthTest();
+		this->disableDepthTest();
 	}
 
 	inline void setVertex2f(float x, float y)
@@ -134,9 +136,9 @@ struct Context
 	inline void setVertex4f(float x, float y, float z, float w)
 	{ storage.vertices.push_back(create(x, y, z, w)); }
 
-	inline void draw()
+	inline void rasterize()
 	{
-		if (types.size() == 0) throw std::exception();
+		//if (types.size() == 0) throw std::exception();
 
 		sglEElementType type = types.back();
 		types.pop_back();
@@ -181,7 +183,13 @@ struct Context
 	inline void transform(Vertex & v)
 	{
 		check_MVP();
-		v = MVP * v;
+
+		//This is a uqly fix to differ the multiplication with Z-TEST and without
+
+		if(Z_TEST)	v = MVP << v;	//WITH
+		else		v = MVP < v;	//WITHOUT
+
+		printf("     after transform -> vertex: x=%f, y=%f, z=%f, w=%f\n",v.x,v.y,v.z,v.w);
 	}
 
 	inline float calculateRadiusScaleFactor()
@@ -301,7 +309,7 @@ struct Context
 		}
 
 		//FIXME draw should be at "End" in rasterisation phase
-		draw();
+		rasterize();
 	}
 
 	inline int_fast16_t stackSize()
@@ -365,11 +373,13 @@ struct Context
 	{ matrixMode = mode; }
 
 	inline bool BeginBeforeEnd()
-	{ return BEGIN;//(types.size() > 0);
-	}
+	{ return BEGIN; }
 
 	inline void begin()
-	{ BEGIN=true; }
+	{
+		storage.vertices.index = 0;
+		BEGIN                  = true;
+	}
 
 	inline void end()
 	{ BEGIN=false; }
@@ -406,16 +416,15 @@ struct Context
 
 	inline void clearColorBuffer()
 	{
-		//memcpy(&storage.clear[offset], &storage.clear[l], s);
-
 		memcpy(storage.buffer, storage.clear, storage.w_h);
-		return;
 	}
 
 	inline void clearDepthBuffer()
 	{
-		//memcpy(buffer, clear, w_h);
-		return;
+		float clear = std::numeric_limits<float>::max();
+
+	    for(uint_fast32_t i = 0; i < storage.w_h; ++i)
+	        storage.depth[i] = clear;
 	}
 
 	inline bool check_MP()
@@ -462,10 +471,16 @@ struct Context
 	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 
 	void enableDepthTest()
-	{ g.set(&DrawingLibraryDepth::instance()); }
+	{
+		g.set(&DrawingLibraryDepth::instance());
+		Z_TEST = true;
+	}
 
 	void disableDepthTest()
-	{ g.set(&DrawingLibraryFlat::instance()); }
+	{
+		g.set(&DrawingLibraryFlat::instance());
+		Z_TEST = false;
+	}
 
 };
 

@@ -57,12 +57,6 @@
 #include "core/Context.h"
 #include "core/ContextManager.h"
 
-
-Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::I = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::T = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
 //---------------------------------------------------------------------------
@@ -258,7 +252,7 @@ void sglEnd(void)
 	 }
 
 	 current()->end();
-	 current()->draw();
+	 current()->rasterize();
 }
 
 //Vertex with 3 float coords in homogenous coordinates
@@ -267,6 +261,7 @@ void sglEnd(void)
 void sglVertex4f(float x, float y, float z, float w)
 {
 	current()->setVertex4f(x, y, z, w);
+	printf("before transform -> vertex4: x=%f, y=%f, z=%f, w=%f\n",x,y,z,w);
 }
 
 //Vertex with 3 float coords
@@ -274,6 +269,7 @@ void sglVertex4f(float x, float y, float z, float w)
 void sglVertex3f(float x, float y, float z)
 {
 	current()->setVertex3f(x, y, z);
+	printf("before transform -> vertex3: x=%f, y=%f, z=%f\n",x,y,z);
 }
 
 //Vertex with 2 float coords
@@ -281,6 +277,7 @@ void sglVertex3f(float x, float y, float z)
 void sglVertex2f(float x, float y)
 {
 	current()->setVertex2f(x, y);
+	printf("before transform -> vertex2: x=%f, y=%f\n",x,y);
 }
 
 //2D Circle
@@ -338,13 +335,6 @@ void sglEllipse(float x, float y, float z, float a, float b)
 	current()->drawEllipse(x, y, z, a, b);
 }
 
-//Line
-void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
-{
-
-}
-
-
 //2D Arc
 //
 // x	- center.x
@@ -361,13 +351,8 @@ void sglArc(float x, float y, float z, float radius, float from, float to)
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
-	//sglEErrorCode err;
-	//ctx_mgr.getContext(&err).drawArc(x, y, z, radius, from, to);
-	//setErrCode(err);
 
 	current()->drawArc2D(x, y, z, radius, from, to);
-
-//	current()->drawArc2D(x,y,z,radius,from,to);
 }
 
 //---------------------------------------------------------------------------
@@ -389,8 +374,6 @@ void sglMatrixMode( sglEMatrixMode mode )
 		case SGL_PROJECTION	:
 		{
 			current()->setMatrixMode(mode);
-
-			//current()->setMatrixMode(mode);
 		}
 		break;
 
@@ -408,8 +391,6 @@ void sglPushMatrix(void)
 	}
 
 	current()->pushMatrix();
-
-	//current()->pushMatrix();
 }
 
 //Pop Matrix from transformation Stack
@@ -427,8 +408,6 @@ void sglPopMatrix(void)
 	}
 
 	current()->popMatrix();
-
-//	current()->popMatrix();
 }
 
 void sglLoadIdentity(void)
@@ -438,9 +417,7 @@ void sglLoadIdentity(void)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	//ERROR HERE
 
-	//current().setCurrentMatrix(Matrix::identity());
 	current()->setCurrentMatrix(MatrixCache::identity());
 }
 
@@ -460,7 +437,11 @@ void sglLoadMatrix(const float* matrix)
 //Multiply two matrices
 void sglMultMatrix(const float* matrix)
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
 
 	Matrix mat = Matrix(matrix);
 	current()->multiplyCurrentMatrix(mat);
@@ -470,6 +451,12 @@ void sglMultMatrix(const float* matrix)
 //Translate coordinates
 void sglTranslate(float x, float y, float z)
 {
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
 	Matrix translate = MatrixCache::translate(x,y,z);
 	current()->multiplyCurrentMatrix(translate);
 
@@ -479,6 +466,12 @@ void sglTranslate(float x, float y, float z)
 //Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
 	Matrix scale = MatrixCache::scale(scalex, scaley, scalez);
 	current()->multiplyCurrentMatrix(scale);
 
@@ -488,6 +481,12 @@ void sglScale(float scalex, float scaley, float scalez)
 //Rotate **** around the centerx,centery axis with given angle
 void sglRotate2D(float angle, float centerx, float centery)
 {
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
 	//Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
 
 	sglTranslate(centerx, centery, 0.0f);
@@ -507,28 +506,27 @@ void sglRotateY(float angle)
 // ?
 void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
 
-	Matrix ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
-	//current()->multiplyCurrentMatrix(ortho);
+	Matrix ortho = MatrixCache::ortho(left, right, bottom, top, near, far);
 	current()->multiplyCurrentMatrix(ortho);
 }
 
 // ?
 void sglFrustum(float left, float right, float bottom, float top, float near, float far)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
 
-	//Matrix frustum((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
-	//current()->multiplyCurrentMatrix(frustum);
+	Matrix frustum = MatrixCache::frustum(left, right, bottom, top, near, far);
+	current()->multiplyCurrentMatrix(frustum);
 }
 
 //Sets scene viewport
@@ -547,8 +545,6 @@ void sglViewport(int x, int y, int width, int height)
 	}
 
 	current()->setViewport(x, y, width, height);
-
-	//current()->setViewport(width, height, x, y);
 }
 
 //---------------------------------------------------------------------------

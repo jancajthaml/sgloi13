@@ -53,7 +53,7 @@ struct Viewport
 
 	inline void calculateWindowCoordinates(Vertex & v)
 	{
-		if (ready)
+		if( ready )
 		{
 			v.x = x + (v.x + 1) * width_2_x;
 			v.y = y + (v.y + 1) * height_2_y;

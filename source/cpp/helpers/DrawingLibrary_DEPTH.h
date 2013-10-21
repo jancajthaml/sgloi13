@@ -26,8 +26,8 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			for( ; from <= to; from++ )
 			{
-				setPixel( from, h1, context );
-				setPixel( from, l1, context );
+				setPixel( from, h1, 0.0f, context );
+				setPixel( from, l1, 0.0f, context );
 			}
 
 			to		= center_x+y;
@@ -37,8 +37,8 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			for( ; from <= to; from++ )
 			{
-				setPixel( from, h1 ,context );
-				setPixel( from, l1 ,context );
+				setPixel( from, h1, 0.0f,context );
+				setPixel( from, l1, 0.0f,context );
 			}
 		}
 
@@ -48,18 +48,18 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			signed ry = y + ys;
 			signed mrx = -x + xs;
 			signed mry = -y + ys;
-			setPixel(rx, ry, context);
-			setPixel(rx, mry, context);
-			setPixel(mrx, ry, context);
-			setPixel(mrx, mry, context);
+			setPixel(rx, ry, 0.0f, context);
+			setPixel(rx, mry, 0.0f, context);
+			setPixel(mrx, ry, 0.0f, context);
+			setPixel(mrx, mry, 0.0f, context);
 			rx = x + ys;
 			ry = y + xs;
 			mrx = -x + ys;
 			mry = -y + xs;
-			setPixel(ry, rx, context);
-			setPixel(ry, mrx, context);
-			setPixel(mry, rx, context);
-			setPixel(mry, mrx, context);
+			setPixel(ry, rx, 0.0f, context);
+			setPixel(ry, mrx, 0.0f, context);
+			setPixel(mry, rx, 0.0f, context);
+			setPixel(mry, mrx, 0.0f, context);
 		}
 
 	///######### API STARTS HERE ###############################################################
@@ -68,10 +68,23 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 	public:
 
 		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
-		{ DrawingLibraryFlat::instance().drawLine2D(a, b, context); }
+		{
+			//FIXME incorporate z COORDINATE
+			DrawingLibraryFlat::instance().drawLine2D(a, b, context);
+		}
 
-		inline void setPixel(signed x, signed y, Chunk &context)
-		{ DrawingLibraryFlat::instance().setPixel(x, y, context); }
+		inline void setPixel(signed x, signed y, signed z, Chunk &context)
+		{
+			uint_fast32_t index = (x + context.w * y);
+
+			if (x >= 0 && x < context.w && y >= 0 && y < context.h && z < context.depth[index])
+			{
+				context.lastSetPixelIndex	= index;
+				context.depth[index]		= z;
+
+				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+			}
+		}
 
 		inline void setPixel_x( Chunk &context )
 		{ DrawingLibraryFlat::instance().setPixel_x(context); }
@@ -102,7 +115,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			if(context.size==1)
 			{
 				for (int_fast32_t i = 0; i < s; i++)
-					setPixel( (context.vertices)[i].x, (context.vertices)[i].y, context );
+					setPixel( (context.vertices)[i].x, (context.vertices)[i].y, (context.vertices)[i].z, context );
 			}
 			else
 			{
@@ -117,7 +130,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 					Vertex v = (context.vertices)[i];
 					for(int_fast8_t i = -thickness; i<context.size-1; i++)
 						for(int_fast8_t j = -thickness; j<context.size-1; j++)
-							setPixel(v.x+j, v.y+i, context);
+							setPixel(v.x+j, v.y+i, (context.vertices)[i].z, context);
 				}
 			}
 		}
@@ -252,7 +265,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 					for( float from = active_edges[i-1].intersectX; from<=to; from++ )
 					{
 						if( depth )	z1+=deltaZ;
-						else		setPixel(from, y,context);
+						else		setPixel(from, y, z1, context);
 					}
 
 					if(size % 3==0 && size % 2!=0 && i+2==size)
@@ -270,7 +283,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 							}
 							else
 							{
-								setPixel(from, y,context);
+								setPixel(from, y, z1, context);
 			                }
 						}
 			        }
