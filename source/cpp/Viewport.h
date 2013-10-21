@@ -2,13 +2,15 @@
  * Viewport.h
  *
  *  Created on: 7.10.2013
- *      Author: Jan Brejcha
+ *      Author: Jan Brejcha & Jan Cajthaml
  */
 
 #ifndef VIEWPORT_H_
 #define VIEWPORT_H_
-#include <stdint.h>
 
+#include "Matrix.h"
+
+//TODO COMMENT !!!!!!!
 struct Viewport
 {
 
@@ -19,8 +21,8 @@ struct Viewport
 	int_fast32_t x;
 	int_fast32_t y;
 	bool ready;
-	Matrix viewportMatrix;
-	bool viewportMatrixChanged;
+	Matrix V;
+	bool V_changed;
 
 	Viewport()
 	{
@@ -31,7 +33,7 @@ struct Viewport
 		x						= 0;
 		y						= 0;
 		ready					= false;
-		viewportMatrixChanged	= true;
+		V_changed	= true;
 	}
 
 	inline float calculateRatio()
@@ -67,17 +69,15 @@ struct Viewport
 		this->x						=  x;
 		this->y						=  y;
 
-		this->viewportMatrix		=  Matrix
-				(
-						width_2_x, 0.0f, 0.0f, 0.0f,
-						0.0f, height_2_y, 0.0f, 0.0f,
-						0.0f, 0.0f, 1.0f, 0.0f,
-						width_2_x + x, height_2_y + x, 0.0f, 1.0f
-				);
-		this->ready					=  true;
-		this->viewportMatrixChanged	=  true;
-	//	this->width_2_x				+= x;
-//		this->height_2_y			+= y;
+		this->V		=  Matrix
+		(
+			width_2_x, 0.0f, 0.0f, 0.0f,
+			0.0f, height_2_y, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			width_2_x + x, height_2_y + x, 0.0f, 1.0f
+		);
+		this->ready		=  true;
+		this->V_changed	=  true;
 	}
 
 };

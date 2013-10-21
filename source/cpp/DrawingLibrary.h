@@ -17,6 +17,7 @@
 #include "VertexStack.h"
 #include "ContextChunk.h"
 
+//TODO COMMENT !!!!!!!
 class DrawingLibrary
 {
 
@@ -85,27 +86,29 @@ class DrawingLibrary
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		static inline void fillSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
+		static inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
+			signed to	= center_x+x;
+			signed from	= center_x-x;
 
-			//filling the TOP and BOTTOM quarter
-			int to = x+xs;
-			int from = x-xs;
+			signed h1	= center_y+y;
+			signed l1	= center_y-y;
 
 			for( ; from <= to; from++ )
 			{
-				setPixel(from, y+ys, context);
-				setPixel(from, y-ys, context);
+				setPixel( from, h1, context );
+				setPixel( from, l1, context );
 			}
 
-			//filling the LEFT and RIGHT quarter
-			to = x+ys;
-			from = x-ys;
+			to		= center_x+y;
+			from	= center_x-y;
+			h1		= center_y+x;
+			l1		= center_y-x;
 
 			for( ; from <= to; from++ )
 			{
-				setPixel(from, y+xs, context);
-				setPixel(from, y-xs, context);
+				setPixel( from, h1 ,context );
+				setPixel( from, l1 ,context );
 			}
 		}
 
@@ -131,15 +134,15 @@ class DrawingLibrary
 
 		static inline void bresenham_x(signed x1, signed y1, signed x2, signed y2, Chunk &context)
 		{
-			signed dx = x2 - x1;
-			signed dy = y2 - y1;
-			signed sign = 1;
+			signed dx	= x2 - x1;
+			signed dy	= y2 - y1;
+			signed sign	= 1;
 
 			if (dy < 0) sign = -1;
 
-			signed c0 = (dy << 1) * sign;
-			signed c1 = c0 - (dx << 1);
-			signed p = c0 - dx;
+			signed c0	= (dy << 1) * sign;
+			signed c1	= c0 - (dx << 1);
+			signed p	= c0 - dx;
 
 			setPixel( x1, y1, context );
 
@@ -153,22 +156,23 @@ class DrawingLibrary
 				else
 				{
 					p += c1;
-					if (sign > 0)	setPixel_xy( context );
-					else			setPixel_xmy( context );
+					if (sign > 0)	setPixel_xy  ( context );
+					else			setPixel_xmy ( context );
 				}
 			}
 		}
 
 		static inline void bresenham_y(signed x1, signed y1, signed x2, signed y2, Chunk &context)
 		{
-			signed dx = x2 - x1;
-			signed dy = y2 - y1;
-			signed sign = 1;
+			signed dx	= x2 - x1;
+			signed dy	= y2 - y1;
+			signed sign	= 1;
+
 			if (dy < 0)	sign = -1;
-			signed c0, c1, p;
-			c0 = (dy << 1) * sign;
-			c1 = c0 - (dx << 1);
-			p = c0 - dx;
+
+			signed c0	= (dy << 1) * sign;
+			signed c1	= c0 - (dx << 1);
+			signed p	= c0 - dx;
 
 			setPixel( y1, x1, context );
 
@@ -182,62 +186,9 @@ class DrawingLibrary
 				else
 				{
 					p += c1;
-					if (sign > 0)
-						setPixel_xy(context);
-					else
-						setPixel_mxy(context);
+					if( sign>0 )	setPixel_xy  (context);
+					else			setPixel_mxy (context);
 				}
-			}
-		}
-
-		static inline void bresenham_circle_draw( int_fast32_t xs, int_fast32_t ys, int_fast32_t r, Chunk &context)
-		{
-			int_fast32_t x, y, p;
-			x = 0;
-			y = r;
-			p = 3 - (r << 1);
-			while (x < y)
-			{
-				setSymPixel(x, y, xs, ys, context);
-				if (p < 0)
-				{
-					p += (x << 2) + 6;
-				}
-				else
-				{
-					p += ((x - y) << 2) + 10;
-					y -= 1;
-				}
-				x += 1;
-			}
-			if (x == y) setSymPixel(x, y, xs, ys, context);
-		}
-
-		static inline void bresenham_circle_fill( int_fast32_t xs, int_fast32_t ys, int_fast32_t r, Chunk &context)
-		{
-			int_fast32_t x, y, p;
-			x = 0;
-			y = r;
-			p = 3 - (r << 1);
-
-			int from	= x-r;
-			int to		= x+r;
-
-			for(; from<=to; from++) setPixel(from, y, context);
-
-			while (x < y)
-			{
-				if (p < 0)
-				{
-					p += (x << 2) + 6;
-				}
-				else
-				{
-					p += ((x - y) << 2) + 10;
-					y -= 1;
-				}
-				fillSymPixel( x, y, xs, ys, context );
-				x += 1;
 			}
 		}
 
@@ -328,11 +279,32 @@ class DrawingLibrary
 			drawLine2D( context.vertices[size], context.vertices[0], context );
 		}
 
-		static void drawTriangles() {}
+		static void drawTriangles()
+		{
+
+		}
 
 		static void drawCircle( Vertex v,float r, Chunk &context)
 		{
-			bresenham_circle_draw(int_fast32_t(v.x), (int_fast32_t)(v.y), int_fast32_t(r), context);
+			int_fast32_t x = 0;
+			int_fast32_t y = r;
+			int_fast32_t p = 3 - (int_fast32_t(r) << 1);
+
+			while( x<y )
+			{
+				setSymPixel(x, y, v.x, v.y, context);
+				if (p < 0)
+				{
+					p += (x << 2) + 6;
+				}
+				else
+				{
+					p += ((x - y) << 2) + 10;
+					y -= 1;
+				}
+				x += 1;
+			}
+			if( x==y ) setSymPixel(x, y, v.x, v.y, context);
 		}
 
 
@@ -340,66 +312,81 @@ class DrawingLibrary
 
 	//FILL
 
-
 		static void fillCircle( Vertex v,float r,Chunk &context )
 		{
+			int_fast32_t x = 0;
+			int_fast32_t y = r;
+			int_fast32_t p = 3 - (int_fast32_t(r) << 1);
 
-			bresenham_circle_fill(int_fast32_t(v.x), (int_fast32_t)(v.y), int_fast32_t(r), context);
+			while(x <= y)
+			{
+
+				fillSymPixel( x, y, v.x, v.y, context);
+
+				if (p < 0)
+				{
+					p += (x << 1) + 6;
+				}
+				else
+				{
+					p += ((x - y) << 1) + 10;
+					y -= 1;
+				}
+
+				x += 1;
+			}
 		}
-
 
 		static void fillPolygon( Chunk &context )
 		{
-			bool depth	= false;
+			bool depth	= context.depth;
 
 		    EdgeStack* tableEdges = new EdgeStack[context.h];
-		    //FIXME
-			int min = Helper::bucketSort(&tableEdges[0], context.vertices.index-1, context.vertices);
 
-			std::vector<Edge > actEdges;
+		    //FIXME
+			int min = Helper::bucketSort(&tableEdges[0], context.vertices.index, context.vertices);
+
+			std::vector<Edge> active_edges;
 
 			for(int y = min; y<context.h; y++)
 			{
 				while(tableEdges[y].index!=0)
 				{
-					actEdges.push_back(tableEdges[y].back());
+					active_edges.push_back(tableEdges[y].back());
 					tableEdges[y].pop_back();
 				}
-				if(actEdges.empty())continue;
 
-				//FIXME
-				Helper::bubbleSort(actEdges, actEdges.size(), context.vertices);
+				if( active_edges.empty() )continue;
 
-				int sizeAE = actEdges.size();
-				float to;
+				uint_fast16_t size	= active_edges.size();
 
-				for(int i = 1; i<sizeAE; i+=2)
+				//FIXME use shaker sort
+				Helper::bubbleSort(active_edges, size, context.vertices);
+
+
+				float to	= 0.0f;
+
+				for( int i = 1; i<size; i+=2 )
 				{
-					to = actEdges[i].intersectX;
-					float z1 = actEdges[i-1].z2 + (y-actEdges[i-1].y2)*(actEdges[i-1].z1 - actEdges[i-1].z2)/(actEdges[i-1].y1 - actEdges[i-1].y2);
-					float z2 = actEdges[i].z2 + (y-actEdges[i].y2)*(actEdges[i].z1 - actEdges[i].z2)/(actEdges[i].y1 - actEdges[i].y2);
-					float deltaZ = (z2-z1)/(actEdges[i].intersectX-actEdges[i-1].intersectX);
+					to				= active_edges[i].intersectX;
+					float z1		= active_edges[i-1].v2.z + (y-active_edges[i-1].v2.y)*(active_edges[i-1].v1.z - active_edges[i-1].v2.z)/(active_edges[i-1].v1.y - active_edges[i-1].v2.y);
+					float z2		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
+					float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i-1].intersectX);
 
-					for(float from = actEdges[i-1].intersectX; from<=to; from++)
+					for( float from = active_edges[i-1].intersectX; from<=to; from++ )
 					{
-						if(depth)
-						{
-							z1+=deltaZ;
-						}
-						else
-						{
-							setPixel(from, y,context);
-						}
+						if( depth )	z1+=deltaZ;
+						else		setPixel(from, y,context);
 					}
 
-					if(sizeAE % 3==0 && sizeAE % 2!=0 && i+2==sizeAE)
+					if(size % 3==0 && size % 2!=0 && i+2==size)
 					{
-						to = actEdges[i+1].intersectX;
-						float z1 = actEdges[i].z2 + (y-actEdges[i].y2)*(actEdges[i].z1 - actEdges[i].z2)/(actEdges[i].y1 - actEdges[i].y2);
-						float z2 = actEdges[i+1].z2 + (y-actEdges[i+1].y2)*(actEdges[i+1].z1 - actEdges[i+1].z2)/(actEdges[i+1].y1 - actEdges[i+1].y2);
-						float deltaZ = (z2-z1)/(actEdges[i].intersectX-actEdges[i].intersectX);
+						to				= active_edges[i+1].intersectX;
+						float z1		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
+						float z2		= active_edges[i+1].v2.z + (y-active_edges[i+1].v2.y)*(active_edges[i+1].v1.z - active_edges[i+1].v2.z)/(active_edges[i+1].v1.y - active_edges[i+1].v2.y);
+						float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i].intersectX);
 
-						for(float from = actEdges[i].intersectX; from<=to; from++)
+						for(float from = active_edges[i].intersectX; from<=to; from++)
 						{
 							if(depth)
 							{
@@ -409,28 +396,28 @@ class DrawingLibrary
 							{
 								setPixel(from, y,context);
 			                }
-			           }
+						}
 			        }
-			        }
+				}
 
-			        for(unsigned int pos = 0; pos<actEdges.size(); pos++){
-
-			            if(actEdges[pos].deltaY < 1){
-			                actEdges.erase(actEdges.begin()+pos);
+			        for( unsigned int pos=0 ; pos<active_edges.size() ; pos++ )
+			        {
+			            if(active_edges[pos].deltaY < 1)
+			            {
+			            	active_edges.erase(active_edges.begin()+pos);
 			                pos--;
-			            }else{
-			                actEdges[pos].deltaY--;
-			                actEdges[pos].intersectX+=actEdges[pos].deltaX;
+			            }
+			            else
+			            {
+			            	active_edges[pos].deltaY--;
+			            	active_edges[pos].intersectX += active_edges[pos].deltaX;
 			            }
 			        }
-
-
 			    }
+
 			    delete[] tableEdges;
 			    context.vertices.index=0;
 		}
-
-
 
 };
 

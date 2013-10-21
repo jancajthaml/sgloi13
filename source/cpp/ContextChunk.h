@@ -18,21 +18,23 @@
 struct Chunk
 {
 
-	Color* buffer		;	// COLOR BUFFER
-	Color* clear		;	// CLEAR COLOR CACHE
+	Color* buffer					;	// COLOR BUFFER
+	Color* clear					;	// CLEAR COLOR CACHE
 
-	int_fast16_t w		;	// CONTEXT WIDTH  (maximum 65536)
-	int_fast16_t h		;	// CONTEXT HEIGHT (maximum 65536)
-	uint_fast32_t w_h	;	// PRE-MULTIPLIED WIDTH * HEGIHT, must be 32bit (16bit is too small)
+	int_fast16_t w					;	// CONTEXT WIDTH  (maximum 65536)
+	int_fast16_t h					;	// CONTEXT HEIGHT (maximum 65536)
+	uint_fast32_t w_h				;	// PRE-MULTIPLIED WIDTH * HEGIHT, must be 32bit (16bit is too small)
 
-	Color color			;	// CURRENT ACTIVE COLOR
+	Color color						;	// CURRENT ACTIVE COLOR
 
-	VertexStack vertices	;	//STACK OF VERTICIES
-	EdgeStack edges			;	//STACK OF EDGES
+	VertexStack vertices			;	//STACK OF VERTICIES
+	EdgeStack edges					;	//STACK OF EDGES
 
-	int_fast8_t size		;	//SIZE OF A PIXEL FOR DRAWING POINTS (maximum 256)
+	int_fast8_t size				;	//SIZE OF A PIXEL FOR DRAWING POINTS (maximum 256)
 
 	uint_fast32_t lastSetPixelIndex	;	//CACHE OF setPixel(int,int) METHOD
+
+	bool depth						;	//DEPTH TEST
 };
 
 #endif /* CHUNK_H_ */

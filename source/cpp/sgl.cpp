@@ -266,16 +266,14 @@ void sglEnd(void)
 //
 void sglVertex4f(float x, float y, float z, float w)
 {
-	//normalize(x, y);
-	//VERTICES.push_back(Vertex (x, y, z, w));
+	current()->setVertex4f(x, y, z, w);
 }
 
 //Vertex with 3 float coords
 //[x,y,z]
 void sglVertex3f(float x, float y, float z)
 {
-	//normalize(x, y);
-	//VERTICES.push_back(Vertex (x, y, z));
+	current()->setVertex3f(x, y, z);
 }
 
 //Vertex with 2 float coords
@@ -283,8 +281,6 @@ void sglVertex3f(float x, float y, float z)
 void sglVertex2f(float x, float y)
 {
 	current()->setVertex2f(x, y);
-
-	//current()->setVertex2f(x,y);
 }
 
 //2D Circle
@@ -303,15 +299,13 @@ void sglCircle(float x, float y, float z, float r)
 		return;
 	}
 
-		//sglEErrorCode err;
-		//SGLContext c = ctx_mgr.getContext(&err);
-	//Context c = ;
-		//setErrCode(err);
-	//if (!c.beginEndCheck())
+	//if (current()->BeginBeforeEnd())
+	//{
 		//setErrCode(SGL_INVALID_OPERATION);
-	current()->drawCricle(x, y, z, r);
+		//return;
+	//}
 
-//	current()->drawCricle(x,y,z,r);
+	current()->drawCricle(x, y, z, r);
 }
 
 //2D Ellipse
@@ -335,20 +329,13 @@ void sglEllipse(float x, float y, float z, float a, float b)
 		return;
 	}
 
-
-
-	//SGLContext c = ctx_mgr.getContext(&err);
-	//setErrCode(err);
-
-	//if (!c.beginEndCheck())
-	//setErrCode(SGL_INVALID_OPERATION);
-
-	//setErrCode(err);
-	//if (!c.beginEndCheck())
+	//if (current()->BeginBeforeEnd())
+	//{
 		//setErrCode(SGL_INVALID_OPERATION);
-	current()->drawEllipse(x, y, z, a, b);
+		//return;
+	//}
 
-	//current()->drawEllipse(x, y, z, a, b);
+	current()->drawEllipse(x, y, z, a, b);
 }
 
 //Line

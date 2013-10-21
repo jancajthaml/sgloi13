@@ -11,29 +11,53 @@
 
 struct Edge
 {
-    float x1, y1, z1,  x2, y2, z2;
+	//FIXME change to Vertex??
+
+	Vertex v1;
+	Vertex v2;
+
     float deltaX;
     int deltaY;
+
     float deltaZy;
     float deltaZx;
+
     float intersectX;
+
     float intersectZy;
     float intersectZx;
 
     Edge(Vertex v1, Vertex v2)
     {
-        x1 = v1.x;
-        y1 = v1.y;
-        z1 = v1.z;
-        x2 = v2.x;
-        y2 = v2.y;
-        z2 = v2.z;
-        deltaX = (x2-x1)/(y2-y1);
-        deltaY =(int)(y2-y1);
-        intersectX = x1;
-        intersectZy = z1;
+    	this->v1			= v1;
+    	this->v2			= v2;
+    	this->deltaX		= (v2.x-v1.x)/(v2.y-v1.y);
+        this->deltaY		= int(v2.y-v1.y);
+
+        this->deltaZy = 0.0f;
+        this->deltaZx = 0.0f;
+
+
+        this->intersectX	= v1.x;
+        this->intersectZy	= v1.z;
+        this->intersectZx	= 0.0f;
     }
-    Edge(){}
+
+    Edge()
+    {
+    	this->v1			= Vertex(0.0f,0.0f,1.0f,1.0f);
+    	this->v2			= Vertex(0.0f,0.0f,1.0f,1.0f);
+    	this->deltaX		= 0.0f;
+        this->deltaY		= 0;
+
+        this->deltaZy = 0.0f;
+        this->deltaZx = 0.0f;
+
+
+        this->intersectX	= 0.0f;
+        this->intersectZy	= 0.0f;
+        this->intersectZx	= 0.0f;
+    }
 
 };
 

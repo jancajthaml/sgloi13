@@ -16,6 +16,7 @@
 //TODO COMMENT !!!!!!!
 struct Vertex
 {
+
 	float x;
 	float y;
 	float z;
@@ -50,6 +51,7 @@ struct Vertex
 		z = Z;
 		w = W;
 	}
+
 };
 
 #endif /* VERTEX_H_ */

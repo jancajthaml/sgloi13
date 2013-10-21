@@ -52,13 +52,13 @@ struct Helper
 	        if(vertices[i].y>vertices[i+1].y)
 	        {
 	            Edge e(vertices[i+1], vertices[i]);
-	            pos= int(e.y1);
+	            pos= int(e.v1.y);
 	            tableEdges[pos].push_back(e);
 	        }
 	        else
 	        {
 	            Edge e(vertices[i], vertices[i+1]);
-	            pos= int(e.y1);
+	            pos= int(e.v1.y);
 	            tableEdges[pos].push_back(e);
 	        }
 	        if(pos<min || min==0 )min = pos;
@@ -68,13 +68,13 @@ struct Helper
 	    if(vertices[i].y>vertices[0].y)
 	    {
 	        Edge e(vertices[0], vertices[i]);
-	        pos= int(e.y1);
+	        pos= int(e.v1.y);
 	        tableEdges[pos].push_back(e);
 	    }
 	    else
 	    {
 	        Edge e(vertices[i], vertices[0]);
-	        pos = int(e.y1);
+	        pos = int(e.v1.y);
 	        tableEdges[pos].push_back(e);
 	    }
 	    if(pos<min || min==0 )min = pos;

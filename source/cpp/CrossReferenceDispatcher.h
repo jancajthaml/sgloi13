@@ -22,7 +22,6 @@ typedef struct { float f1; float f2; float f3;} __attribute__((packed)) __color;
 #include <cstdio>
 #include <stdio.h>
 #include <iostream>
-#include <exception>
 #include <cstdio>
 #include <stdint.h>
 

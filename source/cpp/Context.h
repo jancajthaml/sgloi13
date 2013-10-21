@@ -65,7 +65,6 @@ typedef struct Context
 	sglEMatrixMode matrixMode;
 
 	//State
-	bool depth;
 	bool BEGIN;
 
 	//Transformation matrices
@@ -87,39 +86,35 @@ typedef struct Context
 
 	Context(uint_fast16_t width, uint_fast16_t height)
 	{
-
-		storage = Chunk();
-		storage.w=width;
-		storage.h=height;
-		storage.w_h=width * height;
-		storage.color=Color(0,255,0);
+		storage        = Chunk();
+		storage.w      = width;
+		storage.h      = height;
+		storage.w_h    = width * height;
+		storage.color  = Color(0,255,0);
 
 		//----------------------//
 
 		//Initialise Drawing
-		id			= 0;
+		id		 	  = 0;
 
 		//----------------------//
 
 		//Initialise Flags
-		depth	= false;
-		BEGIN	= false;
+		storage.depth  = false;
+		BEGIN		   = false;
 
 		//----------------------//
 
-		storage.size	= 1;
-		storage.buffer =(Color*) malloc(sizeof(Color) * storage.w_h);
-		storage.clear =(Color*) malloc(sizeof(Color) * storage.w_h);
+		storage.size   = 1;
+		storage.buffer = (Color*) malloc(sizeof(Color) * storage.w_h);
+		storage.clear  = (Color*) malloc(sizeof(Color) * storage.w_h);
 
+		current_MV	   = MatrixCache::identity();
+		current_P      = MatrixCache::identity();
 
-		if (!storage.buffer) throw std::exception();
-
-		current_MV	= MatrixCache::identity();
-		current_P	= MatrixCache::identity();
-
-		P_changed	= true;
-		M_changed	= true;
-		drawType	= SGL_FILL;
+		P_changed      = true;
+		M_changed      = true;
+		drawType       = SGL_FILL;
 	}
 
 	inline void setVertex2f(float x, float y)
