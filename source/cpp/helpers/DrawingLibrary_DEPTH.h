@@ -13,65 +13,28 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 {
 
 	private:
-	DrawingLibraryDepth() : DrawingLibraryInterface(){}
-	~DrawingLibraryDepth()
-	{}
+		DrawingLibraryDepth() : DrawingLibraryInterface()	{}
+		~DrawingLibraryDepth()								{}
 
 		inline void setPixel(signed x, signed y, Chunk &context)
-		{
-			//Condition not needed for now
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
-			{
-				context.lastSetPixelIndex = (x + context.w * y);
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-			}
-		}
+		{ DrawingLibraryFlat::instance().setPixel(x, y, context); }
 
-	inline void setPixel_x( Chunk &context )
-		{
-			context.lastSetPixelIndex += 1;
+		inline void setPixel_x( Chunk &context )
+		{ DrawingLibraryFlat::instance().setPixel_x(context); }
 
-			//Safety off
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
+		inline void setPixel_y(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_y(context); }
 
-	inline void setPixel_y(Chunk &context)
-		{
-			context.lastSetPixelIndex += context.w;
+		inline void setPixel_xy(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_xy(context); }
 
-			//Safety off
-	//		if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
+		inline void setPixel_mxy(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_mxy(context); }
 
-	inline void setPixel_xy(Chunk &context)
-		{
-			context.lastSetPixelIndex += (context.w + 1);
+		inline void setPixel_xmy(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_xmy(context); }
 
-			//Safety off
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
-
-
-	inline void setPixel_mxy(Chunk &context)
-		{
-			context.lastSetPixelIndex += context.w - 1;
-
-			//Safety off
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
-		}
-
-	inline void setPixel_xmy(Chunk &context)
-		{
-			context.lastSetPixelIndex += (1 - context.w);
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
-
-	inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
+		inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
 			signed to	= center_x+x;
 			signed from	= center_x-x;
@@ -97,7 +60,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			}
 		}
 
-	inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
+		inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
 		{
 			signed rx = x + xs;
 			signed ry = y + ys;
@@ -117,85 +80,12 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			setPixel(mry, mrx, context);
 		}
 
-	inline void bresenham_x(signed x1, signed y1, signed x2, signed y2, Chunk &context)
-		{
-			signed dx	= x2 - x1;
-			signed dy	= y2 - y1;
-			signed sign	= 1;
 
-			if (dy < 0) sign = -1;
-
-			signed c0	= (dy << 1) * sign;
-			signed c1	= c0 - (dx << 1);
-			signed p	= c0 - dx;
-
-			setPixel( x1, y1, context );
-
-			for (signed i = x1 + 1; i <= x2; ++i)
-			{
-				if (p < 0)
-				{
-					p += c0;
-					setPixel_x( context );
-				}
-				else
-				{
-					p += c1;
-					if (sign > 0)	setPixel_xy  ( context );
-					else			setPixel_xmy ( context );
-				}
-			}
-		}
-
-	inline void bresenham_y(signed x1, signed y1, signed x2, signed y2, Chunk &context)
-		{
-			signed dx	= x2 - x1;
-			signed dy	= y2 - y1;
-			signed sign	= 1;
-
-			if (dy < 0)	sign = -1;
-
-			signed c0	= (dy << 1) * sign;
-			signed c1	= c0 - (dx << 1);
-			signed p	= c0 - dx;
-
-			setPixel( y1, x1, context );
-
-			for (signed i = x1 + 1; i <= x2; ++i)
-			{
-				if (p < 0)
-				{
-					p += c0;
-					setPixel_y(context);
-				}
-				else
-				{
-					p += c1;
-					if( sign>0 )	setPixel_xy  (context);
-					else			setPixel_mxy (context);
-				}
-			}
-		}
-
-	inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
-		{
-			int_fast32_t dx = abs(b.x - a.x);
-			int_fast32_t dy = abs(b.y - a.y);
-
-			if (dx > dy)
-				if (a.x < b.x)	bresenham_x(a.x, a.y, b.x, b.y, context);
-				else			bresenham_x(b.x, b.y, a.x, a.y, context);
-			else
-				if (a.y < b.y)	bresenham_y(a.y, a.x, b.y, b.x, context);
-				else			bresenham_y(b.y, b.x, a.y, a.x, context);
-		}
+		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
+		{ DrawingLibraryFlat::instance().drawLine2D(a, b, context); }
 
 	///######### API STARTS HERE ###############################################################
 
-
-	//DrawingLibraryInterface(){}
-	//~DrawingLibraryDepth(){}
-	//~DrawingLibraryDepth(){}
 
 	public:
 		static DrawingLibraryDepth& instance()
@@ -205,7 +95,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 		}
 	//POINTS
 
-	inline void drawPoints( Chunk &context )
+		inline void drawPoints( Chunk &context )
 		{
 			int_fast32_t s = int_fast32_t(context.vertices.index);
 
@@ -236,7 +126,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 	//LINES
 
-	inline void drawLines( Chunk &context )
+		inline void drawLines( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -244,7 +134,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 				drawLine2D(context.vertices[i], context.vertices[i+1], context);
 		}
 
-	inline void drawLineStrip( Chunk &context )
+		inline void drawLineStrip( Chunk &context )
 		{
 			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -261,7 +151,6 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
-
 
 		inline void drawPolygon( Chunk &context )
 		{
@@ -296,7 +185,6 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			if( x==y ) setSymPixel(x, y, v.x, v.y, context);
 		}
 
-
 	//-----------------------------------------------------------------------------
 
 	//FILL
@@ -309,7 +197,6 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			while(x <= y)
 			{
-
 				fillSymPixel( x, y, v.x, v.y, context);
 
 				if (p < 0)

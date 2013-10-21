@@ -14,11 +14,10 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 	private:
 
-	DrawingLibraryFlat() : DrawingLibraryInterface()	{}
-	~DrawingLibraryFlat()								{}
+		DrawingLibraryFlat() : DrawingLibraryInterface()	{}
+		~DrawingLibraryFlat()								{}
 
-
-	inline void setPixel(signed x, signed y, Chunk &context)
+		inline void setPixel(signed x, signed y, Chunk &context)
 		{
 			//Condition not needed for now
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
@@ -28,7 +27,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
-	inline void setPixel_x( Chunk &context )
+		inline void setPixel_x( Chunk &context )
 		{
 			context.lastSetPixelIndex += 1;
 
@@ -37,16 +36,16 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-	inline void setPixel_y(Chunk &context)
+		inline void setPixel_y(Chunk &context)
 		{
 			context.lastSetPixelIndex += context.w;
 
 			//Safety off
-	//		if (lastSetPixelIndex < w_h)
+		//		if (lastSetPixelIndex < w_h)
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-	inline void setPixel_xy(Chunk &context)
+		inline void setPixel_xy(Chunk &context)
 		{
 			context.lastSetPixelIndex += (context.w + 1);
 
@@ -55,8 +54,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-
-	inline void setPixel_mxy(Chunk &context)
+		inline void setPixel_mxy(Chunk &context)
 		{
 			context.lastSetPixelIndex += context.w - 1;
 
@@ -65,14 +63,14 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
 		}
 
-	inline void setPixel_xmy(Chunk &context)
+		inline void setPixel_xmy(Chunk &context)
 		{
 			context.lastSetPixelIndex += (1 - context.w);
 			//if (lastSetPixelIndex < w_h)
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-	inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
+		inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
 			signed to	= center_x+x;
 			signed from	= center_x-x;
@@ -98,7 +96,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
-	inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
+		inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
 		{
 			signed rx = x + xs;
 			signed ry = y + ys;
@@ -118,7 +116,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			setPixel(mry, mrx, context);
 		}
 
-	inline void bresenham_x(signed x1, signed y1, signed x2, signed y2, Chunk &context)
+		inline void bresenham_x(signed x1, signed y1, signed x2, signed y2, Chunk &context)
 		{
 			signed dx	= x2 - x1;
 			signed dy	= y2 - y1;
@@ -148,7 +146,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
-	inline void bresenham_y(signed x1, signed y1, signed x2, signed y2, Chunk &context)
+		inline void bresenham_y(signed x1, signed y1, signed x2, signed y2, Chunk &context)
 		{
 			signed dx	= x2 - x1;
 			signed dy	= y2 - y1;
@@ -178,7 +176,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
-	inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
+		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
 		{
 			int_fast32_t dx = abs(b.x - a.x);
 			int_fast32_t dy = abs(b.y - a.y);
@@ -194,16 +192,16 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 	///######### API STARTS HERE ###############################################################
 
 	public:
+
 		static DrawingLibraryFlat& instance()
 		{
 			static DrawingLibraryFlat * theInstance = new DrawingLibraryFlat(); // only initialized once!
 			return *theInstance;
 		}
 
-
 	//POINTS
 
-	inline void drawPoints( Chunk &context )
+		inline void drawPoints( Chunk &context )
 		{
 			int_fast32_t s = int_fast32_t(context.vertices.index);
 
@@ -234,7 +232,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 	//LINES
 
-	inline void drawLines( Chunk &context )
+		inline void drawLines( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -242,7 +240,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				drawLine2D(context.vertices[i], context.vertices[i+1], context);
 		}
 
-	inline void drawLineStrip( Chunk &context )
+		inline void drawLineStrip( Chunk &context )
 		{
 			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -250,7 +248,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				drawLine2D(context.vertices[i], context.vertices[i+1], context);
 		}
 
-	inline void drawLineLoop( Chunk &context )
+		inline void drawLineLoop( Chunk &context )
 		{
 			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
@@ -260,8 +258,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
 
-
-	inline void drawPolygon( Chunk &context )
+		inline void drawPolygon( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast32_t(context.vertices.index-1);
 
@@ -307,7 +304,6 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 			while(x <= y)
 			{
-
 				fillSymPixel( x, y, v.x, v.y, context);
 
 				if (p < 0)

@@ -36,8 +36,8 @@ class DrawingLibraryInterface
 		virtual void setPixel_mxy	( Chunk &context) = 0;
 		virtual void fillSymPixel	( signed x, signed y, signed center_x, signed center_y, Chunk &context) = 0;
 		virtual void setSymPixel	( signed x, signed y, signed xs, signed ys, Chunk &context) = 0;
-		virtual void bresenham_x	( signed x1, signed y1, signed x2, signed y2, Chunk &context) = 0;
-		virtual void bresenham_y	( signed x1, signed y1, signed x2, signed y2, Chunk &context) = 0;
+		//virtual void bresenham_x	( signed x1, signed y1, signed x2, signed y2, Chunk &context) = 0;
+		//virtual void bresenham_y	( signed x1, signed y1, signed x2, signed y2, Chunk &context) = 0;
 		virtual void drawLine2D		( Vertex a, Vertex b, Chunk &context) = 0;
 		virtual void drawPoints		( Chunk &context ) = 0;
 		virtual void drawLines		( Chunk &context ) = 0;
@@ -99,8 +99,8 @@ void DrawingLibraryBase::fillSymPixel	( signed x, signed y, signed center_x, sig
 void DrawingLibraryBase::setSymPixel	( signed x, signed y, signed xs, signed ys, Chunk &context)					{ state->setSymPixel(x, y, xs, ys, context);				}
 
 
-void DrawingLibraryBase::bresenham_x	( signed x1, signed y1, signed x2, signed y2, Chunk &context)				{ state->bresenham_x(x1, y1, x2, y2, context);	}
-void DrawingLibraryBase::bresenham_y	( signed x1, signed y1, signed x2, signed y2, Chunk &context)				{ state->bresenham_y(x1, y1, x2, y2, context);	}
+//void DrawingLibraryBase::bresenham_x	( signed x1, signed y1, signed x2, signed y2, Chunk &context)				{ state->bresenham_x(x1, y1, x2, y2, context);	}
+//void DrawingLibraryBase::bresenham_y	( signed x1, signed y1, signed x2, signed y2, Chunk &context)				{ state->bresenham_y(x1, y1, x2, y2, context);	}
 void DrawingLibraryBase::drawLine2D		( Vertex a, Vertex b, Chunk &context)										{ state->drawLine2D(a, b, context);				}
 
 void DrawingLibraryBase::drawPoints		( Chunk &context )															{ state->drawPoints( context );			}
