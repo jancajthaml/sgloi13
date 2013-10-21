@@ -16,24 +16,6 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 		DrawingLibraryDepth() : DrawingLibraryInterface()	{}
 		~DrawingLibraryDepth()								{}
 
-		inline void setPixel(signed x, signed y, Chunk &context)
-		{ DrawingLibraryFlat::instance().setPixel(x, y, context); }
-
-		inline void setPixel_x( Chunk &context )
-		{ DrawingLibraryFlat::instance().setPixel_x(context); }
-
-		inline void setPixel_y(Chunk &context)
-		{ DrawingLibraryFlat::instance().setPixel_y(context); }
-
-		inline void setPixel_xy(Chunk &context)
-		{ DrawingLibraryFlat::instance().setPixel_xy(context); }
-
-		inline void setPixel_mxy(Chunk &context)
-		{ DrawingLibraryFlat::instance().setPixel_mxy(context); }
-
-		inline void setPixel_xmy(Chunk &context)
-		{ DrawingLibraryFlat::instance().setPixel_xmy(context); }
-
 		inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
 			signed to	= center_x+x;
@@ -80,14 +62,32 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			setPixel(mry, mrx, context);
 		}
 
-
-		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
-		{ DrawingLibraryFlat::instance().drawLine2D(a, b, context); }
-
 	///######### API STARTS HERE ###############################################################
 
 
 	public:
+
+		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
+		{ DrawingLibraryFlat::instance().drawLine2D(a, b, context); }
+
+		inline void setPixel(signed x, signed y, Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel(x, y, context); }
+
+		inline void setPixel_x( Chunk &context )
+		{ DrawingLibraryFlat::instance().setPixel_x(context); }
+
+		inline void setPixel_y(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_y(context); }
+
+		inline void setPixel_xy(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_xy(context); }
+
+		inline void setPixel_mxy(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_mxy(context); }
+
+		inline void setPixel_xmy(Chunk &context)
+		{ DrawingLibraryFlat::instance().setPixel_xmy(context); }
+
 		static DrawingLibraryDepth& instance()
 		{
 			static DrawingLibraryDepth * theInstance = new DrawingLibraryDepth(); // only initialized once!

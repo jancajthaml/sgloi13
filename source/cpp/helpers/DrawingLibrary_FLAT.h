@@ -17,58 +17,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 		DrawingLibraryFlat() : DrawingLibraryInterface()	{}
 		~DrawingLibraryFlat()								{}
 
-		inline void setPixel(signed x, signed y, Chunk &context)
-		{
-			//Condition not needed for now
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
-			{
-				context.lastSetPixelIndex = (x + context.w * y);
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-			}
-		}
 
-		inline void setPixel_x( Chunk &context )
-		{
-			context.lastSetPixelIndex += 1;
-
-			//Safety off
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
-
-		inline void setPixel_y(Chunk &context)
-		{
-			context.lastSetPixelIndex += context.w;
-
-			//Safety off
-		//		if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
-
-		inline void setPixel_xy(Chunk &context)
-		{
-			context.lastSetPixelIndex += (context.w + 1);
-
-			//Safety off
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
-
-		inline void setPixel_mxy(Chunk &context)
-		{
-			context.lastSetPixelIndex += context.w - 1;
-
-			//Safety off
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
-		}
-
-		inline void setPixel_xmy(Chunk &context)
-		{
-			context.lastSetPixelIndex += (1 - context.w);
-			//if (lastSetPixelIndex < w_h)
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-		}
 
 		inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
@@ -176,6 +125,10 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
+	///######### API STARTS HERE ###############################################################
+
+	public:
+
 		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
 		{
 			int_fast32_t dx = abs(b.x - a.x);
@@ -189,10 +142,58 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				else			bresenham_y(b.y, b.x, a.y, a.x, context);
 		}
 
-	///######### API STARTS HERE ###############################################################
+		inline void setPixel(signed x, signed y, Chunk &context)
+				{
+					//Condition not needed for now
+					if (x >= 0 && x < context.w && y >= 0 && y < context.h)
+					{
+						context.lastSetPixelIndex = (x + context.w * y);
+						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+					}
+				}
 
-	public:
+				inline void setPixel_x( Chunk &context )
+				{
+					context.lastSetPixelIndex += 1;
 
+					//Safety off
+					//if (lastSetPixelIndex < w_h)
+						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+				}
+
+				inline void setPixel_y(Chunk &context)
+				{
+					context.lastSetPixelIndex += context.w;
+
+					//Safety off
+				//		if (lastSetPixelIndex < w_h)
+						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+				}
+
+				inline void setPixel_xy(Chunk &context)
+				{
+					context.lastSetPixelIndex += (context.w + 1);
+
+					//Safety off
+					//if (lastSetPixelIndex < w_h)
+						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+				}
+
+				inline void setPixel_mxy(Chunk &context)
+				{
+					context.lastSetPixelIndex += context.w - 1;
+
+					//Safety off
+					//if (lastSetPixelIndex < w_h)
+						*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
+				}
+
+				inline void setPixel_xmy(Chunk &context)
+				{
+					context.lastSetPixelIndex += (1 - context.w);
+					//if (lastSetPixelIndex < w_h)
+						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+				}
 		static DrawingLibraryFlat& instance()
 		{
 			static DrawingLibraryFlat * theInstance = new DrawingLibraryFlat(); // only initialized once!
