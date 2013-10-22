@@ -6,6 +6,8 @@ public class Matrix implements Cloneable
 	static Matrix scale		= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix translate	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix rotate_2D	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
+	static Matrix frustum	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
+	static Matrix ortho	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	
 	public float[] matrix	= new float[16];
 	
@@ -67,7 +69,34 @@ public class Matrix implements Cloneable
 		rotate_2D.matrix[4]=sin_a;
 		rotate_2D.matrix[5]=cos_a;
 		return rotate_2D;
+	}
+	
+	public static Matrix frustum(float left, float right, float bottom, float top, float near, float far)
+	{
+		float r = (right-left);
+		float t = (top-bottom);
 
+		frustum.matrix[0] = 2.0f*near / r;
+		frustum.matrix[5] = 2.0f*near / t;
+		frustum.matrix[8] = (right + left) / (right - left);
+		frustum.matrix[9] = (top + bottom) / (top - bottom);
+		frustum.matrix[10] = -(far + near) / (far - near);
+		frustum.matrix[11] = -1.0f;
+		frustum.matrix[14] = -(2.0f * near * far) / (far - near);
+
+		return frustum;
+	}
+
+	public static Matrix ortho(float left, float right, float bottom, float top, float near, float far)
+	{
+		ortho.matrix[0] = 2.0f/(right-left);
+		ortho.matrix[5] = 2.0f/(top-bottom);
+		ortho.matrix[10] = -2.0f/(far-near);
+		ortho.matrix[12] = -((right + left)/(right-left));
+		ortho.matrix[13] = -((top + bottom)/(top-bottom));
+		ortho.matrix[14] = -((far + near)/(far-near));
+
+		return ortho;
 	}
 
 	public static Matrix rotateY(float angle)

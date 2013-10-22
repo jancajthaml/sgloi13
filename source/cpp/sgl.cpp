@@ -609,9 +609,7 @@ void sglEnable(sglEEnableFlags flag)
 	switch(flag)
 	{
 		case SGL_DEPTH_TEST : current()->enableDepthTest(); break;//depth test is off by default
-
-		setErrCode(SGL_INVALID_ENUM);
-		return;
+		default: setErrCode(SGL_INVALID_ENUM); return;
 	}
 }
 

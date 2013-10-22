@@ -3,26 +3,19 @@ package main;
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-
 import rabbit.gl.scheme.sglCanvas;
 import tests.Test1;
-
-import static rabbit.gl.engine.HUB.sglBegin;
+import tests.Test2;
 import static rabbit.gl.engine.HUB.sglClear;
 import static rabbit.gl.engine.HUB.sglClearColor;
 import static rabbit.gl.engine.HUB.sglCreateContext;
-import static rabbit.gl.engine.HUB.sglEnd;
-import static rabbit.gl.engine.HUB.sglVertex2f;
 import static rabbit.gl.engine.HUB.sglViewport;
-import static rabbit.gl.type.sglEElementType.SGL_LINES;
-import static rabbit.gl.type.sglEElementType.SGL_LINE_LOOP;
 import static rabbit.gl.type.sglEClearBit.SGL_COLOR_BUFFER_BIT;
 
-public class SGLTest {
-
+public class SGLTest
+{
 
 	static int current_context = 0;
 	
@@ -49,6 +42,9 @@ public class SGLTest {
 				case 2 : Test1.DrawTestScene1B()			; return;
 				case 3 : Test1.DrawTestScene1C()			; return;
 				
+				case 4 : Test2.DrawTestScene2B(800,600)		; return;
+				case 5 : Test2.DrawTestScene2C(800,600)		; return;
+				
 			}
 		}
 		
@@ -70,6 +66,8 @@ public class SGLTest {
 						case KeyEvent.VK_1	:	scene=1; break;
 						case KeyEvent.VK_2	:	scene=2; break;
 						case KeyEvent.VK_3	:	scene=3; break;
+						case KeyEvent.VK_4	:	scene=4; break;
+						case KeyEvent.VK_5	:	scene=5; break;
 					}
 					repaint();
 				}
@@ -124,17 +122,4 @@ public class SGLTest {
 	}
 	
 
-	static void box()
-	{
-	  sglBegin(SGL_LINE_LOOP);
-	  sglVertex2f(-1,-1);
-	  sglVertex2f(-1,1);
-	  sglVertex2f(1,1);
-	  sglVertex2f(1,-1);
-	  sglEnd();
-	  sglBegin(SGL_LINES);
-	  sglVertex2f(0,-1);
-	  sglVertex2f(0,1);
-	  sglEnd();
-	}
 }

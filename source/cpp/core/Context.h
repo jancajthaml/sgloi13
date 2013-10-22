@@ -98,6 +98,7 @@ struct Context
 		storage.h      = height;
 		storage.w_h    = width * height;
 		storage.color  = Color(0,255,0);
+		storage.size   = 1;
 
 		//----------------------//
 

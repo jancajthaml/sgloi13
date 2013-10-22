@@ -26,8 +26,8 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			for( ; from <= to; from++ )
 			{
-				setPixel( from, h1, 0.0f, context );
-				setPixel( from, l1, 0.0f, context );
+				setPixel( from, h1, 0, context );
+				setPixel( from, l1, 0, context );
 			}
 
 			to		= center_x+y;
@@ -37,8 +37,8 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			for( ; from <= to; from++ )
 			{
-				setPixel( from, h1, 0.0f,context );
-				setPixel( from, l1, 0.0f,context );
+				setPixel( from, h1, 0, context );
+				setPixel( from, l1, 0, context );
 			}
 		}
 
@@ -48,18 +48,18 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			signed ry = y + ys;
 			signed mrx = -x + xs;
 			signed mry = -y + ys;
-			setPixel(rx, ry, 0.0f, context);
-			setPixel(rx, mry, 0.0f, context);
-			setPixel(mrx, ry, 0.0f, context);
-			setPixel(mrx, mry, 0.0f, context);
+			setPixel(rx, ry, 0, context);
+			setPixel(rx, mry, 0, context);
+			setPixel(mrx, ry, 0, context);
+			setPixel(mrx, mry, 0, context);
 			rx = x + ys;
 			ry = y + xs;
 			mrx = -x + ys;
 			mry = -y + xs;
-			setPixel(ry, rx, 0.0f, context);
-			setPixel(ry, mrx, 0.0f, context);
-			setPixel(mry, rx, 0.0f, context);
-			setPixel(mry, mrx, 0.0f, context);
+			setPixel(ry, rx, 0, context);
+			setPixel(ry, mrx, 0, context);
+			setPixel(mry, rx, 0, context);
+			setPixel(mry, mrx, 0, context);
 		}
 
 	///######### API STARTS HERE ###############################################################
