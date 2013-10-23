@@ -501,6 +501,11 @@ void sglRotate2D(float angle, float centerx, float centery)
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
+	//This is crusial
+	//sglTranslate(centerx, centery, 0.0f);
+		Matrix rotate = MatrixCache::rotateY(angle);
+		current()->multiplyCurrentMatrix(rotate);
+		//sglTranslate(-centerx, -centery, 0.0f);
 }
 
 // ?

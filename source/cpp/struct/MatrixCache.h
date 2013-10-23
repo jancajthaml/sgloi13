@@ -19,6 +19,7 @@ struct MatrixCache
 	static Matrix S;
 	static Matrix F;
 	static Matrix O;
+	static Matrix Y;
 
 	static inline Matrix identity()
 	{ return I; }
@@ -82,7 +83,17 @@ struct MatrixCache
 	}
 
 	static inline Matrix rotateY(float angle)
-	{ return identity(); }
+	{
+		float sin = sinf(angle);
+		float cos = cosf(angle);
+
+		Y.matrix[0] = cos;
+		Y.matrix[2] = sin;
+		Y.matrix[8] = -sin;
+		Y.matrix[10] = cos;
+
+		return Y;
+	}
 };
 
 Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -91,5 +102,6 @@ Matrix MatrixCache::I = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0
 Matrix MatrixCache::T = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 Matrix MatrixCache::F = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 Matrix MatrixCache::O = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+Matrix MatrixCache::Y = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 #endif /* MATRIXCACHE_H_ */
