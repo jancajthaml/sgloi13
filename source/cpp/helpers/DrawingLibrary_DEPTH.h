@@ -70,14 +70,85 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 		inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
 		{
 			//FIXME incorporate z COORDINATE
-			DrawingLibraryFlat::instance().drawLine2D(a, b, context);
+			//DrawingLibraryFlat::instance().drawLine2D(a, b, context);
+
+			int_fast32_t dx = abs(b.x - a.x);
+			int_fast32_t dy = abs(b.y - a.y);
+
+			if (dx > dy)
+				if (a.x < b.x)	bresenham_x(a.x, a.y, a.z, b.x, b.y, b.z, context);
+				else			bresenham_x(b.x, b.y, a.z, a.x, a.y, b.z, context);
+			else
+				if (a.y < b.y)	bresenham_y(a.y, a.x, a.z, b.y, b.x, b.z, context);
+				else			bresenham_y(b.y, b.x, a.z, a.y, a.x, b.z, context);
+		}
+
+
+		inline void bresenham_x(signed x1, signed y1, signed z1, signed x2, signed y2, signed z2, Chunk &context)
+		{
+			signed dx	= x2 - x1;
+			signed dy	= y2 - y1;
+			signed sign	= 1;
+
+			if (dy < 0) sign = -1;
+
+			signed c0	= (dy << 1) * sign;
+			signed c1	= c0 - (dx << 1);
+			signed p	= c0 - dx;
+
+			setPixel( x1, y1, z1, context );
+
+			for (signed i = x1 + 1; i <= x2; ++i)
+			{
+				if (p < 0)
+				{
+					p += c0;
+					setPixel_x( context );
+				}
+				else
+				{
+					p += c1;
+					if (sign > 0)	setPixel_xy  ( context );
+					else			setPixel_xmy ( context );
+				}
+			}
+		}
+
+		inline void bresenham_y(signed x1, signed y1, signed z1, signed x2, signed y2, signed z2, Chunk &context)
+		{
+			signed dx	= x2 - x1;
+			signed dy	= y2 - y1;
+			signed sign	= 1;
+
+			if (dy < 0)	sign = -1;
+
+			signed c0	= (dy << 1) * sign;
+			signed c1	= c0 - (dx << 1);
+			signed p	= c0 - dx;
+
+			setPixel( y1, x1, z1, context );
+
+			for (signed i = x1 + 1; i <= x2; ++i)
+			{
+				if (p < 0)
+				{
+					p += c0;
+					setPixel_y(context);
+				}
+				else
+				{
+					p += c1;
+					if( sign>0 )	setPixel_xy  (context);
+					else			setPixel_mxy (context);
+				}
+			}
 		}
 
 		inline void setPixel(signed x, signed y, signed z, Chunk &context)
 		{
 			uint_fast32_t index = (x + context.w * y);
 
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h && z < context.depth[index])
+			if (x >= 0 && x < context.w && y >= 0 && y < context.h /*&& z < context.depth[index]*/)
 			{
 				context.lastSetPixelIndex	= index;
 				context.depth[index]		= z;
@@ -165,6 +236,16 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
 
+		inline void drawTrianglesFan( Chunk &context )
+		{
+			DrawingLibraryFlat::instance().drawTrianglesFan(context);
+		}
+
+		inline void drawTrianglesStrip( Chunk &context )
+		{
+			DrawingLibraryFlat::instance().drawTrianglesStrip(context);
+		}
+
 		inline void drawPolygon( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast32_t(context.vertices.index-1);
@@ -174,6 +255,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 			drawLine2D( context.vertices[size], context.vertices[0], context );
 		}
+
 
 		inline void drawCircle( Vertex v,float r, Chunk &context)
 		{
@@ -228,84 +310,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 		inline void fillPolygon( Chunk &context )
 		{
-			bool depth	= true;
-
-		    EdgeStack* tableEdges = new EdgeStack[context.h];
-
-		    //FIXME
-			int min = Helper::bucketSort(&tableEdges[0], context.vertices.index, context.vertices);
-
-			std::vector<Edge> active_edges;
-
-			for(int y = min; y<context.h; y++)
-			{
-				while(tableEdges[y].index!=0)
-				{
-					active_edges.push_back(tableEdges[y].back());
-					tableEdges[y].pop_back();
-				}
-
-				if( active_edges.empty() )continue;
-
-				uint_fast16_t size	= active_edges.size();
-
-				//FIXME use shaker sort
-				Helper::bubbleSort(active_edges, size, context.vertices);
-
-
-				float to	= 0.0f;
-
-				for( int i = 1; i<size; i+=2 )
-				{
-					to				= active_edges[i].intersectX;
-					float z1		= active_edges[i-1].v2.z + (y-active_edges[i-1].v2.y)*(active_edges[i-1].v1.z - active_edges[i-1].v2.z)/(active_edges[i-1].v1.y - active_edges[i-1].v2.y);
-					float z2		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-					float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i-1].intersectX);
-
-					for( float from = active_edges[i-1].intersectX; from<=to; from++ )
-					{
-						if( depth )	z1+=deltaZ;
-						else		setPixel(from, y, z1, context);
-					}
-
-					if(size % 3==0 && size % 2!=0 && i+2==size)
-					{
-						to				= active_edges[i+1].intersectX;
-						float z1		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-						float z2		= active_edges[i+1].v2.z + (y-active_edges[i+1].v2.y)*(active_edges[i+1].v1.z - active_edges[i+1].v2.z)/(active_edges[i+1].v1.y - active_edges[i+1].v2.y);
-						float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i].intersectX);
-
-						for(float from = active_edges[i].intersectX; from<=to; from++)
-						{
-							if(depth)
-							{
-								z1+=deltaZ;
-							}
-							else
-							{
-								setPixel(from, y, z1, context);
-			                }
-						}
-			        }
-				}
-
-			        for( unsigned int pos=0 ; pos<active_edges.size() ; pos++ )
-			        {
-			            if(active_edges[pos].deltaY < 1)
-			            {
-			            	active_edges.erase(active_edges.begin()+pos);
-			                pos--;
-			            }
-			            else
-			            {
-			            	active_edges[pos].deltaY--;
-			            	active_edges[pos].intersectX += active_edges[pos].deltaX;
-			            }
-			        }
-			    }
-
-			    delete[] tableEdges;
-			    context.vertices.index=0;
+			 DrawingLibraryFlat::instance().fillPolygon(context);
 		}
 
 };

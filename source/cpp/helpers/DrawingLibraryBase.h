@@ -13,14 +13,6 @@
 #include "./../struct/Color.h"
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
-#include "./../struct/EdgeStack.h"
-#include "./../struct/VertexStack.h"
-#include "./../core/ContextChunk.h"
-#include "./Helpers.h"
-#include "./../struct/Color.h"
-#include "./../struct/Vertex.h"
-#include "./../struct/Edge.h"
-#include "./../struct/EdgeStack.h"
 #include "./../struct/VertexStack.h"
 #include "./../core/ContextChunk.h"
 
@@ -36,6 +28,11 @@ class DrawingLibraryInterface
 		virtual void drawPolygon	( Chunk &context ) = 0;
 		virtual void drawCircle		( Vertex v,float r, Chunk &context) = 0;
 		virtual void fillCircle		( Vertex v,float r,Chunk &context ) = 0;
+		virtual void drawTrianglesFan	( Chunk &context ) = 0;
+		virtual void drawTrianglesStrip	( Chunk &context ) = 0;
+
+		//virtual void drawArc2D		( float x, float y, float z, float r, float from, float to, Chunk &context) = 0;
+		//virtual void fillArc2D		( float x, float y, float z, float r, float from, float to, Chunk &context) = 0;
 		virtual void fillPolygon	( Chunk &context ) = 0;
 
 	protected:
@@ -56,7 +53,13 @@ class DrawingLibraryBase
 		void drawLineLoop	( Chunk &context );
 		void drawPolygon	( Chunk &context );
 		void drawCircle		( Vertex v,float r, Chunk &context);
-		void fillCircle		( Vertex v,float r,Chunk &context );
+		void drawTrianglesFan	( Chunk &context );
+		void drawTrianglesStrip	( Chunk &context );
+
+	//	void drawArc2D		( float x, float y, float z, float r, float from, float to, Chunk &context);
+//		void fillArc2D		( float x, float y, float z, float r, float from, float to, Chunk &context);
+
+		void fillCircle		( Vertex v,float r, Chunk &context );
 		void fillPolygon	( Chunk &context );
 
 		void set (DrawingLibraryInterface* newState){ state = newState; }
@@ -73,6 +76,11 @@ void DrawingLibraryBase::drawLineStrip	( Chunk &context )															{ state-
 void DrawingLibraryBase::drawLineLoop	( Chunk &context )															{ state->drawLineLoop(context);			}
 void DrawingLibraryBase::drawPolygon	( Chunk &context )															{ state->drawPolygon(context);			}
 void DrawingLibraryBase::drawCircle		( Vertex v,float r, Chunk &context)											{ state->drawCircle( v, r, context);	}
+void DrawingLibraryBase::drawTrianglesFan	( Chunk &context)															{ state->drawTrianglesFan( context);	}
+void DrawingLibraryBase::drawTrianglesStrip	( Chunk &context)															{ state->drawTrianglesStrip( context);	}
+
+//void DrawingLibraryBase::drawArc2D		( float x, float y, float z, float r, float from, float to, Chunk &context)	{ state->drawArc2D( x, y, z, r, from, to, context);	}
+//void DrawingLibraryBase::fillArc2D		( float x, float y, float z, float r, float from, float to, Chunk &context)	{ state->fillArc2D( x, y, z, r, from, to, context);	}
 void DrawingLibraryBase::fillCircle		( Vertex v,float r,Chunk &context )											{ state->fillCircle( v, r, context );	}
 void DrawingLibraryBase::fillPolygon	( Chunk &context )															{ state->fillPolygon( context );		}
 

@@ -8,6 +8,7 @@
 #ifndef DRAWINGLIBRARYFLAT_H_
 #define DRAWINGLIBRARYFLAT_H_
 
+#include "../sgl.h";
 
 class DrawingLibraryFlat : public DrawingLibraryInterface
 {
@@ -16,8 +17,6 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 		DrawingLibraryFlat() : DrawingLibraryInterface()	{}
 		~DrawingLibraryFlat()								{}
-
-
 
 		inline void fillSymPixel(signed x, signed y, signed center_x, signed center_y, Chunk &context)
 		{
@@ -152,45 +151,46 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
-				inline void setPixel_x( Chunk &context )
-				{
-					context.lastSetPixelIndex += 1;
+		inline void setPixel_x( Chunk &context )
+		{
+			context.lastSetPixelIndex++;
 
-					if( context.lastSetPixelIndex < context.w_h )
-						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-				}
+			if( context.lastSetPixelIndex < context.w_h )
+				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
 
-				inline void setPixel_y(Chunk &context)
-				{
-					context.lastSetPixelIndex += context.w;
+		inline void setPixel_y(Chunk &context)
+		{
+			context.lastSetPixelIndex += context.w;
 
-					if( context.lastSetPixelIndex < context.w_h )
-						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-				}
+			if( context.lastSetPixelIndex < context.w_h )
+				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
 
-				inline void setPixel_xy(Chunk &context)
-				{
-					context.lastSetPixelIndex += (context.w + 1);
+		inline void setPixel_xy(Chunk &context)
+		{
+			context.lastSetPixelIndex += (context.w + 1);
 
-					if( context.lastSetPixelIndex < context.w_h )
-						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-				}
+			if( context.lastSetPixelIndex < context.w_h )
+				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
 
-				inline void setPixel_mxy(Chunk &context)
-				{
-					context.lastSetPixelIndex += context.w - 1;
+		inline void setPixel_mxy(Chunk &context)
+		{
+			context.lastSetPixelIndex += context.w - 1;
 
-					if( context.lastSetPixelIndex < context.w_h )
-						*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
-				}
+			if( context.lastSetPixelIndex < context.w_h )
+				*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
+		}
 
-				inline void setPixel_xmy(Chunk &context)
-				{
-					context.lastSetPixelIndex += (1 - context.w);
+		inline void setPixel_xmy(Chunk &context)
+		{
+			context.lastSetPixelIndex += (1 - context.w);
 
-					if( context.lastSetPixelIndex < context.w_h )
-						*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
-				}
+			if( context.lastSetPixelIndex < context.w_h )
+				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
+
 		static DrawingLibraryFlat& instance()
 		{
 			static DrawingLibraryFlat * theInstance = new DrawingLibraryFlat(); // only initialized once!
@@ -256,6 +256,53 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
 
+		inline void drawTrianglesStrip( Chunk &context )
+		{
+			//Triangle strip
+			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
+
+			if(context.vertices.index<3) return;
+
+			Vertex first	= context.vertices[0];
+			Vertex second	= context.vertices[1];
+			Vertex third	= context.vertices[2];
+
+			for (uint_fast16_t i = 2; i < size; i++)
+			{
+				drawTriangle(first,second,third,context);
+				first	= second;
+				second	= third;
+				third	= context.vertices[i];
+
+			}
+				//drawLine2D( context.vertices[i], context.vertices[i+1], context);
+
+			//drawLine2D(context.vertices[size], context.vertices[0], context);
+		}
+
+		inline void drawTrianglesFan( Chunk &context )
+		{
+			//Triangle fan
+								uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
+
+								if(context.vertices.index<3) return;
+
+								Vertex center	= context.vertices[0];
+								Vertex A		= context.vertices[1];
+								Vertex B		= context.vertices[2];
+
+								for (uint_fast16_t i = 2; i <= size; i++)
+								{
+									drawTriangle(center, A, B, context);
+									//first	= second;
+									A	= B;
+									B	= context.vertices[i];
+
+								}
+
+								drawTriangle(center, A, B, context);
+		}
+
 		inline void drawPolygon( Chunk &context )
 		{
 			uint_fast32_t size = uint_fast32_t(context.vertices.index-1);
@@ -318,86 +365,198 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
+		inline void setPixelChunk(int y,int xstart,int xend, Chunk &context)
+		{
+			int n						= xend-xstart+1;
+			context.lastSetPixelIndex	= (xstart + context.w * y);
+
+			while( n >= 8 )
+			{
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
+				n -= 8;
+			}
+
+			switch( n )
+			{
+				case 8 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 7 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 6 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 5 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 4 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 3 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 2 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+				case 1 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
+			}
+		}
+
+		inline void drawTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
+		{
+			int x0 = int(v0.x);
+			int y0 = int(v0.y);
+			int x1 = int(v1.x);
+			int y1 = int(v1.y);
+			int x2 = int(v2.x);
+			int y2 = int(v2.y);
+
+			if (y0 > y2) { Helper::swap(x0, x2); Helper::swap(y0, y2); }
+			if (y1 > y2) { Helper::swap(x1, x2); Helper::swap(y1, y2); }
+			if (y0 > y1) { Helper::swap(x0, x1); Helper::swap(y0, y1); }
+
+		  float xs,xe;
+		  float dxs,dxe;
+
+		  float xm = float(x0)+float(x2-x0)/float(y2-y0)*float(y1-y0);
+
+		  if (x1<xm){
+		    dxs = float(x1-x0)/float(y1-y0);
+		    dxe = float(x2-x0)/float(y2-y0);
+		  }
+		  else{
+		    dxs = float(x2-x0)/float(y2-y0);
+		    dxe = float(x1-x0)/float(y1-y0);
+		  }
+
+		  xs = x0;
+		  xe = x0;
+
+		    for(int y=y0;y<y1;y++){
+		      const int xstart = int(xs)+1;
+		      const int xend = int(xe);
+		      setPixelChunk(y,xstart,xend, context);
+		      xs+=dxs;
+		      xe+=dxe;
+		    }
+
+
+		  if (x1<xm){
+		    xs=x1;
+		    xe=xm;
+		    dxs = float(x2-x1)/float(y2-y1);
+		    dxe = float(x2-xm)/float(y2-y1);
+		  }
+		  else{
+		    xe=x1;
+		    xs=xm;
+		    dxe = float(x2-x1)/float(y2-y1);
+		    dxs = float(x2-xm)/float(y2-y1);
+		  }
+
+		    for(int y=y1;y<y2;y++){
+		      const int xstart = int(xs)+1;
+		      const int xend = int(xe);
+		      setPixelChunk(y,xstart,xend,context);
+		      xs+=dxs;
+		      xe+=dxe;
+		    }
+		}
+
+
 		inline void fillPolygon( Chunk &context )
 		{
-			bool depth	= false;
+			int size = context.vertices.index;
 
-		    EdgeStack* tableEdges = new EdgeStack[context.h];
+			int *viewX = new int[size];
+			int *viewY = new int[size];
+			Edge* edges = new Edge[size];
 
-		    //FIXME
-			int min = Helper::bucketSort(&tableEdges[0], context.vertices.index, context.vertices);
+			viewX[0] = int(context.vertices[0].x+1.0f);
+			viewY[0] = int(context.vertices[0].y+1.0f);
 
-			std::vector<Edge> active_edges;
+			int miny = viewY[0];
+			int maxy = viewY[0];
 
-			for(int y = min; y<context.h; y++)
+			for(int i=1; i<size; i++)
 			{
-				while(tableEdges[y].index!=0)
-				{
-					active_edges.push_back(tableEdges[y].back());
-					tableEdges[y].pop_back();
-				}
+				viewX[i] = int(context.vertices[i].x);
+			    viewY[i] = int(context.vertices[i].y);
 
-				if( active_edges.empty() )continue;
+			    if(viewY[i]<miny)  miny = viewY[i];
+			    if(viewY[i]>maxy)  maxy = viewY[i];
 
-				uint_fast16_t size	= active_edges.size();
-
-				//FIXME use shaker sort
-				Helper::bubbleSort(active_edges, size, context.vertices);
-
-
-				float to	= 0.0f;
-
-				for( int i = 1; i<size; i+=2 )
-				{
-					to				= active_edges[i].intersectX;
-					float z1		= active_edges[i-1].v2.z + (y-active_edges[i-1].v2.y)*(active_edges[i-1].v1.z - active_edges[i-1].v2.z)/(active_edges[i-1].v1.y - active_edges[i-1].v2.y);
-					float z2		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-					float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i-1].intersectX);
-
-					for( float from = active_edges[i-1].intersectX; from<=to; from++ )
-					{
-						if( depth )	z1+=deltaZ;
-						else		setPixel(from, y,context);
-					}
-
-					if(size % 3==0 && size % 2!=0 && i+2==size)
-					{
-						to				= active_edges[i+1].intersectX;
-						float z1		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-						float z2		= active_edges[i+1].v2.z + (y-active_edges[i+1].v2.y)*(active_edges[i+1].v1.z - active_edges[i+1].v2.z)/(active_edges[i+1].v1.y - active_edges[i+1].v2.y);
-						float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i].intersectX);
-
-						for(float from = active_edges[i].intersectX; from<=to; from++)
-						{
-							if(depth)
-							{
-								z1+=deltaZ;
-							}
-							else
-							{
-								setPixel(from, y,context);
-			                }
-						}
-			        }
-				}
-
-			        for( unsigned int pos=0 ; pos<active_edges.size() ; pos++ )
-			        {
-			            if(active_edges[pos].deltaY < 1)
-			            {
-			            	active_edges.erase(active_edges.begin()+pos);
-			                pos--;
-			            }
-			            else
-			            {
-			            	active_edges[pos].deltaY--;
-			            	active_edges[pos].intersectX += active_edges[pos].deltaX;
-			            }
-			        }
+			    if(viewY[i]<viewY[i-1])
+			    {
+			      edges[i].miny = viewY[i]-1;
+			      edges[i].maxy = viewY[i-1];
+			      edges[i].actualX = float(viewX[i]);
 			    }
+			    else{
+			      edges[i].miny = viewY[i-1]-1;
+			      edges[i].maxy = viewY[i];
+			      edges[i].actualX = float(viewX[i-1]);
+			    }
+			    edges[i].dx = (float(viewX[i]-viewX[i-1]))/(float(viewY[i]-viewY[i-1]));
+			  }
 
-			    delete[] tableEdges;
-			    context.vertices.index=0;
+			  if(viewY[0]<viewY[size-1])
+			  {
+			    edges[0].miny = viewY[0]-1;
+			    edges[0].maxy = viewY[size-1];
+			    edges[0].actualX = float(viewX[0]);
+			  }
+			  else
+			  {
+			    edges[0].miny = viewY[size-1]-1;
+			    edges[0].maxy = viewY[0];
+			    edges[0].actualX = float(viewX[size-1]);
+			  }
+			  edges[0].dx = (float(viewX[0]-viewX[size-1]))/(float(viewY[0]-viewY[size-1]));
+
+			  int *draw = new int[size];
+			  int count;
+
+			  for( int y=miny; y<maxy; y++ )
+			  {
+				  count = 0;
+
+				  for( int v=0; v<size; v++ )
+				  {
+					  if((edges[v].miny<y) & (edges[v].maxy>y))
+					  {
+						  edges[v].actualX += edges[v].dx;
+						  draw[count]      =  int(edges[v].actualX)+1;
+						  count++;
+					  }
+				  }
+
+				  int i=1;
+				  bool a = false;
+
+				  //BUBBLE SORT START
+				  do
+				  {
+					  if(i>=count)
+			      {
+			        i=1;
+			        a = false;
+			      }
+
+			      if(draw[i]<draw[i-1])
+			      {
+			    	Helper::swap(draw[i], draw[i-1]);
+			        Edge tmp=edges[i-1];
+			        edges[i-1]=edges[i];
+			        edges[i]=tmp;
+
+			        a = true;
+			      }
+			      i++;
+			    }
+				while (a || i<count);
+				//BUBBLE SORT END
+
+			    for(int i=0; i<count; i=i+2)
+			    	setPixelChunk(y+1, draw[i], draw[i+1]-1, context);
+			  }
+
+			  context.vertices.index=0;
+			  delete[] edges;
 		}
 
 };

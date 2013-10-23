@@ -10,72 +10,38 @@
 
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
-#include "./../struct/EdgeStack.h"
 #include "./../struct/VertexStack.h"
 
 //TODO COMMENT !!!!!!!
 struct Helper
 {
 
-	static inline void bubbleSort(std::vector<Edge>& pole, int length, VertexStack& vertices)
-	{
-	    bool swap = true;
-	    int n = length;
-	    while(swap){
-	        swap = false;
-	        for(int i=1;i<n;i++){
-	            if(pole[i-1].intersectX>pole[i].intersectX){
-	                swap = true;
-	                Edge temp=pole[i];
-	                pole[i]= pole[i-1];
-	                pole[i-1]=temp;
-	            }
-	        }
-	        n--;
-	    }
+	//FIXME this is a example of a HELPER ... move to Helpers.h
+	static inline int_fast32_t round(float x)
+	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 
+
+
+	static inline void swap(float &x,float &y)
+	{
+	  float tmp=x;
+	  x=y;
+	  y=tmp;
 	}
 
-	static inline int bucketSort(EdgeStack* tableEdges, int length, VertexStack& vertices)
+
+	static inline void swap(int &x,int &y)
 	{
-	    int min = 0;
-	    int pos;
-	    int i;
-	    for( i = 0; i<length-1; i++)
-	    {
-	        if(vertices[i].y== vertices[i+1].y) continue;
+	  int tmp=x;
+	  x=y;
+	  y=tmp;
+	}
 
-	        if(vertices[i].y>vertices[i+1].y)
-	        {
-	            Edge e(vertices[i+1], vertices[i]);
-	            pos= int(e.v1.y);
-	            tableEdges[pos].push_back(e);
-	        }
-	        else
-	        {
-	            Edge e(vertices[i], vertices[i+1]);
-	            pos= int(e.v1.y);
-	            tableEdges[pos].push_back(e);
-	        }
-	        if(pos<min || min==0 )min = pos;
-	    }
-
-	    if(vertices[i].y == vertices[0].y) return min;
-	    if(vertices[i].y>vertices[0].y)
-	    {
-	        Edge e(vertices[0], vertices[i]);
-	        pos= int(e.v1.y);
-	        tableEdges[pos].push_back(e);
-	    }
-	    else
-	    {
-	        Edge e(vertices[i], vertices[0]);
-	        pos = int(e.v1.y);
-	        tableEdges[pos].push_back(e);
-	    }
-	    if(pos<min || min==0 )min = pos;
-
-	    return min;
+	static inline void swap(short &x,short &y)
+	{
+	  x ^= y;
+	  y ^= x;
+	  x ^= y;
 	}
 };
 

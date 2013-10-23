@@ -13,7 +13,6 @@
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
 #include "./../struct/Matrix.h"
-#include "./../struct/EdgeStack.h"
 #include "./../struct/VertexStack.h"
 #include "./../struct/MatrixCache.h"
 #include "./Viewport.h"
@@ -150,22 +149,22 @@ struct Context
 
             default                 : switch( type )	//LINES of FILLING
             {
-                case SGL_POINTS     : g.drawPoints    ( storage ) ; break;
-                case SGL_LINES      : g.drawLines     ( storage ) ; break;
-                case SGL_LINE_STRIP : g.drawLineStrip ( storage ) ; break;
-                case SGL_LINE_LOOP  : g.drawLineLoop  ( storage ) ; break;
-                case SGL_TRIANGLES  : /*DrawingLibraryBase::drawTriangles (         )*/ ; break;
+                case SGL_POINTS     : g.drawPoints       ( storage ) ; break;
+                case SGL_LINES      : g.drawLines        ( storage ) ; break;
+                case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
+                case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
+                case SGL_TRIANGLES  : g.drawTrianglesFan ( storage ) ; break;
 
                 case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
                 {
-                    case SGL_LINE   : g.drawPolygon   ( storage ) ; break;
-                    default         : g.fillPolygon   ( storage ) ; break;
+                    case SGL_LINE   : g.drawPolygon      ( storage ) ; break;
+                    default         : g.fillPolygon      ( storage ) ; break;
                 }
                 break;
 
-                case SGL_AREA_LIGHT        : 					              ; break;
-                case SGL_LAST_ELEMENT_TYPE : 					              ; break;
-                default                    :                                    break;
+                case SGL_AREA_LIGHT        : 					     ; break;
+                case SGL_LAST_ELEMENT_TYPE : 					     ; break;
+                default                    :                         ; break;
             }
             break;
         }
@@ -220,6 +219,8 @@ struct Context
 			}
 			else
 			{
+
+
 				sglBegin(SGL_POLYGON);
 
 				//Translate center_x,center_y
@@ -286,31 +287,76 @@ struct Context
 	inline void drawArc2D(float x, float y, float z, float r, float from, float to)
 	{
 		float x2, y2;
-		float N		= 40 * (to - from)/6.283185307179586f;
-		float alpha	= (to - from) / N;
+				float N		= 40 * (to - from)/6.283185307179586f;
+				float alpha	= (to - from) / N;
 
-		pushTypeState(SGL_LINE_STRIP);
+				int_fast32_t offset = from / alpha;
+				float fromOffset	= (offset - 1)*alpha;
+				float x1			= r * cosf(fromOffset);
+				float y1			= r * sinf(fromOffset);
+				float sa			= sinf(alpha);
+				float ca			= cosf(alpha);
 
-		int_fast32_t offset = from / alpha;
-		float fromOffset	= (offset - 1)*alpha;
-		float x1			= r * cosf(fromOffset);
-		float y1			= r * sinf(fromOffset);
-		float sa			= sinf(alpha);
-		float ca			= cosf(alpha);
+				int_fast32_t RR = Helper::round(N)+offset;
 
-		int_fast32_t RR = __round(N)+offset;
-
-		for (int_fast32_t i = offset; i <= RR; i++)
+		switch( drawType )
 		{
-			x2 = ca * x1 - sa * y1;
-			y2 = sa * x1 + ca * y1;
-			setVertex2f(x2 + x, y2 + y);
-			x1 = x2;
-			y1 = y2;
+			case SGL_POINT  :
+			{
+				sglBegin(SGL_POINTS);
+
+				for (int_fast32_t i = offset; i <= RR; i++)
+				{
+					x2 = ca * x1 - sa * y1;
+					y2 = sa * x1 + ca * y1;
+					setVertex2f(x2 + x, y2 + y);
+					x1 = x2;
+					y1 = y2;
+				}
+			}
+			break;
+
+			case SGL_LINE   :
+			{
+
+				sglBegin(SGL_LINE_STRIP);
+
+				for (int_fast32_t i = offset; i <= RR; i++)
+				{
+					x2 = ca * x1 - sa * y1;
+					y2 = sa * x1 + ca * y1;
+					setVertex2f(x2 + x, y2 + y);
+					x1 = x2;
+					y1 = y2;
+				}
+			}
+			break;
+
+			default         :
+			{
+				sglBegin(SGL_TRIANGLES);
+				setVertex2f(x, y);
+
+				for (int_fast32_t i = offset; i <= RR; i++)
+				{
+					x2 = ca * x1 - sa * y1;
+					y2 = sa * x1 + ca * y1;
+					setVertex2f(x2 + x, y2 + y);
+
+
+					x1 = x2;
+					y1 = y2;
+				}
+			}break;
 		}
 
+
+
+
 		//FIXME draw should be at "End" in rasterisation phase
-		rasterize();
+		//rasterize();
+		sglEnd();
+
 	}
 
 	inline int_fast16_t stackSize()

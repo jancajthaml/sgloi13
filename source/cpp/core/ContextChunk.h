@@ -10,7 +10,6 @@
 
 #include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
-#include "./../struct/EdgeStack.h"
 #include "./../struct/VertexStack.h"
 
 //A brige between DrawingLibrary.h and Context.h
@@ -29,7 +28,6 @@ struct Chunk
 	Color color						;	// CURRENT ACTIVE COLOR
 
 	VertexStack vertices			;	//STACK OF VERTICIES
-	EdgeStack edges					;	//STACK OF EDGES
 
 	int_fast8_t size				;	//SIZE OF A PIXEL FOR DRAWING POINTS (maximum 256)
 

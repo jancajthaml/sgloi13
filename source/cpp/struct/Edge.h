@@ -13,6 +13,14 @@ struct Edge
 {
 	//FIXME change to Vertex??
 
+	  int miny,maxy;
+	  float dx,actualX;
+	  Edge() {};
+	  Edge(int miny,int maxy, float dx, float actualX) : miny(miny),maxy(maxy),dx(dx),actualX(actualX) {};
+
+	  /*
+	   * //FIXME change to Vertex??
+
 	Vertex v1;
 	Vertex v2;
 
@@ -58,7 +66,7 @@ struct Edge
         this->intersectZy	= 0.0f;
         this->intersectZx	= 0.0f;
     }
-
+	   */
 };
 
 #endif /* EDGE_H_ */
