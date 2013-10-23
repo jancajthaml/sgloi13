@@ -78,7 +78,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 			setPixel( x1, y1, context );
 
-			for (signed i = x1 + 1; i <= x2; ++i)
+			for( signed i = x1 + 1; i <= x2; ++i )
 			{
 				if (p < 0)
 				{
@@ -159,7 +159,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		inline void setPixel_y(Chunk &context)
+		inline void setPixel_y( Chunk &context )
 		{
 			context.lastSetPixelIndex += context.w;
 
@@ -167,15 +167,15 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		inline void setPixel_xy(Chunk &context)
+		inline void setPixel_xy( Chunk &context )
 		{
-			context.lastSetPixelIndex += (context.w + 1);
+			context.lastSetPixelIndex += context.w + 1;
 
 			if( context.lastSetPixelIndex < context.w_h )
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 		}
 
-		inline void setPixel_mxy(Chunk &context)
+		inline void setPixel_mxy( Chunk &context )
 		{
 			context.lastSetPixelIndex += context.w - 1;
 
@@ -183,9 +183,9 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex))		= *((__color*) &(context.color));
 		}
 
-		inline void setPixel_xmy(Chunk &context)
+		inline void setPixel_xmy( Chunk &context )
 		{
-			context.lastSetPixelIndex += (1 - context.w);
+			context.lastSetPixelIndex += 1 - context.w;
 
 			if( context.lastSetPixelIndex < context.w_h )
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
@@ -256,51 +256,45 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
 
-		inline void drawTrianglesStrip( Chunk &context )
+		inline void fillTrianglesStrip( Chunk &context )
 		{
 			//Triangle strip
 			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
 			if(context.vertices.index<3) return;
 
-			Vertex first	= context.vertices[0];
-			Vertex second	= context.vertices[1];
-			Vertex third	= context.vertices[2];
+			Vertex A  = context.vertices[0];
+			Vertex B  = context.vertices[1];
+			Vertex C  = context.vertices[2];
 
-			for (uint_fast16_t i = 2; i < size; i++)
+			for( uint_fast16_t i = 2; i < size; i++ )
 			{
-				drawTriangle(first,second,third,context);
-				first	= second;
-				second	= third;
-				third	= context.vertices[i];
-
+				drawTriangle(A, B, C, context);
+				A  = B;
+				B  = C;
+				C  = context.vertices[i];
 			}
-				//drawLine2D( context.vertices[i], context.vertices[i+1], context);
-
-			//drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
 
-		inline void drawTrianglesFan( Chunk &context )
+		inline void fillTrianglesFan( Chunk &context )
 		{
 			//Triangle fan
-								uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
+			uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
 
-								if(context.vertices.index<3) return;
+			if(context.vertices.index<3) return;
 
-								Vertex center	= context.vertices[0];
-								Vertex A		= context.vertices[1];
-								Vertex B		= context.vertices[2];
+			Vertex center	= context.vertices[0];
+			Vertex A		= context.vertices[1];
+			Vertex B		= context.vertices[2];
 
-								for (uint_fast16_t i = 2; i <= size; i++)
-								{
-									drawTriangle(center, A, B, context);
-									//first	= second;
-									A	= B;
-									B	= context.vertices[i];
+			for (uint_fast16_t i = 2; i <= size; i++)
+			{
+				drawTriangle(center, A, B, context);
+				A	= B;
+				B	= context.vertices[i];
+			}
 
-								}
-
-								drawTriangle(center, A, B, context);
+			drawTriangle(center, A, B, context);
 		}
 
 		inline void drawPolygon( Chunk &context )
@@ -462,65 +456,65 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 		{
 			int size = context.vertices.index;
 
-			int *viewX = new int[size];
-			int *viewY = new int[size];
+			int *view_x = new int[size];
+			int *view_y = new int[size];
 			Edge* edges = new Edge[size];
 
-			viewX[0] = int(context.vertices[0].x+1.0f);
-			viewY[0] = int(context.vertices[0].y+1.0f);
+			view_x[0] = int(context.vertices[0].x+1.0f);
+			view_y[0] = int(context.vertices[0].y+1.0f);
 
-			int miny = viewY[0];
-			int maxy = viewY[0];
+			int min_y = view_y[0];
+			int max_y = view_y[0];
 
 			for(int i=1; i<size; i++)
 			{
-				viewX[i] = int(context.vertices[i].x);
-			    viewY[i] = int(context.vertices[i].y);
+				view_x[i] = int(context.vertices[i].x);
+				view_y[i] = int(context.vertices[i].y);
 
-			    if(viewY[i]<miny)  miny = viewY[i];
-			    if(viewY[i]>maxy)  maxy = viewY[i];
+			    if( view_y[i]<min_y )  min_y = view_y[i];
+			    if( view_y[i]>max_y )  max_y = view_y[i];
 
-			    if(viewY[i]<viewY[i-1])
+			    if( view_y[i]<view_y[i-1] )
 			    {
-			      edges[i].miny = viewY[i]-1;
-			      edges[i].maxy = viewY[i-1];
-			      edges[i].actualX = float(viewX[i]);
+			      edges[i].min_y = view_y[i]-1;
+			      edges[i].max_y = view_y[i-1];
+			      edges[i].x     = float(view_x[i]);
 			    }
 			    else{
-			      edges[i].miny = viewY[i-1]-1;
-			      edges[i].maxy = viewY[i];
-			      edges[i].actualX = float(viewX[i-1]);
+			      edges[i].min_y = view_y[i-1]-1;
+			      edges[i].max_y = view_y[i];
+			      edges[i].x     = float(view_x[i-1]);
 			    }
-			    edges[i].dx = (float(viewX[i]-viewX[i-1]))/(float(viewY[i]-viewY[i-1]));
+			    edges[i].delta = (float(view_x[i]-view_x[i-1]))/(float(view_y[i]-view_y[i-1]));
 			  }
 
-			  if(viewY[0]<viewY[size-1])
+			  if( view_y[0]<view_y[size-1] )
 			  {
-			    edges[0].miny = viewY[0]-1;
-			    edges[0].maxy = viewY[size-1];
-			    edges[0].actualX = float(viewX[0]);
+			    edges[0].min_y = view_y[0]-1;
+			    edges[0].max_y = view_y[size-1];
+			    edges[0].x     = float(view_x[0]);
 			  }
 			  else
 			  {
-			    edges[0].miny = viewY[size-1]-1;
-			    edges[0].maxy = viewY[0];
-			    edges[0].actualX = float(viewX[size-1]);
+			    edges[0].min_y = view_y[size-1]-1;
+			    edges[0].max_y = view_y[0];
+			    edges[0].x     = float(view_x[size-1]);
 			  }
-			  edges[0].dx = (float(viewX[0]-viewX[size-1]))/(float(viewY[0]-viewY[size-1]));
+			  edges[0].delta   = (float(view_x[0]-view_x[size-1]))/(float(view_y[0]-view_y[size-1]));
 
 			  int *draw = new int[size];
 			  int count;
 
-			  for( int y=miny; y<maxy; y++ )
+			  for( int y=min_y; y<max_y; y++ )
 			  {
 				  count = 0;
 
 				  for( int v=0; v<size; v++ )
 				  {
-					  if((edges[v].miny<y) & (edges[v].maxy>y))
+					  if( (edges[v].min_y<y) & (edges[v].max_y>y) )
 					  {
-						  edges[v].actualX += edges[v].dx;
-						  draw[count]      =  int(edges[v].actualX)+1;
+						  edges[v].x  +=  edges[v].delta;
+						  draw[count]  =  int(edges[v].x)+1;
 						  count++;
 					  }
 				  }

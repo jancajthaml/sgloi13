@@ -11,12 +11,26 @@
 
 struct Edge
 {
-	//FIXME change to Vertex??
+	int min_y;
+	int max_y;
+	float delta;
+	float x;
 
-	  int miny,maxy;
-	  float dx,actualX;
-	  Edge() {};
-	  Edge(int miny,int maxy, float dx, float actualX) : miny(miny),maxy(maxy),dx(dx),actualX(actualX) {};
+	Edge()
+	{
+		min_y      = 0;
+		max_y      = 0;
+		delta      = 0.0f;
+		x   	   = 0.0f;
+	};
+
+	Edge(int miny,int maxy, float dx, float actualX)
+	{
+		this->min_y  = miny;
+		this->max_y  = maxy;
+		this->delta  = dx;
+		this->x   	 = actualX;
+	}
 
 	  /*
 	   * //FIXME change to Vertex??

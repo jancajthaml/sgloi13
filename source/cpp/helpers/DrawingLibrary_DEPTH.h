@@ -236,15 +236,11 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			drawLine2D(context.vertices[size], context.vertices[0], context);
 		}
 
-		inline void drawTrianglesFan( Chunk &context )
-		{
-			DrawingLibraryFlat::instance().drawTrianglesFan(context);
-		}
+		inline void fillTrianglesFan( Chunk &context )
+		{ DrawingLibraryFlat::instance().fillTrianglesFan(context); }
 
-		inline void drawTrianglesStrip( Chunk &context )
-		{
-			DrawingLibraryFlat::instance().drawTrianglesStrip(context);
-		}
+		inline void fillTrianglesStrip( Chunk &context )
+		{ DrawingLibraryFlat::instance().fillTrianglesStrip(context); }
 
 		inline void drawPolygon( Chunk &context )
 		{

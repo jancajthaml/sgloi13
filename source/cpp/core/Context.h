@@ -57,37 +57,37 @@
 struct Context
 {
 
-	int_fast8_t id;	//Maximum 256 contexts
+	int_fast8_t id            ;  //Maximum 256 contexts
 
-	Chunk storage;			// Graphic dependent data storage
-	Viewport viewport;
+	Chunk storage             ;  // Graphic dependent data storage
+	Viewport viewport         ;
 
-	sglEAreaMode drawType;	// Drawing mode
-	sglEMatrixMode matrixMode;
+	sglEAreaMode drawType     ;  // Drawing mode
+	sglEMatrixMode matrixMode ;
 
-	static DrawingLibraryBase g;
-	static DrawingLibraryFlat flat;
+	static DrawingLibraryBase  g;
+	static DrawingLibraryFlat  flat;
 	static DrawingLibraryDepth depth;
 
 	//State
-	bool BEGIN;
-	bool Z_TEST;
+	bool BEGIN  ;
+	bool Z_TEST ;
 
 	//Transformation matrices
-	Matrix current_MV;
-	Matrix current_P;
+	Matrix current_MV ;
+	Matrix current_P  ;
 
-	Matrix MP;
-	Matrix MVP;
+	Matrix MP  ;
+	Matrix MVP ;
 
-	bool P_changed;
-	bool M_changed;
-
-	//FIXME don't use a std::vector stack for this, implement custom
-	std::vector<sglEElementType> types;
+	bool P_changed ;
+	bool M_changed ;
 
 	//FIXME don't use a std::vector stack for this, implement custom
-	std::vector<Matrix> P_stack;
+	std::vector<sglEElementType> types ;
+
+	//FIXME don't use a std::vector stack for this, implement custom
+	std::vector<Matrix> P_stack        ;
 
 
 	Context(uint_fast16_t width, uint_fast16_t height)
@@ -108,21 +108,22 @@ struct Context
 
 		//Initialise Flags
 		//storage.depth  = false;
-		BEGIN		   = false;
-
+		BEGIN			= false;
+		Z_TEST			= false;
 		//----------------------//
 
-		storage.size   = 1;
-		storage.buffer = (Color*) malloc(sizeof(Color) * storage.w_h);
-		storage.depth  = (float*) malloc(sizeof(float) * storage.w_h);
-		storage.clear  = (Color*) malloc(sizeof(Color) * storage.w_h);
+		storage.size   = 1                                            ;
+		storage.buffer = (Color*) malloc(sizeof(Color) * storage.w_h) ;
+		storage.depth  = (float*) malloc(sizeof(float) * storage.w_h) ;
+		storage.clear  = (Color*) malloc(sizeof(Color) * storage.w_h) ;
 
-		current_MV	   = MatrixCache::identity();
-		current_P      = MatrixCache::identity();
+		current_MV	   = MatrixCache::identity()                      ;
+		current_P      = MatrixCache::identity()                      ;
 
-		P_changed      = true;
-		M_changed      = true;
-		drawType       = SGL_FILL;
+		P_changed      = true                                         ;
+		M_changed      = true                                         ;
+		drawType       = SGL_FILL                                     ;
+		matrixMode     = SGL_MODELVIEW                                ;
 
 		this->disableDepthTest();
 	}
@@ -138,14 +139,12 @@ struct Context
 
 	inline void rasterize()
 	{
-		//if (types.size() == 0) throw std::exception();
-
 		sglEElementType type = types.back();
 		types.pop_back();
 
         switch( drawType )
         {
-            case SGL_POINT          : g.drawPoints ( storage )    ; break;
+            case SGL_POINT          : g.drawPoints ( storage )       ; break;
 
             default                 : switch( type )	//LINES of FILLING
             {
@@ -153,7 +152,7 @@ struct Context
                 case SGL_LINES      : g.drawLines        ( storage ) ; break;
                 case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
                 case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
-                case SGL_TRIANGLES  : g.drawTrianglesFan ( storage ) ; break;
+                case SGL_TRIANGLES  : g.fillTrianglesFan ( storage ) ; break;
 
                 case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
                 {
@@ -174,22 +173,23 @@ struct Context
 
 	inline Vertex& create(float x, float y, float z, float w)
 	{
-		//FIXME how?
 		Vertex v(x, y, z, w);
 		transform(v);
 		return v;
 	}
 
-	inline void transform(Vertex & v)
+	inline Vertex transform(Vertex & v)
 	{
 		check_MVP();
 
 		//This is a uqly fix to differ the multiplication with Z-TEST and without
 
-		if(Z_TEST)	v = MVP << v;	//WITH
-		else		v = MVP < v;	//WITHOUT
+		if(Z_TEST)	v = MVP << v ;  //WITH
+		else		v = MVP <  v ;  //WITHOUT
 
 		printf("     after transform -> vertex: x=%f, y=%f, z=%f, w=%f\n",v.x,v.y,v.z,v.w);
+
+		return v;
 	}
 
 	inline float calculateRadiusScaleFactor()
@@ -211,17 +211,15 @@ struct Context
 
 	inline void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
 	{
-			bool ellipse_adaptive = false;
+		bool ellipse_adaptive = false;
 
-			if(ellipse_adaptive)
-			{
+		if(ellipse_adaptive)
+		{
 
-			}
-			else
-			{
-
-
-				sglBegin(SGL_POLYGON);
+		}
+		else
+		{
+			sglBegin(SGL_POLYGON);
 
 				//Translate center_x,center_y
 
@@ -286,18 +284,19 @@ struct Context
 
 	inline void drawArc2D(float x, float y, float z, float r, float from, float to)
 	{
-		float x2, y2;
-				float N		= 40 * (to - from)/6.283185307179586f;
-				float alpha	= (to - from) / N;
+		float x2			= 0.0f					;
+		float y2			= 0.0f					;
+		float f				= to - from				;
+		float N				= f * 12.732395447351626861510701069801148962756771659236515f;
+		float alpha			= f / N					;
+		float offset = from / alpha			;
+		float from_offset	= (offset - 1)*alpha	;
+		float x1			= r * cosf(from_offset)	;
+		float y1			= r * sinf(from_offset)	;
+		float sa			= sinf(alpha)			;
+		float ca			= cosf(alpha)			;
 
-				int_fast32_t offset = from / alpha;
-				float fromOffset	= (offset - 1)*alpha;
-				float x1			= r * cosf(fromOffset);
-				float y1			= r * sinf(fromOffset);
-				float sa			= sinf(alpha);
-				float ca			= cosf(alpha);
-
-				int_fast32_t RR = Helper::round(N)+offset;
+		float RR = Helper::round(N)+offset;
 
 		switch( drawType )
 		{
@@ -334,7 +333,10 @@ struct Context
 
 			default         :
 			{
+				//Fill Arct bi triangle fan (can we do it better ? )
 				sglBegin(SGL_TRIANGLES);
+
+				//Center
 				setVertex2f(x, y);
 
 				for (int_fast32_t i = offset; i <= RR; i++)
@@ -343,37 +345,26 @@ struct Context
 					y2 = sa * x1 + ca * y1;
 					setVertex2f(x2 + x, y2 + y);
 
-
 					x1 = x2;
 					y1 = y2;
 				}
 			}break;
 		}
 
-
-
-
-		//FIXME draw should be at "End" in rasterisation phase
-		//rasterize();
 		sglEnd();
-
 	}
-
-	inline int_fast16_t stackSize()
-	{ return types.size(); }
 
 	inline void multiplyCurrentMatrix(Matrix & m)
 	{
-
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW :
-				M_changed			= true;
+				M_changed	= true;
 				current_MV	= current_MV * m;
 			break;
 
 			default:
-				P_changed			= true;
+				P_changed	= true;
 				current_P	= current_P * m;
 			break;
 		}
@@ -405,12 +396,12 @@ struct Context
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW	:
-				M_changed			= true;
+				M_changed	= true;
 				current_MV	= matrix;
 			break;
 
 			default				:
-				P_changed			= true;
+				P_changed	= true;
 				current_P	= matrix;
 			break;
 		}
@@ -476,11 +467,11 @@ struct Context
 
 	inline bool check_MP()
 	{
-		if (M_changed || P_changed)
+		if( M_changed || P_changed )
 		{
 			M_changed	= false;
 			P_changed	= false;
-			MP		= current_P * current_MV;
+			MP			= current_P * current_MV;
 			return true;
 		}
 		return false;
@@ -488,7 +479,7 @@ struct Context
 
 	inline void check_MVP()
 	{
-		if (check_MP() || viewport.V_changed)
+		if( check_MP() || viewport.V_changed )
 		{
 			viewport.V_changed	= false;
 			MVP					= viewport.V * MP;
@@ -499,12 +490,13 @@ struct Context
 	inline void cacheClear(float r, float g, float b, float a)
 	{
 		Color c = Color(r,g,b);
+
 		//1-6 = RGB RGB
 		*((__color*) (storage.clear))	= *((__color*) &c);	//1-3 RGB
 		*((__color*) (storage.clear+2))	= *((__color*) &c);	//4-7 RGB
 
-		uint_fast32_t l = 2;
-		int_fast8_t s = sizeof(Color);
+		uint_fast32_t l	= 2				;
+		int_fast8_t s	= sizeof(Color)	;
 
 		for(uint_fast32_t offset=l ; offset < storage.w_h; offset <<= 1)
 		{
@@ -512,10 +504,6 @@ struct Context
 			l = offset;
 		}
 	}
-
-	//FIXME this is a example of a HELPER ... move to Helpers.h
-	inline int_fast32_t __round(float x)
-	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 
 	void enableDepthTest()
 	{
@@ -531,8 +519,6 @@ struct Context
 
 };
 
-
 DrawingLibraryBase Context::g = DrawingLibraryBase();
-
 
 #endif /* DATA_H_ */
