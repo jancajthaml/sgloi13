@@ -152,8 +152,12 @@ struct Context
                 case SGL_LINES      : g.drawLines        ( storage ) ; break;
                 case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
                 case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
-                case SGL_TRIANGLES  : g.fillTrianglesFan ( storage ) ; break;
-
+                case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
+                {
+                    case SGL_LINE   : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
+                    default         : g.fillTrianglesFan ( storage ) ; break;
+                }
+                break;
                 case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
                 {
                     case SGL_LINE   : g.drawPolygon      ( storage ) ; break;
