@@ -359,10 +359,10 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			}
 		}
 
-		inline void setPixelChunk(int y,int xstart,int xend, Chunk &context)
+		inline void setPixelChunk(int y, int start, int end, Chunk &context)
 		{
-			int n						= xend-xstart+1;
-			context.lastSetPixelIndex	= (xstart + context.w * y);
+			int n						= end-start+1;
+			context.lastSetPixelIndex	= (start + context.w * y);
 
 			while( n >= 8 )
 			{
@@ -392,6 +392,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 		inline void drawTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
 		{
+
 			int x0 = int(v0.x);
 			int y0 = int(v0.y);
 			int x1 = int(v1.x);
@@ -403,54 +404,55 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			if (y1 > y2) { Helper::swap(x1, x2); Helper::swap(y1, y2); }
 			if (y0 > y1) { Helper::swap(x0, x1); Helper::swap(y0, y1); }
 
-		  float xs,xe;
-		  float dxs,dxe;
+		  float xs	= 0.0f;
+		  float xe	= 0.0f;
+		  float dxs	= 0.0f;
+		  float dxe	= 0.0f;
+		  float xm	= (x0)+(x2-x0)/float(y2-y0)*float(y1-y0);
 
-		  float xm = float(x0)+float(x2-x0)/float(y2-y0)*float(y1-y0);
-
-		  if (x1<xm){
-		    dxs = float(x1-x0)/float(y1-y0);
-		    dxe = float(x2-x0)/float(y2-y0);
+		  if (x1<xm)
+		  {
+			  dxs = (x1-x0)/float(y1-y0);
+			  dxe = (x2-x0)/float(y2-y0);
 		  }
-		  else{
-		    dxs = float(x2-x0)/float(y2-y0);
-		    dxe = float(x1-x0)/float(y1-y0);
+		  else
+		  {
+			  dxs = (x2-x0)/float(y2-y0);
+			  dxe = (x1-x0)/float(y1-y0);
 		  }
 
 		  xs = x0;
 		  xe = x0;
 
-		    for(int y=y0;y<y1;y++){
-		      const int xstart = int(xs)+1;
-		      const int xend = int(xe);
-		      setPixelChunk(y,xstart,xend, context);
+		  for(int y=y0;y<y1;y++)
+		  {
+		      setPixelChunk(y,int(xs)+1,int(xe), context);
 		      xs+=dxs;
 		      xe+=dxe;
-		    }
-
-
-		  if (x1<xm){
-		    xs=x1;
-		    xe=xm;
-		    dxs = float(x2-x1)/float(y2-y1);
-		    dxe = float(x2-xm)/float(y2-y1);
-		  }
-		  else{
-		    xe=x1;
-		    xs=xm;
-		    dxe = float(x2-x1)/float(y2-y1);
-		    dxs = float(x2-xm)/float(y2-y1);
 		  }
 
-		    for(int y=y1;y<y2;y++){
-		      const int xstart = int(xs)+1;
-		      const int xend = int(xe);
-		      setPixelChunk(y,xstart,xend,context);
-		      xs+=dxs;
-		      xe+=dxe;
-		    }
+		  if (x1<xm)
+		  {
+			  xs=x1;
+			  xe=xm;
+			  dxs = (x2-x1)/float(y2-y1);
+			  dxe = (x2-xm)/float(y2-y1);
+		  }
+		  else
+		  {
+			  xe  = x1;
+			  xs  = xm;
+			  dxe = (x2-x1)/float(y2-y1);
+			  dxs = (x2-xm)/float(y2-y1);
+		  }
+
+		  for(int y=y1;y<y2;y++)
+		  {
+			  setPixelChunk(y,int(xs)+1,int(xe),context);
+			  xs+=dxs;
+			  xe+=dxe;
+		  }
 		}
-
 
 		inline void fillPolygon( Chunk &context )
 		{
@@ -485,7 +487,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			      edges[i].max_y = view_y[i];
 			      edges[i].x     = float(view_x[i-1]);
 			    }
-			    edges[i].delta = (float(view_x[i]-view_x[i-1]))/(float(view_y[i]-view_y[i-1]));
+			    edges[i].delta = (view_x[i]-view_x[i-1])/(float(view_y[i]-view_y[i-1]));
 			  }
 
 			  if( view_y[0]<view_y[size-1] )
@@ -500,7 +502,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			    edges[0].max_y = view_y[0];
 			    edges[0].x     = float(view_x[size-1]);
 			  }
-			  edges[0].delta   = (float(view_x[0]-view_x[size-1]))/(float(view_y[0]-view_y[size-1]));
+			  edges[0].delta   = (view_x[0]-view_x[size-1])/(float(view_y[0]-view_y[size-1]));
 
 			  int *draw = new int[size];
 			  int count;
@@ -526,23 +528,22 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				  do
 				  {
 					  if(i>=count)
-			      {
-			        i=1;
-			        a = false;
-			      }
+					  {
+						  i=1;
+						  a = false;
+					  }
 
-			      if(draw[i]<draw[i-1])
-			      {
-			    	Helper::swap(draw[i], draw[i-1]);
-			        Edge tmp=edges[i-1];
-			        edges[i-1]=edges[i];
-			        edges[i]=tmp;
-
-			        a = true;
-			      }
-			      i++;
+					  if(draw[i]<draw[i-1])
+					  {
+						  Helper::swap(draw[i], draw[i-1]);
+						  Edge tmp=edges[i-1];
+						  edges[i-1]=edges[i];
+						  edges[i]=tmp;
+						  a = true;
+					  }
+					  i++;
 			    }
-				while (a || i<count);
+				while( a || i<count );
 				//BUBBLE SORT END
 
 			    for(int i=0; i<count; i=i+2)

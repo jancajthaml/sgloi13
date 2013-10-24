@@ -43,6 +43,14 @@ struct Helper
 	  y ^= x;
 	  x ^= y;
 	}
+
+	static inline int min(float A, float B, float C)
+	{ return (A<B)?((A<C)?int(A):int(C)):int(B); }
+
+	static inline int max(float A, float B, float C)
+	{ return (A>B)?((A>C)?int(A):int(C)):int(B); }
+
+
 };
 
 #endif /* HELPERS_H_ */

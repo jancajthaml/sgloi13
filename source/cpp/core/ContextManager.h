@@ -22,14 +22,14 @@ struct ContextManager
 
 	inline void setContext(int_fast8_t id)
 	{
-		if ((id >= 0) && (id < int_fast32_t(contexts.size())))
+		if ((id >= 0) && (id < contexts.size()))
 			current = id;
 		else throw std::exception();
 	}
 
 	inline void deleteContext(int_fast8_t id)
 	{
-		if (id >= 0 && id < (int_fast32_t)contexts.size())
+		if (id >= 0 && id < contexts.size())
 			contexts.erase(contexts.begin() + id);
 	}
 

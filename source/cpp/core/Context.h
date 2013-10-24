@@ -191,7 +191,7 @@ struct Context
 		if(Z_TEST)	v = MVP << v ;  //WITH
 		else		v = MVP <  v ;  //WITHOUT
 
-		printf("     after transform -> vertex: x=%f, y=%f, z=%f, w=%f\n",v.x,v.y,v.z,v.w);
+		//printf("     after transform -> vertex: x=%f, y=%f, z=%f, w=%f\n",v.x,v.y,v.z,v.w);
 
 		return v;
 	}
@@ -300,7 +300,7 @@ struct Context
 		float sa			= sinf(alpha)			;
 		float ca			= cosf(alpha)			;
 
-		float RR = Helper::round(N)+offset;
+		int_fast32_t RR     = Helper::round(N)+offset;
 
 		switch( drawType )
 		{
@@ -308,51 +308,37 @@ struct Context
 			{
 				sglBegin(SGL_POINTS);
 
-				for (int_fast32_t i = offset; i <= RR; i++)
-				{
-					x2 = ca * x1 - sa * y1;
-					y2 = sa * x1 + ca * y1;
-					setVertex2f(x2 + x, y2 + y);
-					x1 = x2;
-					y1 = y2;
-				}
 			}
 			break;
 
 			case SGL_LINE   :
 			{
-
 				sglBegin(SGL_LINE_STRIP);
-
-				for (int_fast32_t i = offset; i <= RR; i++)
-				{
-					x2 = ca * x1 - sa * y1;
-					y2 = sa * x1 + ca * y1;
-					setVertex2f(x2 + x, y2 + y);
-					x1 = x2;
-					y1 = y2;
-				}
 			}
 			break;
 
 			default         :
 			{
 				//Fill Arct bi triangle fan (can we do it better ? )
+				//Artefacts appear in polygon fill too
+				//SGL_POLYGON is SLOWER!
 				sglBegin(SGL_TRIANGLES);
 
 				//Center
 				setVertex2f(x, y);
 
-				for (int_fast32_t i = offset; i <= RR; i++)
-				{
-					x2 = ca * x1 - sa * y1;
-					y2 = sa * x1 + ca * y1;
-					setVertex2f(x2 + x, y2 + y);
-
-					x1 = x2;
-					y1 = y2;
-				}
 			}break;
+		}
+
+		for (int_fast32_t i = offset; i <= RR; i++)
+		{
+			x2 = ca * x1 - sa * y1;
+			y2 = sa * x1 + ca * y1;
+
+			setVertex2f(x2 + x, y2 + y);
+
+			x1 = x2;
+			y1 = y2;
 		}
 
 		sglEnd();
@@ -495,12 +481,17 @@ struct Context
 	{
 		Color c = Color(r,g,b);
 
-		//1-6 = RGB RGB
-		*((__color*) (storage.clear))	= *((__color*) &c);	//1-3 RGB
-		*((__color*) (storage.clear+2))	= *((__color*) &c);	//4-7 RGB
+		*((__color*) (storage.clear))	= *((__color*) &c);
+		*((__color*) (storage.clear+2))	= *((__color*) &c);
+		*((__color*) (storage.clear+3))	= *((__color*) &c);
+		*((__color*) (storage.clear+4))	= *((__color*) &c);
+		*((__color*) (storage.clear+5))	= *((__color*) &c);
+		*((__color*) (storage.clear+6))	= *((__color*) &c);
+		*((__color*) (storage.clear+7))	= *((__color*) &c);
+		*((__color*) (storage.clear+8))	= *((__color*) &c);
 
-		uint_fast32_t l	= 2				;
-		int_fast8_t s	= sizeof(Color)	;
+		uint_fast32_t  l  =  8					;
+		int_fast8_t    s  =  sizeof(__color)	;
 
 		for(uint_fast32_t offset=l ; offset < storage.w_h; offset <<= 1)
 		{

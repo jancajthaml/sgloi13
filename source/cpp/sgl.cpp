@@ -261,7 +261,7 @@ void sglEnd(void)
 void sglVertex4f(float x, float y, float z, float w)
 {
 	current()->setVertex4f(x, y, z, w);
-	printf("before transform -> vertex4: x=%f, y=%f, z=%f, w=%f\n",x,y,z,w);
+	//printf("before transform -> vertex4: x=%f, y=%f, z=%f, w=%f\n",x,y,z,w);
 }
 
 //Vertex with 3 float coords
@@ -269,7 +269,7 @@ void sglVertex4f(float x, float y, float z, float w)
 void sglVertex3f(float x, float y, float z)
 {
 	current()->setVertex3f(x, y, z);
-	printf("before transform -> vertex3: x=%f, y=%f, z=%f\n",x,y,z);
+	//printf("before transform -> vertex3: x=%f, y=%f, z=%f\n",x,y,z);
 }
 
 //Vertex with 2 float coords
@@ -277,7 +277,7 @@ void sglVertex3f(float x, float y, float z)
 void sglVertex2f(float x, float y)
 {
 	current()->setVertex2f(x, y);
-	printf("before transform -> vertex2: x=%f, y=%f\n",x,y);
+	//printf("before transform -> vertex2: x=%f, y=%f\n",x,y);
 }
 
 //2D Circle
@@ -428,10 +428,8 @@ void sglLoadMatrix(const float* matrix)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	//ERROR HERE
-	current()->setCurrentMatrix(Matrix(matrix));
 
-	//current()->setCurrentMatrix(Matrix(matrix));
+	current()->setCurrentMatrix(Matrix(matrix));
 }
 
 //Multiply two matrices
@@ -445,7 +443,6 @@ void sglMultMatrix(const float* matrix)
 
 	Matrix mat = Matrix(matrix);
 	current()->multiplyCurrentMatrix(mat);
-	//current()->multiplyCurrentMatrix(mat);
 }
 
 //Translate coordinates
@@ -459,8 +456,6 @@ void sglTranslate(float x, float y, float z)
 
 	Matrix translate = MatrixCache::translate(x,y,z);
 	current()->multiplyCurrentMatrix(translate);
-
-	//current()->multiplyCurrentMatrix(translate);
 }
 
 //Scale
@@ -475,7 +470,6 @@ void sglScale(float scalex, float scaley, float scalez)
 	Matrix scale = MatrixCache::scale(scalex, scaley, scalez);
 	current()->multiplyCurrentMatrix(scale);
 
-	//current()->multiplyCurrentMatrix(scale);
 }
 
 //Rotate **** around the centerx,centery axis with given angle
@@ -487,25 +481,24 @@ void sglRotate2D(float angle, float centerx, float centery)
 	    return;
 	}
 
-	//Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
-
 	sglTranslate(centerx, centery, 0.0f);
 	Matrix rotate = MatrixCache::rotate2D(angle, centerx, centery);
 	current()->multiplyCurrentMatrix(rotate);
 	sglTranslate(-centerx, -centery, 0.0f);
-
-	//current()->multiplyCurrentMatrix(rotate);
 }
 
 // ? rotates what ? Context or scene ?
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
-	//This is crusial
-	//sglTranslate(centerx, centery, 0.0f);
-		Matrix rotate = MatrixCache::rotateY(angle);
-		current()->multiplyCurrentMatrix(rotate);
-		//sglTranslate(-centerx, -centery, 0.0f);
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
+	Matrix rotate = MatrixCache::rotateY(angle);
+	current()->multiplyCurrentMatrix(rotate);
 }
 
 // ?
@@ -524,6 +517,8 @@ void sglOrtho(float left, float right, float bottom, float top, float near, floa
 // ?
 void sglFrustum(float left, float right, float bottom, float top, float near, float far)
 {
+	if(far < 0 || near < 0) return;
+
 	if(current()->BeginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);

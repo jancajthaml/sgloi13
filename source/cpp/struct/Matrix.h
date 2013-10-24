@@ -51,15 +51,27 @@ struct Matrix
 
 	inline Vertex operator<(const Vertex & other)
 	{
-		float weight = (matrix[3]*other.x + matrix[7]*other.y +matrix[15]);
-		Vertex res((matrix[0]*other.x + matrix[4]*other.y +matrix[12])/weight  ,(matrix[1]*other.x + matrix[5]*other.y +matrix[13])/weight, 0.0f, 1.0f);
+		float w = matrix[3]*other.x + matrix[7]*other.y + matrix[15];
+		Vertex res
+		(
+			(matrix[0]*other.x + matrix[4]*other.y +matrix[12]) / w,
+			(matrix[1]*other.x + matrix[5]*other.y +matrix[13]) / w,
+			other.z,
+			other.w
+		);
 		return res;
 	}
 
 	inline Vertex operator<<(const Vertex & other)
 	{
-		float weight = (matrix[3]*other.x + matrix[7]*other.y + matrix[11]*other.z +matrix[15]) ;
-		Vertex res((matrix[0]*other.x + matrix[4]*other.y + matrix[8]*other.z +matrix[12])/weight  ,(matrix[1]*other.x + matrix[5]*other.y + matrix[9]*other.z +matrix[13])/weight  ,(matrix[2]*other.x + matrix[6]*other.y + matrix[10]*other.z +matrix[14])/weight , other.w);
+		float w = matrix[3]*other.x + matrix[7]*other.y + matrix[11]*other.z + matrix[15];
+		Vertex res
+		(
+			(matrix[0] * other.x + matrix[4] * other.y + matrix[8]  * other.z +matrix[12]) / w,
+			(matrix[1] * other.x + matrix[5] * other.y + matrix[9]  * other.z +matrix[13]) / w,
+			(matrix[2] * other.x + matrix[6] * other.y + matrix[10] * other.z +matrix[14]) / w,
+			other.w
+		);
 		return res;
 	}
 
@@ -92,15 +104,6 @@ struct Matrix
 
 	inline void operator=(const Matrix & other)
 	{ memcpy(matrix, other.matrix, SIZE_FLOAT); }
-
-	inline bool operator==(const Matrix & other)const
-	{
-		if(matrix[0]==other.matrix[0] && matrix[1]==other.matrix[1] && matrix[2]==other.matrix[2] && matrix[3]==other.matrix[3] && matrix[4]==other.matrix[4] && matrix[5]==other.matrix[5] && matrix[6]==other.matrix[6] && matrix[7]==other.matrix[7] && matrix[8]==other.matrix[8] && matrix[9]==other.matrix[9] && matrix[10]==other.matrix[10] && matrix[11]==other.matrix[11] && matrix[12]==other.matrix[12] && matrix[13]==other.matrix[13] && matrix[14]==other.matrix[14] && matrix[15]==other.matrix[15])return true;
-		return false;
-	}
-
-	inline bool operator!=(const Matrix & other)const
-	{ return !(*this == other); }
 
 	inline Matrix operator+(const Matrix &other)const
 	{

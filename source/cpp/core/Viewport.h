@@ -62,19 +62,18 @@ struct Viewport
 
 	inline void changeViewport(int_fast16_t x, int_fast16_t y, int_fast16_t width, int_fast16_t height)
 	{
-		this->width					=  width;
-		this->height				=  height;
-		this->width_2_x				=  width>>1;
-		this->height_2_y			=  height>>1;
-		this->x						=  x;
-		this->y						=  y;
-
-		this->V		=  Matrix
+		this->width			=  width;
+		this->height		=  height;
+		this->width_2_x		=  width>>1;
+		this->height_2_y	=  height>>1;
+		this->x				=  x;
+		this->y				=  y;
+		this->V				=  Matrix
 		(
-			width_2_x, 0.0f, 0.0f, 0.0f,
-			0.0f, height_2_y, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			width_2_x + x, height_2_y + x, 0.0f, 1.0f
+			width_2_x		, 0.0f				, 0.0f	, 0.0f,
+			0.0f			, height_2_y		, 0.0f	, 0.0f,
+			0.0f			, 0.0f				, 1.0f	, 0.0f,
+			width_2_x + x	, height_2_y + x	, 0.0f	, 1.0f
 		);
 		this->ready		=  true;
 		this->V_changed	=  true;
