@@ -1,11 +1,16 @@
 package rabbit.gl.struct;
 
+import rabbit.gl.math.SimpleMath;
+
 public class Matrix implements Cloneable
 {
 	static Matrix identity	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix scale		= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix translate	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix rotate_2D	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
+	static Matrix rotate_X	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
+	static Matrix rotate_Y	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
+	static Matrix rotate_Z	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix frustum	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix ortho	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	
@@ -73,74 +78,103 @@ public class Matrix implements Cloneable
 	
 	public static Matrix frustum(float left, float right, float bottom, float top, float near, float far)
 	{
-		float r = (right-left);
-		float t = (top-bottom);
+		float invDiffRL = 1.0f / (right - left);
+		float invDiffTB = 1.0f / (top - bottom);
+		float invDiffFN = 1.0f / (far - near);
 
-		frustum.matrix[0] = 2.0f*near / r;
-		frustum.matrix[5] = 2.0f*near / t;
-		frustum.matrix[8] = (right + left) / (right - left);
-		frustum.matrix[9] = (top + bottom) / (top - bottom);
-		frustum.matrix[10] = -(far + near) / (far - near);
-		frustum.matrix[11] = -1.0f;
-		frustum.matrix[14] = -(2.0f * near * far) / (far - near);
+		frustum.matrix[0]	= 2.0f * near * invDiffRL;
+		frustum.matrix[5]	= 2.0f * near * invDiffTB;
+		frustum.matrix[8]	= (right + left) * invDiffRL;
+		frustum.matrix[9]	= (top + bottom) * invDiffTB;
+		frustum.matrix[10]	= -((far + near) * invDiffFN);
+		frustum.matrix[11]	= -1.0f;
+		frustum.matrix[14]	= -2.0f * far * near * invDiffFN;
+		frustum.matrix[15]   = 0.0f;
 
 		return frustum;
 	}
 
 	public static Matrix ortho(float left, float right, float bottom, float top, float near, float far)
 	{
-		ortho.matrix[0] = 2.0f/(right-left);
-		ortho.matrix[5] = 2.0f/(top-bottom);
-		ortho.matrix[10] = -2.0f/(far-near);
-		ortho.matrix[12] = -((right + left)/(right-left));
-		ortho.matrix[13] = -((top + bottom)/(top-bottom));
-		ortho.matrix[14] = -((far + near)/(far-near));
+		float invDiffRL = 1.0f / (right - left);
+		float invDiffTB = 1.0f / (top - bottom);
+		float invDiffFN = 1.0f / (far - near);
 
+		ortho.matrix[0]		= 2.0f * invDiffRL;
+		ortho.matrix[5]		= 2.0f * invDiffTB;
+		ortho.matrix[10]	= -2.0f * invDiffFN;
+		ortho.matrix[12]	= -((right+left)*invDiffRL);
+		ortho.matrix[13]	= -((top+bottom)*invDiffTB);
+		ortho.matrix[14]	= -((far+near)*invDiffFN);
+
+		
 		return ortho;
 	}
 
 	public static Matrix rotateY(float angle)
 	{
-		return identity();
+		float sin = SimpleMath.sin(-angle);
+		float cos = SimpleMath.cos(-angle);
+
+		rotate_Y.matrix[0] = cos;
+		rotate_Y.matrix[2] = -sin;
+		rotate_Y.matrix[8] = sin;
+		rotate_Y.matrix[10] = cos;
+
+		return rotate_Y;
+	}
+	
+	public static Matrix rotateX(float angle)
+	{
+		float sin = SimpleMath.sin(-angle);
+		float cos = SimpleMath.cos(-angle);
+
+		rotate_X.matrix[5] = cos;
+		rotate_X.matrix[6] = -sin;
+		rotate_X.matrix[9] = sin;
+		rotate_X.matrix[10] = cos;
+
+		return rotate_X;
+	}
+	
+	public static Matrix rotateZ(float angle)
+	{
+		float sin = SimpleMath.sin(-angle);
+		float cos = SimpleMath.cos(-angle);
+
+		rotate_Z.matrix[0] = cos;
+		rotate_Z.matrix[1] = -sin;
+		rotate_Z.matrix[4] = sin;
+		rotate_Z.matrix[5] = cos;
+
+		return rotate_Z;
 	}
 	
 	public Matrix multiply(Matrix other)
 	{
 		Matrix res = new Matrix();
 
-		res.matrix[0] = matrix[0] * other.matrix[0] + matrix[4] * other.matrix[1] + matrix[8] * other.matrix[2] + matrix[12] * other.matrix[3];
-		res.matrix[1] = matrix[1] * other.matrix[0] + matrix[5] * other.matrix[1] + matrix[9] * other.matrix[2] + matrix[13] * other.matrix[3];
-		res.matrix[2] = matrix[2] * other.matrix[0] + matrix[6] * other.matrix[1] + matrix[10] * other.matrix[2] + matrix[14] * other.matrix[3];
-		res.matrix[3] = matrix[3] * other.matrix[0] + matrix[7] * other.matrix[1] + matrix[11] * other.matrix[2] + matrix[15] * other.matrix[3];
-
-		res.matrix[4] = matrix[0] * other.matrix[4] + matrix[4] * other.matrix[5] + matrix[8] * other.matrix[6] + matrix[12] * other.matrix[7];
-		res.matrix[5] = matrix[1] * other.matrix[4] + matrix[5] * other.matrix[5] + matrix[9] * other.matrix[6] + matrix[13] * other.matrix[7];
-		res.matrix[6] = matrix[2] * other.matrix[4] + matrix[6] * other.matrix[5] + matrix[10] * other.matrix[6] + matrix[14] * other.matrix[7];
-		res.matrix[7] = matrix[3] * other.matrix[4] + matrix[7] * other.matrix[5] + matrix[11] * other.matrix[6] + matrix[15] * other.matrix[7];
-
-		res.matrix[8] = matrix[0] * other.matrix[8] + matrix[4] * other.matrix[9] + matrix[8] * other.matrix[10] + matrix[12] * other.matrix[11];
-		res.matrix[9] = matrix[1] * other.matrix[8] + matrix[5] * other.matrix[9] + matrix[9] * other.matrix[10] + matrix[13] * other.matrix[11];
-		res.matrix[10] = matrix[2] * other.matrix[8] + matrix[6] * other.matrix[9] + matrix[10] * other.matrix[10] + matrix[14] * other.matrix[11];
-		res.matrix[11] = matrix[3] * other.matrix[8] + matrix[7] * other.matrix[9] + matrix[11] * other.matrix[10] + matrix[15] * other.matrix[11];
-
-		res.matrix[12] = matrix[0] * other.matrix[12] + matrix[4] * other.matrix[13] + matrix[8] * other.matrix[14] + matrix[12] * other.matrix[15];
-		res.matrix[13] = matrix[1] * other.matrix[12] + matrix[5] * other.matrix[13] + matrix[9] * other.matrix[14] + matrix[13] * other.matrix[15];
-		res.matrix[14] = matrix[2] * other.matrix[12] + matrix[6] * other.matrix[13] + matrix[10] * other.matrix[14] + matrix[14] * other.matrix[15];
-		res.matrix[15] = matrix[3] * other.matrix[12] + matrix[7] * other.matrix[13] + matrix[11] * other.matrix[14] + matrix[15] * other.matrix[15];
+		for (int r = 0; r < 4; r++)
+		for (int c = 0; c < 4; c++)
+		{
+			res.matrix[r + (c<<2)] = 0.0f;
+				
+			for (int i = 0; i < 4; i++)
+				res.matrix[r + (c<<2)] += matrix[r + (i<<2)] * other.matrix[i + (c<<2)];
+		}
 
 		return res;
 	}
 
 	public Vertex multiply(Vertex other)
 	{
-		Vertex res = new Vertex(0,0);
-		
-		res.x = matrix[0] * other.x + matrix[4] * other.y + matrix[8] * other.z + matrix[12] * other.w;
-		res.y = matrix[1] * other.x + matrix[5] * other.y + matrix[9] * other.z + matrix[13] * other.w;
-		res.z = matrix[2] * other.x + matrix[6] * other.y + matrix[10] * other.z + matrix[14] * other.w;
-		res.w = matrix[3] * other.x + matrix[7] * other.y + matrix[11] * other.z + matrix[15] * other.w;
-
-		return res;
+		return new Vertex
+		(
+			other.x * matrix[0] + other.y * matrix[4] + other.z * matrix[8] + other.w * matrix[12],
+			other.x * matrix[1] + other.y * matrix[5] + other.z * matrix[9] + other.w * matrix[13],
+			other.x * matrix[2] + other.y * matrix[6] + other.z * matrix[10] + other.w * matrix[14],
+			other.x * matrix[3] + other.y * matrix[7] + other.z * matrix[11] + other.w * matrix[15]
+		);
 	}
 
 	public Matrix clone()

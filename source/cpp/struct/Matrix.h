@@ -67,10 +67,10 @@ struct Matrix
 		Matrix res = Matrix();
 		for (int r = 0; r < 4; r++) {
 		    for (int c = 0; c < 4; c++) {
-		      res.matrix[r + c * 4] = 0.0f;
+		      res.matrix[r + (c<<2)] = 0.0f;
 
 		      for (int i = 0; i < 4; i++) {
-		        res.matrix[r + c * 4] += matrix[r + i * 4] * other.matrix[i + c * 4];
+		        res.matrix[r + (c<<2)] += matrix[r + (i<<2)] * other.matrix[i + (c<<2)];
 		      }
 		    }
 		  }

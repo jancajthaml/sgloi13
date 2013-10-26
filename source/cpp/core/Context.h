@@ -185,8 +185,6 @@ struct Context
 		v.y/=v.w;
 		v.z/=v.w;
 
-		//printf("[%f,%f,%f,%f] -> [%f,%f,%f,%f]\n",x,y,z,w,v.x,v.y,v.z,v.w);
-
 		return v;
 	}
 

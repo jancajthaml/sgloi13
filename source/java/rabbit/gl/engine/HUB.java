@@ -1,6 +1,6 @@
 package rabbit.gl.engine;
 
-import java.awt.image.MemoryImageSource;
+import java.awt.image.BufferedImage;
 
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_ENUM;
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_OPERATION;
@@ -18,7 +18,6 @@ import rabbit.gl.type.sglEErrorCode;
 import rabbit.gl.type.sglEMatrixMode;
 import rabbit.gl.type.sglEClearBit;
 import rabbit.gl.util.ReferenceManager;
-
 
 public class HUB
 {
@@ -143,7 +142,7 @@ public class HUB
 
 	
 	//LongName Function
-	public static MemoryImageSource sglGetColorBufferPointer()
+	public static BufferedImage sglGetColorBufferPointer()
 	{
 		return Chunk.buffer;
 		//return Context.buffer;
@@ -182,6 +181,7 @@ public class HUB
 			break;
 			
 			case SGL_DEPTH_BUFFER_BIT :
+				current().clearDepthBuffer();
 			break;
 			
 			default :
@@ -231,6 +231,8 @@ public class HUB
 	{
 		//normalize(x, y);
 		//VERTICES.push_back(Vertex (x, y, z, w));
+		try{ current().setVertex4f(x,y,z,w); }
+		catch(Throwable t){/*ignore*/}
 	}
 
 	//Vertex with 3 float coords
@@ -239,6 +241,8 @@ public class HUB
 	{
 		//normalize(x, y);
 		//VERTICES.push_back(Vertex (x, y, z));
+		try{ current().setVertex3f(x,y,z); }
+		catch(Throwable t){/*ignore*/}
 	}
 
 
@@ -397,8 +401,14 @@ public class HUB
 	// ? rotates what ? Context or scene ?
 	// ? around what Y axis? Base or context?
 	public static void sglRotateY(float angle)
-	{ }
+	{ current().multiplyCurrentMatrix(Matrix.rotateY(angle)); }
+	
+	public static void sglRotateX(float angle)
+	{ current().multiplyCurrentMatrix(Matrix.rotateX(angle)); }
 
+	public static void sglRotateZ(float angle)
+	{ current().multiplyCurrentMatrix(Matrix.rotateZ(angle)); }
+	
 	// ?
 	public static void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 	{
@@ -426,11 +436,6 @@ public class HUB
 	    return;
 	}
 		 */
-		if(current().invalidTypeStack())
-		{
-			setErrCode(SGL_INVALID_OPERATION);
-			return;
-		}
 
 		Matrix frustum = Matrix.frustum(left, right, bottom, top, near, far);
 		current().multiplyCurrentMatrix(frustum);
@@ -439,9 +444,7 @@ public class HUB
 	//Sets scene viewport
 	public static void sglViewport(int x, int y, int width, int height)
 	{
-		
 		current().setViewport(x, y, width, height);
-		//current().setViewport(width, height, x, y);
 	}
 
 	//---------------------------------------------------------------------------
@@ -484,17 +487,21 @@ public class HUB
 	//Enable given flag
 	public static void sglEnable(sglEEnableFlags flag)
 	{
-		switch(flag)
+		switch( flag )
 		{
 			case SGL_DEPTH_TEST : current().enableDepthTest(); break;//depth test is off by default
-			default: setErrCode(SGL_INVALID_ENUM); return;
+			default				: setErrCode(SGL_INVALID_ENUM); return;
 		}
 	}
 
 	//Disable given flag
-	public static void sglDisable(sglEEnableFlags cap)
+	public static void sglDisable(sglEEnableFlags flag)
 	{
-
+		switch( flag )
+		{
+			case SGL_DEPTH_TEST : current().disableDepthTest(); break;//depth test is off by default
+			default				: setErrCode(SGL_INVALID_ENUM); return;
+		}
 	}
 
 	//---------------------------------------------------------------------------

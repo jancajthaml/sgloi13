@@ -2,6 +2,7 @@ package rabbit.gl.helpers;
 
 import rabbit.gl.engine.Chunk;
 import rabbit.gl.math.SimpleMath;
+import rabbit.gl.struct.Edge;
 import rabbit.gl.struct.Vertex;
 
 public class DrawingLibraryFlat implements DrawingLibraryInterface
@@ -82,15 +83,11 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 		void setPixel(float x, float y, Chunk context)
 		{
-
-			int X = (int)x;
-			int Y = (int)y;
-			int index = (int)(x+Chunk.max_w*(context.h-Y));
+			int index = (int)(x+Chunk.max_w*(context.h-((int)y)));
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h /*&& z < context.depth[index]*/)
 			{
 				context.lastSetPixelIndex			= index;
 				Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
-				Chunk.buffer.newPixels(X, context.h-Y, 1, 1);
 			}
 		}
 
@@ -98,7 +95,6 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 		{
 			context.lastSetPixelIndex += 1;
 			if (context.lastSetPixelIndex > context.w_h) return;
-		//	{
 			Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
 		}
 
@@ -106,41 +102,30 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 		{
 			context.lastSetPixelIndex += context.w;
 			if (context.lastSetPixelIndex > context.w_h) return;
-			//{
 			Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
-			//}
 		}
 
 		void setPixel_xy(Chunk context)
 		{
 			context.lastSetPixelIndex += (context.w + 1);
 			if (context.lastSetPixelIndex > context.w_h) return;
-			//{
 			Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
-			//}
-				//buffer[lastSetPixelIndex] = color;
 		}
 
 		void setPixel_mxy(Chunk context)
 		{
 			context.lastSetPixelIndex += (context.w - 1);
 			if (context.lastSetPixelIndex > context.w_h) return;
-		//	{
 			Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
-			//}
-				//buffer[lastSetPixelIndex] = color;
 		}
 
 		void setPixel_xmy(Chunk context)
 		{
 			context.lastSetPixelIndex += (1 - context.w);
 			if (context.lastSetPixelIndex > context.w_h) return;
-		//	{
-				//int offset = (x+w*y)*3;
 
 			Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
-			//}
-				//buffer[lastSetPixelIndex] = color;
+
 		}
 
 		public final static DrawingLibraryFlat instance = new DrawingLibraryFlat();
@@ -196,7 +181,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 				} break;
 			
 			}
-			}catch(Throwable t){ System.err.println(t.getMessage()); }
+			}catch(Throwable t){ t.printStackTrace(); }
 		}
 
 	//-----------------------------------------------------------------------------
@@ -224,7 +209,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 				for (int i = 0; i < size; i++)
 					drawLine2D(context.vertices.get(i), context.vertices.get(i+1), context);
 				
-			}catch(Throwable t){ System.err.println(t.getMessage()); }
+			}catch(Throwable t){ t.printStackTrace(); }
 		}
 
 		public void drawLineLoop( Chunk context )
@@ -281,7 +266,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 			if( x==y ) setSymPixel(x, y, v.x, v.y, context);
 			
 			}
-			catch(Throwable t){System.err.println(t.getMessage()); }
+			catch(Throwable t){ t.printStackTrace(); }
 		}
 
 	//-----------------------------------------------------------------------------
@@ -313,89 +298,99 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 		}
 
 		public void fillPolygon( Chunk context )
-		{
-			/*
-			boolean depth	= true;
+		{	  
+			int size = context.vertices.size();
 
-		    EdgeStack tableEdges = new EdgeStack[context.h];
+			int[] x			= new int[size];
+			int[] y			= new int[size];
+			Edge[] edges	= new Edge[size];
+			
+			for(int i=0; i<size; i++) edges[i]=new Edge();
 
-		    //FIXME
-			int min = Helper::bucketSort(&tableEdges[0], context.vertices.index, context.vertices);
+			x[0] = (int)(context.vertices.get(0).x+1.0f);
+			y[0] = (int)(context.vertices.get(0).y+1.0f);
 
-			std::vector<Edge> active_edges;
+			int    min_y  =  y[0]  ;
+			int    max_y  =  y[0]  ;
 
-			for(int y = min; y<context.h; y++)
+			for( int i=1; i<size; i++ )
 			{
-				while(tableEdges[y].index!=0)
-				{
-					active_edges.push_back(tableEdges[y].back());
-					tableEdges[y].pop_back();
-				}
+			    x[i] = (int)(context.vertices.get(i).x+1.0f);
+			    y[i] = (int)(context.vertices.get(i).y+1.0f);
 
-				if( active_edges.empty() )continue;
+			    if( y[i]<min_y )  min_y = y[i];
+			    if( y[i]>max_y )  max_y = y[i];
 
-				uint_fast16_t size	= active_edges.size();
-
-				//FIXME use shaker sort
-				Helper::bubbleSort(active_edges, size, context.vertices);
-
-
-				float to	= 0.0f;
-
-				for( int i = 1; i<size; i+=2 )
-				{
-					to				= active_edges[i].intersectX;
-					float z1		= active_edges[i-1].v2.z + (y-active_edges[i-1].v2.y)*(active_edges[i-1].v1.z - active_edges[i-1].v2.z)/(active_edges[i-1].v1.y - active_edges[i-1].v2.y);
-					float z2		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-					float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i-1].intersectX);
-
-					for( float from = active_edges[i-1].intersectX; from<=to; from++ )
-					{
-						if( depth )	z1+=deltaZ;
-						else		setPixel(from, y, z1, context);
-					}
-
-					if(size % 3==0 && size % 2!=0 && i+2==size)
-					{
-						to				= active_edges[i+1].intersectX;
-						float z1		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-						float z2		= active_edges[i+1].v2.z + (y-active_edges[i+1].v2.y)*(active_edges[i+1].v1.z - active_edges[i+1].v2.z)/(active_edges[i+1].v1.y - active_edges[i+1].v2.y);
-						float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i].intersectX);
-
-						for(float from = active_edges[i].intersectX; from<=to; from++)
-						{
-							if(depth)
-							{
-								z1+=deltaZ;
-							}
-							else
-							{
-								setPixel(from, y, z1, context);
-			                }
-						}
-			        }
-				}
-
-			        for( unsigned int pos=0 ; pos<active_edges.size() ; pos++ )
-			        {
-			            if(active_edges[pos].deltaY < 1)
-			            {
-			            	active_edges.erase(active_edges.begin()+pos);
-			                pos--;
-			            }
-			            else
-			            {
-			            	active_edges[pos].deltaY--;
-			            	active_edges[pos].intersectX += active_edges[pos].deltaX;
-			            }
-			        }
+			    if( y[i] < y[i-1] )
+			    {
+			    	edges[i].min_y  =  y[i]-1 ;
+			    	edges[i].max_y  =  y[i-1]    ;
+			    	edges[i].x      =  x[i]      ;
+			    }
+			    else
+			    {
+			    	edges[i].min_y  =  y[i-1]-1 ;
+			    	edges[i].max_y  =  y[i]   ;
+			    	edges[i].x      =  x[i-1]   ;
 			    }
 
-			    delete[] tableEdges;
-			    context.vertices.index=0;
-			    */
-		}
+			    edges[i].delta_x = (float)(x[i]-x[i-1]) / (float)(y[i]-y[i-1]);
+			  }
 
+			  if( y[0] < y[size-1] )
+			  {
+				  edges[0].min_y = y[0]-1 ;
+				  edges[0].max_y = y[size-1]   ;
+				  edges[0].x     = x[0]   ;
+			  }
+			  else
+			  {
+				  edges[0].min_y = y[size-1]-1 ;
+				  edges[0].max_y = y[0]   ;
+				  edges[0].x     = x[size-1]   ;
+			  }
+
+			  edges[0].delta_x   = (float)(x[0]-x[size-1])/(float)(y[0]-y[size-1]);
+
+			  float[] draw =  new float[size];
+			  int   count  =  0;
+
+			  for( int Y=min_y ; Y<max_y ; Y++ )
+			  {
+				  count = 0;
+
+				  for( int v=0 ; v<size ; v++ )
+				  {
+					  if( (edges[v].min_y<Y) & (edges[v].max_y>Y) )
+					  {
+						  edges[v].x  +=  edges[v].delta_x;
+						  draw[count]  =  edges[v].x;
+						  count++;
+					  }
+				  }
+
+				  int i = 1;
+				  int j = 2;
+				  float t = 0.0f;
+				  
+				  while( i<count )
+				  {
+					  if( draw[i - 1] > draw[i] )
+					  {
+						  t = draw[i];
+						  draw[i] = draw[--i];
+						  draw[i] = t;
+						  if(i>0)continue;
+					  }
+					  i = j++;
+				  }
+
+				  for( i=0; i<count; i=i+2 )
+					  setPixelChunk(Y+1, (int)draw[i], (int)(draw[i+1]-1), context);
+			  }
+			  
+			  context.vertices.clear();
+		}
 
 		public void bresenham_x(int x1, int y1, int x2, int y2, Chunk context)
 		{
@@ -451,6 +446,181 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 				setPixel(y1, i, context);
 			}
+		}
+		
+		public void fillTrianglesStrip( Chunk context )
+		{
+			try
+			{
+				//Triangle fan
+				int size = context.vertices.size()-1;
+			
+				//if(size<2) return;
+				
+				Vertex A	= context.vertices.get(0);
+				Vertex B	= context.vertices.get(1);
+				Vertex C	= context.vertices.get(2);
+				
+				for (int i = 2; i <= size; i++)
+				{
+					drawTriangle(A, B, C, context);
+					A  = B;
+					B  = C;
+					C  = context.vertices.get(i);
+				}
+			}catch(Throwable t){/*ignore*/}
+		}
+
+		public void fillTrianglesFan( Chunk context )
+		{
+			try
+			{
+				//Triangle fan
+				int size = context.vertices.size()-1;
+			
+			//	if(size<2) return;
+				
+				Vertex center	= context.vertices.get(0);
+				Vertex A		= context.vertices.get(1);
+				Vertex B		= context.vertices.get(2);
+				
+				for (int i = 2; i <= size; i++)
+				{
+					drawTriangle(center, A, B, context);
+					A	= B;
+					B	= context.vertices.get(i);
+				}
+
+				drawTriangle(center, A, B, context);
+
+			}catch(Throwable t){/*ignore*/}
+		}
+
+		private void drawTriangle(Vertex v0, Vertex v1, Vertex v2, Chunk context)
+		{
+
+			int x0 = (int)v0.x;
+			int y0 = (int)v0.y;
+			int x1 = (int)v1.x;
+			int y1 = (int)v1.y;
+			int x2 = (int)v2.x;
+			int y2 = (int)v2.y;
+
+			if (y0 > y2)
+			{
+				int tmp=x2;
+				x2=x0;
+				x0=tmp;
+				
+				tmp=y2;
+				y2=y0;
+				y0=tmp;
+			}
+			if (y1 > y2)
+			{
+				int tmp=x2;
+				x2=x1;
+				x1=tmp;
+				
+				tmp=y2;
+				y2=y1;
+				y1=tmp;
+			}
+			if (y0 > y1)
+			{
+				int tmp=x1;
+				x1=x0;
+				x0=tmp;
+				
+				tmp=y1;
+				y1=y0;
+				y0=tmp;
+			}
+
+		  float xs	= 0.0f;
+		  float xe	= 0.0f;
+		  float dxs	= 0.0f;
+		  float dxe	= 0.0f;
+		  float xm	= (x0)+(x2-x0)/(float)(y2-y0)*(float)(y1-y0);
+
+		  if (x1<xm)
+		  {
+			  dxs = (x1-x0)/(float)(y1-y0);
+			  dxe = (x2-x0)/(float)(y2-y0);
+		  }
+		  else
+		  {
+			  dxs = (x2-x0)/(float)(y2-y0);
+			  dxe = (x1-x0)/(float)(y1-y0);
+		  }
+
+		  xs = x0;
+		  xe = x0;
+
+		  for(int y=y0;y<y1;y++)
+		  {
+		      setPixelChunk(y,(int)xs+1,(int)xe, context);
+		      xs+=dxs;
+		      xe+=dxe;
+		  }
+
+		  if (x1<xm)
+		  {
+			  xs=x1;
+			  xe=xm;
+			  dxs = (x2-x1)/(float)(y2-y1);
+			  dxe = (x2-xm)/(float)(y2-y1);
+		  }
+		  else
+		  {
+			  xe  = x1;
+			  xs  = xm;
+			  dxe = (x2-x1)/(float)(y2-y1);
+			  dxs = (x2-xm)/(float)(y2-y1);
+		  }
+
+		  for(int y=y1;y<y2;y++)
+		  {
+			  setPixelChunk(y,(int)xs+1,(int)xe,context);
+			  xs+=dxs;
+			  xe+=dxe;
+		  }
+		}
+		
+		private void setPixelChunk(int y, int start, int end, Chunk context)
+		{
+			try{
+			y = context.h-y;
+			int size					= end-start+1;
+			int n						= size;
+			context.lastSetPixelIndex	= (start + Chunk.max_w * (y));
+			int rgb						= context.color.getRGB();
+			
+			while( n >= 8 )
+			{
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				n -= 8;
+			}
+
+			switch( n )
+			{
+				case 8 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 7 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 6 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 5 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 4 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 3 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 2 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+				case 1 : Chunk._pixels[context.lastSetPixelIndex++]	= rgb;
+			}
+			}catch(Throwable t){context.lastSetPixelIndex--;}
 		}
 
 }

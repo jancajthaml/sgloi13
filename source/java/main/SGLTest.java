@@ -8,6 +8,7 @@ import javax.swing.SwingUtilities;
 import rabbit.gl.scheme.sglCanvas;
 import tests.Test1;
 import tests.Test2;
+import tests.TestAnimation;
 import static rabbit.gl.engine.HUB.sglClear;
 import static rabbit.gl.engine.HUB.sglClearColor;
 import static rabbit.gl.engine.HUB.sglCreateContext;
@@ -22,7 +23,7 @@ public class SGLTest
    static int w = 800;
    static int h = 600;
    
-   static int scene = 1;
+   static int scene = 0;
 	
    static int repaint = 0;
    
@@ -36,14 +37,16 @@ public class SGLTest
 			
 			switch(scene)
 			{
+				case 0 : TestAnimation.DrawAnimation(800,600); return;
 				case 1 : Test1.DrawTestScene1A(800, 600)	; return;
 				//case 1 : Test0.DrawTestScene0B(s)			; return true;
 				//case 2 : Test0.DrawTestScene0A(s)			; return true;
 				case 2 : Test1.DrawTestScene1B()			; return;
 				case 3 : Test1.DrawTestScene1C()			; return;
 				
-				case 4 : Test2.DrawTestScene2B(800,600)		; return;
-				case 5 : Test2.DrawTestScene2C(800,600)		; return;
+				case 4 : Test2.DrawTestScene2A(800,600)		; return;
+				case 5 : Test2.DrawTestScene2B(800,600)		; return;
+				case 6 : Test2.DrawTestScene2C(800,600)		; return;
 				
 			}
 		}
@@ -68,6 +71,7 @@ public class SGLTest
 						case KeyEvent.VK_3	:	scene=3; break;
 						case KeyEvent.VK_4	:	scene=4; break;
 						case KeyEvent.VK_5	:	scene=5; break;
+						case KeyEvent.VK_6	:	scene=6; break;
 					}
 					repaint();
 				}
@@ -104,8 +108,8 @@ public class SGLTest
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		component.setUpdateDelay(300);
-		//component.enterMainLoop();
+		component.setUpdateDelay(30);
+		component.enterMainLoop();
 		//try {
 		
 	//for(int i=0; i<200; i++)

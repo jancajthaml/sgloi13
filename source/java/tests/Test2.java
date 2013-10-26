@@ -6,6 +6,7 @@ import static rabbit.gl.engine.HUB.sglBegin;
 import static rabbit.gl.engine.HUB.sglCircle;
 import static rabbit.gl.engine.HUB.sglColor3f;
 import static rabbit.gl.engine.HUB.sglVertex3f;
+import static rabbit.gl.engine.HUB.sglClear;
 import static rabbit.gl.engine.HUB.sglEllipse;
 import static rabbit.gl.engine.HUB.sglEnd;
 import static rabbit.gl.engine.HUB.sglLoadIdentity;
@@ -33,9 +34,68 @@ import static rabbit.gl.type.sglEElementType.SGL_LINE_LOOP;
 import static rabbit.gl.type.sglEMatrixMode.SGL_MODELVIEW;
 import static rabbit.gl.type.sglEMatrixMode.SGL_PROJECTION;
 
+import static rabbit.gl.type.sglEClearBit.SGL_DEPTH_BUFFER_BIT;
+
 public class Test2
 {
 
+	public static void DrawTestScene2A(int WIDTH, int HEIGHT)
+	{
+		sglDisable(SGL_DEPTH_TEST);
+
+		  // set viewport
+		  sglViewport(0, 0, WIDTH, HEIGHT);
+
+		  // set the projection matrix
+		  sglMatrixMode(SGL_PROJECTION);
+		  sglLoadIdentity();
+		  sglOrtho(-8, 8, -6, 6, -1, 1);
+
+		  // set the modelview matrix
+		  sglMatrixMode(SGL_MODELVIEW);
+		  sglLoadIdentity();
+
+		  sglColor3f(1,0,0);
+		  sglAreaMode(SGL_FILL);
+		  butterfly();
+		  sglColor3f(1,1,0);
+		  sglAreaMode(SGL_LINE);
+		  butterfly();
+
+		  sglColor3f(0,1,1);
+		  sglAreaMode(SGL_FILL);
+
+		  sglTranslate(4,0,0);
+		  sglRotate2D(1,0,0);
+		  butterfly();
+		  sglColor3f(0,1,0);
+		  sglAreaMode(SGL_LINE);
+		  butterfly();
+
+		  sglLoadIdentity();
+		  sglTranslate(-4,-1,0);
+		  sglRotate2D(-0.5f,0,0);
+		  sglAreaMode(SGL_FILL);
+		  butterfly();
+		  sglColor3f(1,1,0);
+		  sglAreaMode(SGL_LINE);
+		  butterfly();
+	}
+	
+
+	/// render a non-convex polygon
+	private static void butterfly()
+	{
+	  sglBegin(SGL_POLYGON);
+	  sglVertex2f(-2,-2);
+	  sglVertex2f( 0, 1);
+	  sglVertex2f( 2,-2);
+	  sglVertex2f( 2, 2);
+	  sglVertex2f( 0, -1);
+	  sglVertex2f(-2, 2);
+	  sglEnd();
+	}
+	
 	public static void DrawTestScene2B(int WIDTH, int HEIGHT) 
 	{
 		sglDisable(SGL_DEPTH_TEST);
@@ -56,13 +116,15 @@ public class Test2
 
 		  float r;
 		  // circles
-		  for(r=1.2f; r>0.1; r-=0.1) {
+		  for(r=1.2f; r>0.1f; r-=0.1f)
+		  {
 		    sglColor3f(0,r,r);
 		    sglAreaMode(SGL_FILL);
 		    sglCircle(0, 0, 0, r);
 		    sglColor3f(r,r,0);
 		    sglAreaMode(SGL_LINE);
 		    sglCircle(0, 0, 0, r);
+		    
 		    sglColor3f(r,r,r);
 		    sglAreaMode(SGL_POINT);
 		    sglCircle(0, 0, 0, r);
@@ -97,6 +159,7 @@ public class Test2
 	{
 		float tx=0, ty=0, tz=0;
 		
+		sglClear(SGL_DEPTH_BUFFER_BIT);
 		sglViewport(0, 0, WIDTH, HEIGHT);
 
 		  // set the projection matrix

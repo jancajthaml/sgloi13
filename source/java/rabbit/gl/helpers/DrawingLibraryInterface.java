@@ -14,7 +14,9 @@ public interface DrawingLibraryInterface
 		public void drawCircle		( Vertex v,float r, Chunk context );
 		public void fillCircle		( Vertex v,float r,Chunk context );
 		public void fillPolygon		( Chunk context );
-
+		public void fillTrianglesFan	( Chunk context );
+		public void fillTrianglesStrip	( Chunk context );
+		
 	//protected:
 	//	protected DrawingLibraryInterface()	{};
     	//~DrawingLibraryInterface()	{};

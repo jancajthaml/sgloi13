@@ -1,6 +1,7 @@
 package rabbit.gl.helpers;
 
 import rabbit.gl.engine.Chunk;
+import rabbit.gl.struct.Edge;
 import rabbit.gl.struct.Vertex;
 
 public class DrawingLibraryDepth implements DrawingLibraryInterface
@@ -61,19 +62,16 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 		{
 			//FIXME incorporate z COORDINATE
 			DrawingLibraryFlat.instance.drawLine2D(a, b, context); }
-
+		
 		private void setPixel(float x, float y, float z, Chunk context)
-		{ setPixel((int)x,(int)y,(int)z,context); }
-
-		private void setPixel(int x, int y, int z, Chunk context)
 		{
-
-			int index = (x+Chunk.max_w*(context.h-y));
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h /*&& z < context.depth[index]*/)
+			int index = (int)(x+Chunk.max_w*(context.h-((int)y)));
+			
+			if (x >= 0 && x < context.w && y >= 0 && y < context.h && Chunk.depth[index] > z)
 			{
 				context.lastSetPixelIndex			= index;
+				Chunk.depth[index]		= z;
 				Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
-				Chunk.buffer.newPixels(x, context.h-y, 1, 1);
 			}
 		}
 
@@ -146,7 +144,8 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 				} break;
 			
 			}
-			}catch(Throwable t){ System.err.println(t.getMessage()); }
+			}catch(Throwable t)
+			{ System.err.println(t.getMessage()); }
 		}
 
 	//-----------------------------------------------------------------------------
@@ -258,86 +257,138 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 
 		public void fillPolygon( Chunk context )
 		{
-			/*
-			boolean depth	= true;
+			int size		= context.vertices.size();
+			if(size==0){
+				System.err.println("ZERO");
+				return;
+			}
+			float delta		= 0.0f;
+			int[] x			= new int[size];
+			int[] y			= new int[size];
+			Edge[] edges	= new Edge[size];
+			
+			for(int i=0; i<size; i++) edges[i]=new Edge();
 
-		    EdgeStack tableEdges = new EdgeStack[context.h];
+			x[0] = (int)(context.vertices.get(0).x+1.0f);
+			y[0] = (int)(context.vertices.get(0).y+1.0f);
 
-		    //FIXME
-			int min = Helper::bucketSort(&tableEdges[0], context.vertices.index, context.vertices);
+			int    min_y  =  y[0]  ;
+			int    max_y  =  y[0]  ;
 
-			std::vector<Edge> active_edges;
-
-			for(int y = min; y<context.h; y++)
+			for( int i=1; i<size; i++ )
 			{
-				while(tableEdges[y].index!=0)
+			    x[i] = (int)(context.vertices.get(i).x+1.0f);
+			    y[i] = (int)(context.vertices.get(i).y+1.0f);
+
+			    if( y[i]<min_y )  min_y = y[i];
+			    if( y[i]>max_y )  max_y = y[i];
+
+				if( y[i] < y[i-1] )
 				{
-					active_edges.push_back(tableEdges[y].back());
-					tableEdges[y].pop_back();
+					edges[i].min_y  =  y[i]-1 ;
+					edges[i].max_y  =  y[i-1]   ;
+					edges[i].x      =  x[i];
+					edges[i].z      =  context.vertices.get(i)   . z   ;
+				}
+				else
+				{
+					edges[i].min_y  =  y[i-1]-1 ;
+					edges[i].max_y  =  y[i]  ;
+					edges[i].x      =  x[i-1]   ;
+					edges[i].z      =  context.vertices.get(i-1) . z   ;
 				}
 
-				if( active_edges.empty() )continue;
+				delta            = (float)(y[i]-y[i-1]);
+				edges[i].delta_x = (float)(x[i]-x[i-1]) / delta;
+				edges[i].delta_z = (context.vertices.get(i).z-context.vertices.get(i-1).z) / delta;
+			  }
 
-				uint_fast16_t size	= active_edges.size();
+			  if( y[0] < y[size-1] )
+			  {
+				  edges[0].min_y  =  y[0]-1 ;
+				  edges[0].max_y  =  y[size-1]  ;
+				  edges[0].x      =  x[0] ;
+				  edges[0].z      =  context.vertices.get(0)      . z   ;
+			  }
+			  else
+			  {
+				  edges[0].min_y  =  y[size-1]-1 ;
+				  edges[0].max_y  =  y[0]   ;
+				  edges[0].x      =  x[size-1]  ;
+				  edges[0].z      =  context.vertices.get(size-1) . z   ;
+			  }
 
-				//FIXME use shaker sort
-				Helper::bubbleSort(active_edges, size, context.vertices);
+			  delta             =  (float)(y[0]-y[size-1]);
+			  edges[0].delta_x  =  (float)(x[0]-x[size-1]) / delta;
+			  edges[0].delta_z  =  (context.vertices.get(0).z-context.vertices.get(size-1).z) / delta;
 
+			  float[] draw   =  new float[size] ;
+			  float[] drawZ  =  new float[size] ;
+			  int     count  =  0;
 
-				float to	= 0.0f;
+			  for( int Y=min_y ; Y<max_y ; Y++ )
+			  {
+				  count = 0;
+				  for( int v=0 ; v<size ; v++ )
+				  {
+					  if( (edges[v].min_y<Y) & (edges[v].max_y>Y) )
+					  {
+						  edges[v].x  += edges[v].delta_x;
+						  edges[v].z  += edges[v].delta_z;
+						  draw[count]  = edges[v].x;
+						  drawZ[count] = edges[v].z;
 
-				for( int i = 1; i<size; i+=2 )
-				{
-					to				= active_edges[i].intersectX;
-					float z1		= active_edges[i-1].v2.z + (y-active_edges[i-1].v2.y)*(active_edges[i-1].v1.z - active_edges[i-1].v2.z)/(active_edges[i-1].v1.y - active_edges[i-1].v2.y);
-					float z2		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-					float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i-1].intersectX);
+						  count++;
+					  }
+				  }
 
-					for( float from = active_edges[i-1].intersectX; from<=to; from++ )
-					{
-						if( depth )	z1+=deltaZ;
-						else		setPixel(from, y, z1, context);
-					}
+				  float m = 0.0f;
+				  int i	= 1;
+				  int j	= 2;
+				  float t = 0.0f;
+				  
+				  while( i < count )
+				  {
+					  if( draw[i - 1] > draw[i] )
+					  {
+						  t			= draw[i];
+						  m			= drawZ[i];
 
-					if(size % 3==0 && size % 2!=0 && i+2==size)
-					{
-						to				= active_edges[i+1].intersectX;
-						float z1		= active_edges[i].v2.z + (y-active_edges[i].v2.y)*(active_edges[i].v1.z - active_edges[i].v2.z)/(active_edges[i].v1.y - active_edges[i].v2.y);
-						float z2		= active_edges[i+1].v2.z + (y-active_edges[i+1].v2.y)*(active_edges[i+1].v1.z - active_edges[i+1].v2.z)/(active_edges[i+1].v1.y - active_edges[i+1].v2.y);
-						float deltaZ	= (z2-z1)/(active_edges[i].intersectX-active_edges[i].intersectX);
+						  draw[i]	= draw[i-1];
+						  drawZ[i]	= drawZ[--i];
 
-						for(float from = active_edges[i].intersectX; from<=to; from++)
-						{
-							if(depth)
-							{
-								z1+=deltaZ;
-							}
-							else
-							{
-								setPixel(from, y, z1, context);
-			                }
-						}
-			        }
-				}
+						  draw[i]	= t;
+						  drawZ[i]	= m;
+						  if(i>0)continue;
+					  }
+					  i = j++;
+				  }
 
-			        for( unsigned int pos=0 ; pos<active_edges.size() ; pos++ )
-			        {
-			            if(active_edges[pos].deltaY < 1)
-			            {
-			            	active_edges.erase(active_edges.begin()+pos);
-			                pos--;
-			            }
-			            else
-			            {
-			            	active_edges[pos].deltaY--;
-			            	active_edges[pos].intersectX += active_edges[pos].deltaX;
-			            }
-			        }
-			    }
+				  for( i=0 ; i<count ; i=i+2 )
+					  setPixelChunk( Y+1, (int)draw[i], (int)draw[i+1], drawZ[i], (drawZ[i+1]-drawZ[i])/(draw[i+1]-draw[i]), context );
+			  }
 
-			    delete[] tableEdges;
-			    context.vertices.index=0;
-			    */
+			  context.vertices.clear();
+		}
+
+		private void setPixelChunk( int y, int start, int end, float z, float z_growth, Chunk context )
+		{
+			 for( int x=start ; x<end ; x++ )
+			 {
+				 setPixel(x,y,z,context);
+				 z+=z_growth;
+			 }
+		}
+		
+		@Override
+		public void fillTrianglesFan(Chunk context) {
+			DrawingLibraryFlat.instance.fillTrianglesFan(context);
+		}
+
+		@Override
+		public void fillTrianglesStrip(Chunk context) {
+			DrawingLibraryFlat.instance.fillTrianglesStrip(context);
+			
 		}
 
 }

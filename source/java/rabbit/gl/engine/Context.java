@@ -4,9 +4,13 @@ import static rabbit.gl.engine.HUB.sglBegin;
 import static rabbit.gl.engine.HUB.sglEnd;
 import static rabbit.gl.engine.HUB.sglVertex2f;
 import static rabbit.gl.type.sglEElementType.SGL_LINE_STRIP;
+import static rabbit.gl.type.sglEElementType.SGL_TRIANGLES;
+import static rabbit.gl.type.sglEElementType.SGL_POINTS;
 import static rabbit.gl.type.sglEElementType.SGL_POLYGON;
 import static rabbit.gl.type.sglEMatrixMode.SGL_MODELVIEW;
 import java.util.ArrayDeque;
+import java.util.Arrays;
+
 import rabbit.gl.helpers.DrawingLibraryBase;
 import rabbit.gl.helpers.DrawingLibraryDepth;
 import rabbit.gl.helpers.DrawingLibraryFlat;
@@ -23,33 +27,17 @@ public class Context
 {
 	public int id							= 0;
 
-	public Chunk storage;			// Graphic dependent data storage
+	public Chunk storage;
 	static Vertex vertex_calculation_helper	= new Vertex (0,0,0,1);
 
 	static DrawingLibraryBase g = new DrawingLibraryBase();
 	
-//	public int s;// = w*h;
-	
-	//public Color clear;
-	//public Color color;
-
-	//State
-	//public boolean depth;
-
-	//Pixel size
-	//public int size;
-
-
-
-	//std::vector<Vertex> vertices;
-
 	boolean BEGIN;
-	boolean Z_TEST;
 	
 	boolean P_changed;
 	boolean M_changed;
 
-	public Matrix current_MV;
+	public Matrix current_M;
 	public Matrix current_P;
 	
 	public Matrix MP;
@@ -59,36 +47,32 @@ public class Context
 	sglEAreaMode drawType;	// Drawing mode
 	public sglEMatrixMode matrixMode;
 
-	public ArrayDeque <sglEElementType> types = new ArrayDeque<sglEElementType>();		
-	public ArrayDeque <Matrix> P_stack = new ArrayDeque<Matrix>();
+	public ArrayDeque <sglEElementType> types	= new ArrayDeque<sglEElementType>();		
+	public ArrayDeque <Matrix> P_stack			= new ArrayDeque<Matrix>();
 
 	public Context(int width, int height)
 	{
-		//----------------------//
-
-		//Initialise Drawing
 		storage        = new Chunk();
 		storage.w      = width;
 		storage.h      = height;
 		storage.w_h    = width * height;
 		storage.color  = new Color(0,255,0);
-		storage.size = 1;
+		storage.size   = 1;
 
-		//----------------------//
-		id			= 0;
+		id             = 0;
 		BEGIN		   = false;
 
-		current_MV = Matrix.identity();
-		current_P = Matrix.identity();
+		current_M      = Matrix.identity();
+		current_P      = Matrix.identity();
 
-		MP	= Matrix.identity();
-		MVP	= Matrix.identity();
+		MP             = Matrix.identity();
+		MVP            = Matrix.identity();
 		
-		P_changed = true;
-		M_changed = true;
+		P_changed      = true;
+		M_changed      = true;
 
 		drawType       = sglEAreaMode.SGL_FILL;
-
+		
 		this.disableDepthTest();
 	}
 	
@@ -121,8 +105,12 @@ public class Context
                 	case SGL_LINES      : g.drawLines     ( storage ) ; break;
                 	case SGL_LINE_STRIP : g.drawLineStrip ( storage ) ; break;
                 	case SGL_LINE_LOOP  : g.drawLineLoop  ( storage ) ; break;
-                	case SGL_TRIANGLES  : /*DrawingLibraryBase::drawTriangles (         )*/ ; break;
-
+                	case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
+                	{
+                		case SGL_LINE   : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
+                		default         : g.fillTrianglesFan ( storage ) ; break;
+                	}
+                	break;
                 	case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
                 	{
                     	case SGL_LINE   : g.drawPolygon   ( storage ) ; break;
@@ -137,14 +125,8 @@ public class Context
             	break;
 			}
 		}
-		catch(Throwable t){System.err.println(t.getMessage());}
+		catch(Throwable t){ t.printStackTrace(); }
         storage.vertices.clear();
-	}
-
-	public Vertex transform(Vertex v)
-	{
-		checkPMVMatrix();
-		return MVP.multiply(v);
 	}
 
 	private Vertex create(float x, float y, float z, float w)
@@ -153,7 +135,16 @@ public class Context
 		vertex_calculation_helper.y = y;
 		vertex_calculation_helper.z = z;
 		vertex_calculation_helper.w = w;
-		return transform(vertex_calculation_helper);
+		
+		checkPMVMatrix();
+
+		Vertex v = MVP.multiply(vertex_calculation_helper);
+		
+		v.x /= v.w;
+		v.y /= v.w;
+		v.z /= v.w;
+		
+		return  v;
 	}
 
 	public float calculateRadiusScaleFactor()
@@ -164,20 +155,11 @@ public class Context
 
 	public void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
 	{
-		boolean ellipse_adaptive = false;
+		sglBegin(SGL_POLYGON);
 
-		if(ellipse_adaptive)
-		{
-
-		}
-		else
-		{
-			sglBegin(SGL_POLYGON);
-				//TRANSLATE!!!
-
-				sglVertex2f( center_x										, center_y + axis_y									 );
-				sglVertex2f( center_x + (axis_x * 0.1564344693575539f	)	, center_y + ( axis_y * 0.987688339911341f			));
-				sglVertex2f( center_x + (axis_x * 0.3090170026893479f	)	, center_y + ( axis_y * 0.9510565135936411f			));
+		sglVertex2f( center_x										, center_y + axis_y									 );
+		sglVertex2f( center_x + (axis_x * 0.1564344693575539f	)	, center_y + ( axis_y * 0.987688339911341f			));
+		sglVertex2f( center_x + (axis_x * 0.3090170026893479f	)	, center_y + ( axis_y * 0.9510565135936411f			));
 				sglVertex2f( center_x + (axis_x * 0.45399051142368685f	)	, center_y + ( axis_y * 0.8910065182350011f			));
 				sglVertex2f( center_x + (axis_x * 0.587785266437776f		)	, center_y + ( axis_y * 0.8090169840977831f		));
 				sglVertex2f( center_x + (axis_x * 0.7071067966408575f	)	, center_y + ( axis_y * 0.7071067657322372f			));
@@ -216,33 +198,66 @@ public class Context
 				sglVertex2f( center_x - (axis_x * 0.30901694977611f		)	, center_y + ( axis_y * 0.9510565307861931f			));
 				sglVertex2f( center_x - (axis_x * 0.1564343555354446f	)	, center_y + ( axis_y * 0.9876883579389858f			));
 
-			//	}
-
 				sglEnd();
-			}
-		}
+	}
 	public void drawArc2D(float x, float y, float z, float r, float from, float to)
 	{
-		try{
-		float x2, y2;
-		float N = 40 * (to - from)/(2 * SimpleMath.PI);
-		float alpha = (to - from) / N;
-		pushTypeState(SGL_LINE_STRIP);
-		float offset = from / alpha;
-		int fromOffset = (int)SimpleMath.floor(offset) - 1;
-		float x1 = r * SimpleMath.cos(fromOffset * alpha);
-		float y1 = r * SimpleMath.sin(fromOffset * alpha);
-		float sa = SimpleMath.sin(alpha);
-		float ca = SimpleMath.cos(alpha);
-		for (int i = (int)(offset); i <= SimpleMath.round(N) + SimpleMath.round(offset); i++)
+		try
 		{
-			x2 = ca * x1 - sa*y1;
-			y2 = sa * x1 + ca*y1;
-			setVertex2f(x2 + x, y2 + y);
-			x1 = x2;
-			y1 = y2;
-		}
-		rasterize();
+			float x2			= 0.0f					;
+			float y2			= 0.0f					;
+			float f				= to - from				;
+			float N				= f * 12.732395447351626861510701069801148962756771659236515f;
+			float alpha			= f / N					;
+			float offset = from / alpha			;
+			float from_offset	= (offset - 1)*alpha	;
+			float x1			= r * SimpleMath.cos(from_offset)	;
+			float y1			= r * SimpleMath.sin(from_offset)	;
+			float sa			= SimpleMath.sin(alpha)			;
+			float ca			= SimpleMath.cos(alpha)			;
+
+			int RR     = (int) (SimpleMath.round(N)+offset);
+
+			switch( drawType )
+			{
+				case SGL_POINT  :
+				{
+					sglBegin(SGL_POINTS);
+
+				}
+				break;
+
+				case SGL_LINE   :
+				{
+					sglBegin(SGL_LINE_STRIP);
+				}
+				break;
+
+				default         :
+				{
+					//Fill Arct bi triangle fan (can we do it better ? )
+					//Artefacts appear in polygon fill too
+					//SGL_POLYGON is SLOWER!
+					sglBegin(SGL_TRIANGLES);
+
+					//Center
+					setVertex2f(x, y);
+
+				}break;
+			}
+
+			for( int i = (int)offset; i <= RR; i++ )
+			{
+				x2 = ca * x1 - sa * y1;
+				y2 = sa * x1 + ca * y1;
+
+				setVertex2f(x2 + x, y2 + y);
+
+				x1 = x2;
+				y1 = y2;
+			}
+
+			sglEnd();
 		}
 		catch(Throwable t){ System.err.println(t.getMessage()); }
 	}
@@ -255,12 +270,12 @@ public class Context
 	{
 		if (matrixMode == SGL_MODELVIEW)
 		{
-			M_changed			= true;
-			current_MV	= current_MV.multiply(m);
+			M_changed	= true;
+			current_M	= current_M.multiply(m);
 		}
 		else
 		{
-			P_changed			= true;
+			P_changed	= true;
 			current_P	= current_P.multiply(m);
 		}
 	}
@@ -269,7 +284,7 @@ public class Context
 	{ viewport.changeViewport(width, height, x, y); }
 
 	public Matrix getCurrentMatrix()
-	{ return (matrixMode == SGL_MODELVIEW)?current_MV:current_P; }
+	{ return (matrixMode == SGL_MODELVIEW) ? current_M : current_P; }
 
 	public void pushMatrix()
 	{
@@ -277,8 +292,8 @@ public class Context
 		//switch is faster than if 
 		switch(matrixMode)
 		{
-			case SGL_MODELVIEW :P_stack.push(current_MV);  break;
-			default : P_stack.push(current_P);break;
+			case SGL_MODELVIEW : P_stack.push(current_M); break;
+			default :            P_stack.push(current_P); break;
 		}
 		//if (matrixMode == SGL_MODELVIEW)	projectionStack.push(currentModelviewMatrix);//push_back
 		//else 								projectionStack.push(currentProjectionMatrix);//push_back
@@ -290,13 +305,17 @@ public class Context
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW :
+			{
 				M_changed = true;
-				current_MV = matrix;
+				current_M = matrix;
+			}
 			break;
 			
 			default :
+			{
 				P_changed = true;
 				current_P = matrix;
+			}
 			break;
 		}
 	}
@@ -321,12 +340,12 @@ public class Context
 			}
 			if (matrixMode == SGL_MODELVIEW)
 			{
-				M_changed			= true;
-				current_MV	= P_stack.pop();
+				M_changed	= true;
+				current_M	= P_stack.pop();
 			}
 			else
 			{
-				P_changed			= true;
+				P_changed	= true;
 				current_P	= P_stack.pop();
 			}
 		}
@@ -342,10 +361,13 @@ public class Context
 	public void clearColorBuffer()
 	{
 		System.arraycopy(Chunk.clearbuff, 0, Chunk._pixels, 0, Chunk.max_w*Chunk.max_h);
-		Chunk.buffer.newPixels(0,0, storage.w,storage.h);
 		return;
 	}
 	
+	public void clearDepthBuffer()
+	{
+		Arrays.fill(Chunk.depth,Float.MAX_VALUE);
+	}
 
 	boolean checkPMMatrix()
 	{
@@ -353,7 +375,7 @@ public class Context
 		{
 			M_changed	= false;
 			P_changed	= false;
-			MP		= current_P.multiply(current_MV);
+			MP			= current_P.multiply(current_M);
 			return true;
 		}
 		return false;
@@ -363,8 +385,8 @@ public class Context
 	{
 		if (checkPMMatrix() || viewport.viewportMatrixChanged)
 		{
-			viewport.viewportMatrixChanged = false;
-			MVP = viewport.getViewportMatrix().multiply(MP);
+			viewport.viewportMatrixChanged	=  false;
+			MVP								=  viewport.getViewportMatrix().multiply(MP);
 		}
 	}
 
@@ -380,15 +402,9 @@ public class Context
 	}
 	
 	public void enableDepthTest()
-	{
-		g.set(DrawingLibraryDepth.instance);
-		Z_TEST = true;
-	}
+	{ g.set(DrawingLibraryDepth.instance); }
 
 	public void disableDepthTest()
-	{
-		g.set(DrawingLibraryFlat.instance);
-		Z_TEST = false;
-	}
+	{ g.set(DrawingLibraryFlat.instance); }
 
 }
