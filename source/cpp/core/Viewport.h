@@ -26,14 +26,14 @@ struct Viewport
 
 	Viewport()
 	{
-		width					= 0;
-		height					= 0;
-		width_2_x				= 0;
-		height_2_y				= 0;
-		x						= 0;
-		y						= 0;
-		ready					= false;
-		V_changed	= true;
+		width			= 0;
+		height			= 0;
+		width_2_x		= 0;
+		height_2_y		= 0;
+		x				= 0;
+		y				= 0;
+		ready			= false;
+		V_changed		= true;
 	}
 
 	inline float calculateRatio()

@@ -144,15 +144,13 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			}
 		}
 
-		inline void setPixel(signed x, signed y, signed z, Chunk &context)
+		inline void setPixel(float x, float y, float z, Chunk &context)
 		{
-			uint_fast32_t index = (x + context.w * y);
-
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h /*&& z < context.depth[index]*/)
+			uint_fast32_t index = uint_fast32_t(x + context.w * y);
+			if (x >= 0 && x < context.w && y >= 0 && y < context.h && context.depth[index] > z)
 			{
 				context.lastSetPixelIndex	= index;
 				context.depth[index]		= z;
-
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 			}
 		}
@@ -306,11 +304,109 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 		inline void fillPolygon( Chunk &context )
 		{
-			 DrawingLibraryFlat::instance().fillPolygon(context);
+			int    size   =  context.vertices.index ;
+			Edge * edges  =  new Edge[size]         ;
+			float  delta  =  0.0f                   ;
+
+			int  * x      =  new int[size]          ;
+			int  * y      =  new int[size]          ;
+
+			x[0] = int(context.vertices[0].x+1.0f);
+			y[0] = int(context.vertices[0].y+1.0f);
+
+			int    min_y  =  y[0];
+			int    max_y  =  y[0];
+
+			for( int i=1; i<size; i++ )
+			{
+			    x[i] = int(context.vertices[i].x+1.0f);
+			    y[i] = int(context.vertices[i].y+1.0f);
+
+			    if( y[i]<min_y )  min_y = y[i];
+			    if( y[i]>max_y )  max_y = y[i];
+
+				if( y[i] < y[i-1] )
+				{
+					edges[i].min_y  =  y[i]-1 ;
+					edges[i].max_y  =  y[i-1]   ;
+					edges[i].x      =  x[i];
+					edges[i].z      =  context.vertices[i]   . z   ;
+				}
+				else
+				{
+					edges[i].min_y  =  y[i-1]-1 ;
+					edges[i].max_y  =  y[i]  ;
+					edges[i].x      =  x[i-1]   ;
+					edges[i].z      =  context.vertices[i-1] . z   ;
+				}
+
+				delta            = float(y[i]-y[i-1]);
+				edges[i].delta_x = float(x[i]-x[i-1]) / delta;
+				edges[i].delta_z = (context.vertices[i].z-context.vertices[i-1].z) / delta;
+			  }
+
+			  if( y[0] < y[size-1] )
+			  {
+				  edges[0].min_y  =  y[0]-1 ;
+				  edges[0].max_y  =  y[size-1]  ;
+				  edges[0].x      =  x[0] ;
+				  edges[0].z      =  context.vertices[0]      . z   ;
+			  }
+			  else
+			  {
+				  edges[0].min_y  =  y[size-1]-1 ;
+				  edges[0].max_y  =  y[0]   ;
+				  edges[0].x      =  x[size-1]  ;
+				  edges[0].z      =  context.vertices[size-1] . z   ;
+			  }
+
+
+			  delta             =  float(y[0]-y[size-1]);
+			  edges[0].delta_x  =  float(x[0]-x[size-1])/ delta;
+			  edges[0].delta_z  =  (context.vertices[0].z-context.vertices[size-1].z) / delta;
+
+			  float * draw   =  new float[size] ;
+			  float * drawZ  =  new float[size] ;
+			  int     count  =  0;
+
+			  for( int y=min_y ; y<max_y ; y++ )
+			  {
+				  count = 0;
+				  for( int v=0 ; v<size ; v++ )
+				  {
+					  if( (edges[v].min_y<y) & (edges[v].max_y>y) )
+					  {
+						  edges[v].x  += edges[v].delta_x;
+						  edges[v].z  += edges[v].delta_z;
+						  draw[count]  = edges[v].x;
+						  drawZ[count] = edges[v].z;
+
+						  count++;
+					  }
+				  }
+
+				  Helper::sort(draw,drawZ,count);
+
+				  for( int i=0 ; i<count ; i=i+2 )
+					  setPixelChunk( y+1, draw[i], draw[i+1], drawZ[i], (drawZ[i+1]-drawZ[i])/(draw[i+1]-draw[i]), context );
+			  }
+			  // BUBBLE SORT END
+
+			  delete[] drawZ             ;
+			  delete[] draw              ;
+			  context.vertices.index = 0 ;
+			  delete[] edges             ;
+		}
+
+		inline void setPixelChunk( int y, int start, int end, float z, float z_growth, Chunk &context )
+		{
+			 for( int x=start ; x<end ; x++ )
+			 {
+				 setPixel(x,y,z,context);
+				 z+=z_growth;
+			 }
 		}
 
 };
-
-//DrawingLibraryDepth DrawingLibraryDepth::self = DrawingLibraryDepth();
 
 #endif /* DRAWINGLIBRARYFLAT_H_ */

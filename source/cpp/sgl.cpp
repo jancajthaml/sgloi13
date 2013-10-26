@@ -207,11 +207,23 @@ void sglClear(unsigned what)
 		return;
 	}
 
-	switch(what)
+	if( what==SGL_COLOR_BUFFER_BIT )
 	{
-		case SGL_COLOR_BUFFER_BIT :  current()->clearColorBuffer();  break;
-		case SGL_DEPTH_BUFFER_BIT :  current()->clearDepthBuffer();  break;
-		default                   :  setErrCode(SGL_INVALID_VALUE);  return;
+		current()->clearColorBuffer();
+	}
+	else if (what==SGL_DEPTH_BUFFER_BIT)
+	{
+		current()->clearDepthBuffer();
+	}
+	else if (what==(SGL_COLOR_BUFFER_BIT | SGL_DEPTH_BUFFER_BIT))
+	{
+		current()->clearColorBuffer();
+		current()->clearDepthBuffer();
+	}
+	else
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
 	}
 
 	setErrCode(SGL_NO_ERROR);
@@ -517,7 +529,7 @@ void sglOrtho(float left, float right, float bottom, float top, float near, floa
 // ?
 void sglFrustum(float left, float right, float bottom, float top, float near, float far)
 {
-	if(far < 0 || near < 0) return;
+	if( far < 0 || near < 0 ) return;
 
 	if(current()->BeginBeforeEnd())
 	{
@@ -555,8 +567,6 @@ void sglViewport(int x, int y, int width, int height)
 void sglColor3f(float r, float g, float b)
 {
 	current()->storage.color = Color(r, g, b);
-
-	//current()->color = Color(r, g, b);
 }
 
 // ?
@@ -608,8 +618,8 @@ void sglEnable(sglEEnableFlags flag)
 	}
 	switch(flag)
 	{
-		case SGL_DEPTH_TEST : current()->enableDepthTest(); break;//depth test is off by default
-		default: setErrCode(SGL_INVALID_ENUM); return;
+		case SGL_DEPTH_TEST : current()->enableDepthTest(); break;
+		default				: setErrCode(SGL_INVALID_ENUM); return;
 	}
 }
 
@@ -623,10 +633,8 @@ void sglDisable(sglEEnableFlags flag)
 	}
 	switch(flag)
 	{
-		case SGL_DEPTH_TEST : current()->disableDepthTest(); break;//depth test is off by default
-
-		setErrCode(SGL_INVALID_ENUM);
-		return;
+		case SGL_DEPTH_TEST : current()->disableDepthTest(); break;
+		default				: setErrCode(SGL_INVALID_ENUM) ; return;
 	}
 }
 

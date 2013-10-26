@@ -49,56 +49,32 @@ struct Matrix
 		matrix[15] = m44;	//15
 	}
 
-	inline Vertex operator<(const Vertex & other)
+	inline Vertex operator*(const Vertex & other)
 	{
-		float w = matrix[3]*other.x + matrix[7]*other.y + matrix[15];
 		Vertex res
 		(
-			(matrix[0]*other.x + matrix[4]*other.y +matrix[12]) / w,
-			(matrix[1]*other.x + matrix[5]*other.y +matrix[13]) / w,
-			other.z,
-			other.w
+			other.x * matrix[0] + other.y * matrix[4] + other.z * matrix[8] + other.w * matrix[12],
+			other.x * matrix[1] + other.y * matrix[5] + other.z * matrix[9] + other.w * matrix[13],
+			other.x * matrix[2] + other.y * matrix[6] + other.z * matrix[10] + other.w * matrix[14],
+			other.x * matrix[3] + other.y * matrix[7] + other.z * matrix[11] + other.w * matrix[15]
 		);
-		return res;
-	}
 
-	inline Vertex operator<<(const Vertex & other)
-	{
-		float w = matrix[3]*other.x + matrix[7]*other.y + matrix[11]*other.z + matrix[15];
-		Vertex res
-		(
-			(matrix[0] * other.x + matrix[4] * other.y + matrix[8]  * other.z +matrix[12]) / w,
-			(matrix[1] * other.x + matrix[5] * other.y + matrix[9]  * other.z +matrix[13]) / w,
-			(matrix[2] * other.x + matrix[6] * other.y + matrix[10] * other.z +matrix[14]) / w,
-			other.w
-		);
 		return res;
 	}
 
 	inline Matrix operator*(const Matrix & other) const
 	{
-		Matrix res
-		(
-			matrix[0] * other.matrix[0] + matrix[4] * other.matrix[1] + matrix[8] * other.matrix[2] + matrix[12] * other.matrix[3],
-			matrix[1] * other.matrix[0] + matrix[5] * other.matrix[1] + matrix[9] * other.matrix[2] + matrix[13] * other.matrix[3],
-			matrix[2] * other.matrix[0] + matrix[6] * other.matrix[1] + matrix[10] * other.matrix[2] + matrix[14] * other.matrix[3],
-			matrix[3] * other.matrix[0] + matrix[7] * other.matrix[1] + matrix[11] * other.matrix[2] + matrix[15] * other.matrix[3],
+		Matrix res = Matrix();
+		for (int r = 0; r < 4; r++) {
+		    for (int c = 0; c < 4; c++) {
+		      res.matrix[r + c * 4] = 0.0f;
 
-			matrix[0] * other.matrix[4] + matrix[4] * other.matrix[5] + matrix[8] * other.matrix[6] + matrix[12] * other.matrix[7],
-			matrix[1] * other.matrix[4] + matrix[5] * other.matrix[5] + matrix[9] * other.matrix[6] + matrix[13] * other.matrix[7],
-			matrix[2] * other.matrix[4] + matrix[6] * other.matrix[5] + matrix[10] * other.matrix[6] + matrix[14] * other.matrix[7],
-			matrix[3] * other.matrix[4] + matrix[7] * other.matrix[5] + matrix[11] * other.matrix[6] + matrix[15] * other.matrix[7],
+		      for (int i = 0; i < 4; i++) {
+		        res.matrix[r + c * 4] += matrix[r + i * 4] * other.matrix[i + c * 4];
+		      }
+		    }
+		  }
 
-			matrix[0] * other.matrix[8] + matrix[4] * other.matrix[9] + matrix[8] * other.matrix[10] + matrix[12] * other.matrix[11],
-			matrix[1] * other.matrix[8] + matrix[5] * other.matrix[9] + matrix[9] * other.matrix[10] + matrix[13] * other.matrix[11],
-			matrix[2] * other.matrix[8] + matrix[6] * other.matrix[9] + matrix[10] * other.matrix[10] + matrix[14] * other.matrix[11],
-			matrix[3] * other.matrix[8] + matrix[7] * other.matrix[9] + matrix[11] * other.matrix[10] + matrix[15] * other.matrix[11],
-
-			matrix[0] * other.matrix[12] + matrix[4] * other.matrix[13] + matrix[8] * other.matrix[14] + matrix[12] * other.matrix[15],
-			matrix[1] * other.matrix[12] + matrix[5] * other.matrix[13] + matrix[9] * other.matrix[14] + matrix[13] * other.matrix[15],
-			matrix[2] * other.matrix[12] + matrix[6] * other.matrix[13] + matrix[10] * other.matrix[14] + matrix[14] * other.matrix[15],
-			matrix[3] * other.matrix[12] + matrix[7] * other.matrix[13] + matrix[11] * other.matrix[14] + matrix[15] * other.matrix[15]
-		);
 		return res;
 	}
 

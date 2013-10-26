@@ -55,40 +55,47 @@ struct MatrixCache
 
 	static inline Matrix frustum(float left, float right, float bottom, float top, float near, float far)
 	{
-		float r = (right-left);
-		float t = (top-bottom);
+		float invDiffRL = 1.0f / (right - left);
+		float invDiffTB = 1.0f / (top - bottom);
+		float invDiffFN = 1.0f / (far - near);
 
-		F.matrix[0]		= 2.0f*near / r;
-		F.matrix[5]		= 2.0f*near / t;
-		F.matrix[8]		= (right + left) / (right - left);
-		F.matrix[9]		= (top + bottom) / (top - bottom);
-		F.matrix[10]	= -(far + near) / (far - near);
+		F.matrix[0]		= 2.0f * near * invDiffRL;
+		F.matrix[5]		= 2.0f * near * invDiffTB;
+		F.matrix[8]		= (right + left) * invDiffRL;
+		F.matrix[9]		= (top + bottom) * invDiffTB;
+		F.matrix[10]	= -((far + near) * invDiffFN);
 		F.matrix[11]	= -1.0f;
-		F.matrix[14]	= -(2.0f * near * far) / (far - near);
+		F.matrix[14]	= -2.0f * far * near * invDiffFN;
+		F.matrix[15]    = 0.0f;
 
 		return F;
 	}
 
 	static inline Matrix ortho(float left, float right, float bottom, float top, float near, float far)
 	{
-		O.matrix[0]		= 2.0f/(right-left);
-		O.matrix[5]		= 2.0f/(top-bottom);
-		O.matrix[10]	= -2.0f/(far-near);
-		O.matrix[12]	= -((right + left)/(right-left));
-		O.matrix[13]	= -((top + bottom)/(top-bottom));
-		O.matrix[14]	= -((far + near)/(far-near));
+		// helper variables
+		float invDiffRL = 1.0f / (right - left);
+		float invDiffTB = 1.0f / (top - bottom);
+		float invDiffFN = 1.0f / (far - near);
+
+		O.matrix[0]		= 2.0f * invDiffRL;
+		O.matrix[5]		= 2.0f * invDiffTB;
+		O.matrix[10]	= -2.0f * invDiffFN;
+		O.matrix[12]	= -((right+left)*invDiffRL);
+		O.matrix[13]	= -((top+bottom)*invDiffTB);
+		O.matrix[14]	= -((far+near)*invDiffFN);
 
 		return O;
 	}
 
 	static inline Matrix rotateY(float angle)
 	{
-		float sin = sinf(angle);
-		float cos = cosf(angle);
+		float sin = sinf(-angle);
+		float cos = cosf(-angle);
 
 		Y.matrix[0] = cos;
-		Y.matrix[2] = sin;
-		Y.matrix[8] = -sin;
+		Y.matrix[2] = -sin;
+		Y.matrix[8] = sin;
 		Y.matrix[10] = cos;
 
 		return Y;

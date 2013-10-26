@@ -20,28 +20,50 @@ struct Helper
 	static inline int_fast32_t round(float x)
 	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 
-
-
-	static inline void swap(float &x,float &y)
+	static void sort(float* &a, int n)
 	{
-	  float tmp=x;
-	  x=y;
-	  y=tmp;
+		int i = 1;
+		int j = 2;
+		float t = 0.0f;
+
+		while( i<n )
+		{
+			if( a[i - 1] > a[i] )
+			{
+				t = a[i];
+				a[i] = a[i-1];
+				a[i-1] = t;
+
+				if(--i)continue;
+			}
+			i = j++;
+		}
 	}
 
 
-	static inline void swap(int &x,int &y)
+	static void sort(float* &a, float* &b, int n)
 	{
-	  int tmp=x;
-	  x=y;
-	  y=tmp;
-	}
+		float m = 0.0f;
+		int i = 1;
+		int j = 2;
+		float t = 0.0f;
 
-	static inline void swap(short &x,short &y)
-	{
-	  x ^= y;
-	  y ^= x;
-	  x ^= y;
+		while(i < n)
+		{
+			if( a[i - 1] > a[i] )
+			{
+				t = a[i];
+				m = b[i];
+
+				a[i] = a[i-1];
+				b[i] = b[i-1];
+
+				a[i-1] = t;
+				b[i-1] = m;
+				if(--i)continue;
+			}
+			i = j++;
+		}
 	}
 
 	static inline int min(float A, float B, float C)

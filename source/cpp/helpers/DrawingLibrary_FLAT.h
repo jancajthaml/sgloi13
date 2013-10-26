@@ -141,12 +141,11 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				else			bresenham_y(b.y, b.x, a.y, a.x, context);
 		}
 
-		inline void setPixel(signed x, signed y, Chunk &context)
+		inline void setPixel(float x, float y, Chunk &context)
 		{
-			//Condition not needed for now
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
 			{
-				context.lastSetPixelIndex = (x + context.w * y);
+				context.lastSetPixelIndex = uint_fast32_t(x + context.w * y);
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 			}
 		}
@@ -400,9 +399,36 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			int x2 = int(v2.x);
 			int y2 = int(v2.y);
 
-			if (y0 > y2) { Helper::swap(x0, x2); Helper::swap(y0, y2); }
-			if (y1 > y2) { Helper::swap(x1, x2); Helper::swap(y1, y2); }
-			if (y0 > y1) { Helper::swap(x0, x1); Helper::swap(y0, y1); }
+			if (y0 > y2)
+			{
+				int tmp = x0;
+				x0      = x2;
+				x2      = tmp;
+
+				tmp     = y0;
+				y0      = y2;
+				y2      = tmp;
+			}
+			if (y1 > y2)
+			{
+				int tmp = x1;
+				x1      = x2;
+				x2      = tmp;
+
+				tmp     = y1;
+				y1      = y2;
+				y2      = tmp;
+			}
+			if (y0 > y1)
+			{
+				int tmp = x0;
+				x0      = x1;
+				x1      = tmp;
+
+				tmp     = y0;
+				y0      = y1;
+				y1      = tmp;
+			}
 
 		  float xs	= 0.0f;
 		  float xe	= 0.0f;
@@ -456,102 +482,82 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 		inline void fillPolygon( Chunk &context )
 		{
-			int size = context.vertices.index;
+			int    size   =  context.vertices.index ;
+			Edge * edges  =  new Edge[size]         ;
+			int  * x      =  new int[size]          ;
+			int  * y      =  new int[size]          ;
 
-			int *view_x = new int[size];
-			int *view_y = new int[size];
-			Edge* edges = new Edge[size];
+			x[0] = int(context.vertices[0].x+1.0f);
+			y[0] = int(context.vertices[0].y+1.0f);
 
-			view_x[0] = int(context.vertices[0].x+1.0f);
-			view_y[0] = int(context.vertices[0].y+1.0f);
-
-			int min_y = view_y[0];
-			int max_y = view_y[0];
+			int    min_y  =  y[0]  ;
+			int    max_y  =  y[0]  ;
 
 			for(int i=1; i<size; i++)
 			{
-				view_x[i] = int(context.vertices[i].x);
-				view_y[i] = int(context.vertices[i].y);
+			    x[i] = int(context.vertices[i].x+1.0f);
+			    y[i] = int(context.vertices[i].y+1.0f);
 
-			    if( view_y[i]<min_y )  min_y = view_y[i];
-			    if( view_y[i]>max_y )  max_y = view_y[i];
+			    if( y[i]<min_y )  min_y = y[i];
+			    if( y[i]>max_y )  max_y = y[i];
 
-			    if( view_y[i]<view_y[i-1] )
+			    if( y[i] < y[i-1] )
 			    {
-			      edges[i].min_y = view_y[i]-1;
-			      edges[i].max_y = view_y[i-1];
-			      edges[i].x     = float(view_x[i]);
+			    	edges[i].min_y  =  y[i]-1 ;
+			    	edges[i].max_y  =  y[i-1]    ;
+			    	edges[i].x      =  x[i]      ;
 			    }
-			    else{
-			      edges[i].min_y = view_y[i-1]-1;
-			      edges[i].max_y = view_y[i];
-			      edges[i].x     = float(view_x[i-1]);
+			    else
+			    {
+			    	edges[i].min_y  =  y[i-1]-1 ;
+			    	edges[i].max_y  =  y[i]   ;
+			    	edges[i].x      =  x[i-1]   ;
 			    }
-			    edges[i].delta = (view_x[i]-view_x[i-1])/(float(view_y[i]-view_y[i-1]));
+
+			    edges[i].delta_x = float(x[i]-x[i-1]) / float(y[i]-y[i-1]);
 			  }
 
-			  if( view_y[0]<view_y[size-1] )
+			  if( y[0] < y[size-1] )
 			  {
-			    edges[0].min_y = view_y[0]-1;
-			    edges[0].max_y = view_y[size-1];
-			    edges[0].x     = float(view_x[0]);
+				  edges[0].min_y = y[0]-1 ;
+				  edges[0].max_y = y[size-1]   ;
+				  edges[0].x     = x[0]   ;
 			  }
 			  else
 			  {
-			    edges[0].min_y = view_y[size-1]-1;
-			    edges[0].max_y = view_y[0];
-			    edges[0].x     = float(view_x[size-1]);
+				  edges[0].min_y = y[size-1]-1 ;
+				  edges[0].max_y = y[0]   ;
+				  edges[0].x     = x[size-1]   ;
 			  }
-			  edges[0].delta   = (view_x[0]-view_x[size-1])/(float(view_y[0]-view_y[size-1]));
 
-			  int *draw = new int[size];
-			  int count;
+			  edges[0].delta_x   = float(x[0]-x[size-1])/float(y[0]-y[size-1]);
 
-			  for( int y=min_y; y<max_y; y++ )
+			  float * draw =  new float[size];
+			  int   count  =  0;
+
+			  for( int y=min_y ; y<max_y ; y++ )
 			  {
 				  count = 0;
 
-				  for( int v=0; v<size; v++ )
+				  for( int v=0 ; v<size ; v++ )
 				  {
 					  if( (edges[v].min_y<y) & (edges[v].max_y>y) )
 					  {
-						  edges[v].x  +=  edges[v].delta;
-						  draw[count]  =  int(edges[v].x)+1;
+						  edges[v].x  +=  edges[v].delta_x;
+						  draw[count]  =  edges[v].x;
 						  count++;
 					  }
 				  }
 
-				  int i=1;
-				  bool a = false;
+				  Helper::sort(draw,count);
 
-				  //BUBBLE SORT START
-				  do
-				  {
-					  if(i>=count)
-					  {
-						  i=1;
-						  a = false;
-					  }
-
-					  if(draw[i]<draw[i-1])
-					  {
-						  Helper::swap(draw[i], draw[i-1]);
-						  Edge tmp=edges[i-1];
-						  edges[i-1]=edges[i];
-						  edges[i]=tmp;
-						  a = true;
-					  }
-					  i++;
-			    }
-				while( a || i<count );
-				//BUBBLE SORT END
-
-			    for(int i=0; i<count; i=i+2)
+			    for( int i=0; i<count; i=i+2 )
 			    	setPixelChunk(y+1, draw[i], draw[i+1]-1, context);
 			  }
 
-			  context.vertices.index=0;
-			  delete[] edges;
+			  delete[] draw              ;
+			  context.vertices.index = 0 ;
+			  delete[] edges             ;
 		}
 
 };

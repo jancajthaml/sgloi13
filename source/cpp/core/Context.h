@@ -20,7 +20,7 @@
 #include "./../helpers/DrawingLibrary_FLAT.h"
 #include "./../helpers/DrawingLibrary_DEPTH.h"
 #include "./ContextChunk.h"
-
+#include <cfloat>
 /*
  * Side-notes:
  * Jan Cajthaml -using struct instead of class because of no need of encapsulation
@@ -74,7 +74,7 @@ struct Context
 	bool Z_TEST ;
 
 	//Transformation matrices
-	Matrix current_MV ;
+	Matrix current_M ;
 	Matrix current_P  ;
 
 	Matrix MP  ;
@@ -117,7 +117,7 @@ struct Context
 		storage.depth  = (float*) malloc(sizeof(float) * storage.w_h) ;
 		storage.clear  = (Color*) malloc(sizeof(Color) * storage.w_h) ;
 
-		current_MV	   = MatrixCache::identity()                      ;
+		current_M	   = MatrixCache::identity()                      ;
 		current_P      = MatrixCache::identity()                      ;
 
 		P_changed      = true                                         ;
@@ -177,21 +177,15 @@ struct Context
 
 	inline Vertex& create(float x, float y, float z, float w)
 	{
-		Vertex v(x, y, z, w);
-		transform(v);
-		return v;
-	}
-
-	inline Vertex transform(Vertex & v)
-	{
 		check_MVP();
+		Vertex v(x, y, z, w);
+		v = MVP * v;
 
-		//This is a uqly fix to differ the multiplication with Z-TEST and without
+		v.x/=v.w;
+		v.y/=v.w;
+		v.z/=v.w;
 
-		if(Z_TEST)	v = MVP << v ;  //WITH
-		else		v = MVP <  v ;  //WITHOUT
-
-		//printf("     after transform -> vertex: x=%f, y=%f, z=%f, w=%f\n",v.x,v.y,v.z,v.w);
+		//printf("[%f,%f,%f,%f] -> [%f,%f,%f,%f]\n",x,y,z,w,v.x,v.y,v.z,v.w);
 
 		return v;
 	}
@@ -199,7 +193,16 @@ struct Context
 	inline float calculateRadiusScaleFactor()
 	{
 		check_MVP();
-		return sqrt((MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]));
+
+		//Fast square root
+		float number = (MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]);
+		float y = number;
+		long i = *(long*)&y;
+		i = 0x5f3759df - (i >> 1);
+		y = *(float*)&i;
+		y = y * (1.5f - ((number * 0.5f)*y*y));
+		return (static_cast<int>(1/y + 0.5f))/2.8284271247461903f;
+
 	}
 
 	inline void drawCricle( float x, float y, float z, float r )
@@ -210,80 +213,55 @@ struct Context
 			case SGL_LINE   : g.drawCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
 			default         : g.fillCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
 		}
-
 	}
 
 	inline void drawEllipse(float center_x, float center_y, float center_z, float axis_x, float axis_y)
 	{
-		bool ellipse_adaptive = false;
+		sglBegin(SGL_POLYGON);
 
-		if(ellipse_adaptive)
-		{
+		sglVertex2f( center_x										, center_y + axis_y								 );
+		sglVertex2f( center_x + (axis_x * 0.1564344693575539	)	, center_y + ( axis_y * 0.987688339911341		));
+		sglVertex2f( center_x + (axis_x * 0.3090170026893479	)	, center_y + ( axis_y * 0.9510565135936411		));
+		sglVertex2f( center_x + (axis_x * 0.45399051142368685	)	, center_y + ( axis_y * 0.8910065182350011		));
+		sglVertex2f( center_x + (axis_x * 0.587785266437776		)	, center_y + ( axis_y * 0.8090169840977831		));
+		sglVertex2f( center_x + (axis_x * 0.7071067966408575	)	, center_y + ( axis_y * 0.7071067657322372		));
+		sglVertex2f( center_x + (axis_x * 0.8090170097906934	)	, center_y + ( axis_y * 0.5877852310745185		));
+		sglVertex2f( center_x + (axis_x * 0.891006511019614		)	, center_y + ( axis_y * 0.4539905255846804		));
+		sglVertex2f( center_x + (axis_x * 0.9510565271012029	)	, center_y + ( axis_y * 0.3090169611173454		));
+		sglVertex2f( center_x + (axis_x * 0.9876883560735247	)	, center_y + ( axis_y * 0.15643436731351018		));
+		sglVertex2f( center_x + (axis_x * 0.999999999999999		)	, center_y - ( axis_y * 4.371139000186241E-8	));
+		sglVertex2f( center_x + (axis_x * 0.9876883423975937	)	, center_y - ( axis_y * 0.15643445365997144		));
+		sglVertex2f( center_x + (axis_x * 0.9510565000860774	)	, center_y - ( axis_y * 0.30901704426134974		));
+		sglVertex2f( center_x + (axis_x * 0.8910064713304968	)	, center_y - ( axis_y * 0.4539906034789449		));
+		sglVertex2f( center_x + (axis_x * 0.8090170284743339	)	, center_y - ( axis_y * 0.5877852053586913		));
+		sglVertex2f( center_x + (axis_x * 0.7071067769704655	)	, center_y - ( axis_y * 0.7071067854026294		));
+		sglVertex2f( center_x + (axis_x * 0.5877851957112599	)	, center_y - ( axis_y * 0.809017035483602		));
+		sglVertex2f( center_x + (axis_x * 0.4539903804212881	)	, center_y - ( axis_y * 0.8910065849840472		));
+		sglVertex2f( center_x + (axis_x * 0.3090168061705656	)	, center_y - ( axis_y * 0.9510565774464436		));
+		sglVertex2f( center_x + (axis_x * 0.15643444188190603	)	, center_y - ( axis_y * 0.9876883442630557		));
+		sglVertex2f( center_x - (axis_x * 8.742278000372475E-8	)	, center_y - ( axis_y * 0.9999999999999962		));
+		sglVertex2f( center_x - (axis_x * 0.1564346145748253	)	, center_y - ( axis_y * 0.9876883169111731		));
+		sglVertex2f( center_x - (axis_x * 0.3090169724585808	)	, center_y - ( axis_y * 0.9510565234162125		));
+		sglVertex2f( center_x - (axis_x * 0.4539905362098265	)	, center_y - ( axis_y * 0.8910065056058313		));
+		sglVertex2f( center_x - (axis_x * 0.5877853371642876	)	, center_y - ( axis_y * 0.8090169327119581		));
+		sglVertex2f( center_x - (axis_x * 0.7071069006049366	)	, center_y - ( axis_y * 0.7071066617681382		));
+		sglVertex2f( center_x - (axis_x * 0.8090171312459549	)	, center_y - ( axis_y * 0.5877850639056469		));
+		sglVertex2f( center_x - (axis_x * 0.8910066589484567	)	, center_y - ( axis_y * 0.4539902352578838		));
+		sglVertex2f( center_x - (axis_x * 0.951056480440929		)	, center_y - ( axis_y * 0.3090171047228822		));
+		sglVertex2f( center_x - (axis_x * 0.9876883324525811	)	, center_y - ( axis_y * 0.156434516450301		));
+		sglVertex2f( center_x - (axis_x * 0.9999999999999999	)	, center_y + ( axis_y * 1.1924880454806035E-8	));
+		sglVertex2f( center_x - (axis_x * 0.9876883287216551	)	, center_y + ( axis_y * 0.15643454000643153		));
+		sglVertex2f( center_x - (axis_x * 0.9510564730709448	)	, center_y + ( axis_y * 0.30901712740535175		));
+		sglVertex2f( center_x - (axis_x * 0.8910064316413727	)	, center_y + ( axis_y * 0.45399068137320586		));
+		sglVertex2f( center_x - (axis_x * 0.8090168369495607	)	, center_y + ( axis_y * 0.5877854689698682		));
+		sglVertex2f( center_x - (axis_x * 0.7071065465657921	)	, center_y + ( axis_y * 0.7071070158072251		));
+		sglVertex2f( center_x - (axis_x * 0.5877849321000184	)	, center_y + ( axis_y * 0.8090172270082862		));
+		sglVertex2f( center_x - (axis_x * 0.45399051495953424	)	, center_y + ( axis_y * 0.8910065164333968		));
+		sglVertex2f( center_x - (axis_x * 0.30901694977611		)	, center_y + ( axis_y * 0.9510565307861931		));
+		sglVertex2f( center_x - (axis_x * 0.1564343555354446	)	, center_y + ( axis_y * 0.9876883579389858		));
 
-		}
-		else
-		{
-			sglBegin(SGL_POLYGON);
-
-				//Translate center_x,center_y
-
-				//float diff = 0.15707963267f;
-
-				//for(int_fast32_t i = 0; i < 40; ++i)
-				//{
-				//sglVertex2f(center_x+(axis_x * sin(i*diff)), center_y+(axis_y * cos(i*diff)));
-				//}
-
-
-				// //Translate -center_x,-center_y
-				//TRANSLATE is slower than calculation
-
-				sglVertex2f( center_x										, center_y + axis_y								 );
-				sglVertex2f( center_x + (axis_x * 0.1564344693575539	)	, center_y + ( axis_y * 0.987688339911341		));
-				sglVertex2f( center_x + (axis_x * 0.3090170026893479	)	, center_y + ( axis_y * 0.9510565135936411		));
-				sglVertex2f( center_x + (axis_x * 0.45399051142368685	)	, center_y + ( axis_y * 0.8910065182350011		));
-				sglVertex2f( center_x + (axis_x * 0.587785266437776		)	, center_y + ( axis_y * 0.8090169840977831		));
-				sglVertex2f( center_x + (axis_x * 0.7071067966408575	)	, center_y + ( axis_y * 0.7071067657322372		));
-				sglVertex2f( center_x + (axis_x * 0.8090170097906934	)	, center_y + ( axis_y * 0.5877852310745185		));
-				sglVertex2f( center_x + (axis_x * 0.891006511019614		)	, center_y + ( axis_y * 0.4539905255846804		));
-				sglVertex2f( center_x + (axis_x * 0.9510565271012029	)	, center_y + ( axis_y * 0.3090169611173454		));
-				sglVertex2f( center_x + (axis_x * 0.9876883560735247	)	, center_y + ( axis_y * 0.15643436731351018		));
-				sglVertex2f( center_x + (axis_x * 0.999999999999999		)	, center_y - ( axis_y * 4.371139000186241E-8	));
-				sglVertex2f( center_x + (axis_x * 0.9876883423975937	)	, center_y - ( axis_y * 0.15643445365997144		));
-				sglVertex2f( center_x + (axis_x * 0.9510565000860774	)	, center_y - ( axis_y * 0.30901704426134974		));
-				sglVertex2f( center_x + (axis_x * 0.8910064713304968	)	, center_y - ( axis_y * 0.4539906034789449		));
-				sglVertex2f( center_x + (axis_x * 0.8090170284743339	)	, center_y - ( axis_y * 0.5877852053586913		));
-				sglVertex2f( center_x + (axis_x * 0.7071067769704655	)	, center_y - ( axis_y * 0.7071067854026294		));
-				sglVertex2f( center_x + (axis_x * 0.5877851957112599	)	, center_y - ( axis_y * 0.809017035483602		));
-				sglVertex2f( center_x + (axis_x * 0.4539903804212881	)	, center_y - ( axis_y * 0.8910065849840472		));
-				sglVertex2f( center_x + (axis_x * 0.3090168061705656	)	, center_y - ( axis_y * 0.9510565774464436		));
-				sglVertex2f( center_x + (axis_x * 0.15643444188190603	)	, center_y - ( axis_y * 0.9876883442630557		));
-				sglVertex2f( center_x - (axis_x * 8.742278000372475E-8	)	, center_y - ( axis_y * 0.9999999999999962		));
-				sglVertex2f( center_x - (axis_x * 0.1564346145748253	)	, center_y - ( axis_y * 0.9876883169111731		));
-				sglVertex2f( center_x - (axis_x * 0.3090169724585808	)	, center_y - ( axis_y * 0.9510565234162125		));
-				sglVertex2f( center_x - (axis_x * 0.4539905362098265	)	, center_y - ( axis_y * 0.8910065056058313		));
-				sglVertex2f( center_x - (axis_x * 0.5877853371642876	)	, center_y - ( axis_y * 0.8090169327119581		));
-				sglVertex2f( center_x - (axis_x * 0.7071069006049366	)	, center_y - ( axis_y * 0.7071066617681382		));
-				sglVertex2f( center_x - (axis_x * 0.8090171312459549	)	, center_y - ( axis_y * 0.5877850639056469		));
-				sglVertex2f( center_x - (axis_x * 0.8910066589484567	)	, center_y - ( axis_y * 0.4539902352578838		));
-				sglVertex2f( center_x - (axis_x * 0.951056480440929		)	, center_y - ( axis_y * 0.3090171047228822		));
-				sglVertex2f( center_x - (axis_x * 0.9876883324525811	)	, center_y - ( axis_y * 0.156434516450301		));
-				sglVertex2f( center_x - (axis_x * 0.9999999999999999	)	, center_y + ( axis_y * 1.1924880454806035E-8	));
-				sglVertex2f( center_x - (axis_x * 0.9876883287216551	)	, center_y + ( axis_y * 0.15643454000643153		));
-				sglVertex2f( center_x - (axis_x * 0.9510564730709448	)	, center_y + ( axis_y * 0.30901712740535175		));
-				sglVertex2f( center_x - (axis_x * 0.8910064316413727	)	, center_y + ( axis_y * 0.45399068137320586		));
-				sglVertex2f( center_x - (axis_x * 0.8090168369495607	)	, center_y + ( axis_y * 0.5877854689698682		));
-				sglVertex2f( center_x - (axis_x * 0.7071065465657921	)	, center_y + ( axis_y * 0.7071070158072251		));
-				sglVertex2f( center_x - (axis_x * 0.5877849321000184	)	, center_y + ( axis_y * 0.8090172270082862		));
-				sglVertex2f( center_x - (axis_x * 0.45399051495953424	)	, center_y + ( axis_y * 0.8910065164333968		));
-				sglVertex2f( center_x - (axis_x * 0.30901694977611		)	, center_y + ( axis_y * 0.9510565307861931		));
-				sglVertex2f( center_x - (axis_x * 0.1564343555354446	)	, center_y + ( axis_y * 0.9876883579389858		));
-
-			//	}
-
-				sglEnd();
-			}
-		}
+		sglEnd();
+	}
 
 
 	inline void drawArc2D(float x, float y, float z, float r, float from, float to)
@@ -293,7 +271,7 @@ struct Context
 		float f				= to - from				;
 		float N				= f * 12.732395447351626861510701069801148962756771659236515f;
 		float alpha			= f / N					;
-		float offset = from / alpha			;
+		float offset        = from / alpha			;
 		float from_offset	= (offset - 1)*alpha	;
 		float x1			= r * cosf(from_offset)	;
 		float y1			= r * sinf(from_offset)	;
@@ -307,7 +285,6 @@ struct Context
 			case SGL_POINT  :
 			{
 				sglBegin(SGL_POINTS);
-
 			}
 			break;
 
@@ -349,13 +326,17 @@ struct Context
 		switch(matrixMode)
 		{
 			case SGL_MODELVIEW :
+			{
 				M_changed	= true;
-				current_MV	= current_MV * m;
+				current_M	= current_M * m;
+			}
 			break;
 
 			default:
+			{
 				P_changed	= true;
 				current_P	= current_P * m;
+			}
 			break;
 		}
 	}
@@ -367,7 +348,7 @@ struct Context
 	{
 		switch(matrixMode)
 		{
-			case SGL_MODELVIEW	: return current_MV;
+			case SGL_MODELVIEW	: return current_M;
 			default				: return current_P;
 		}
 	}
@@ -376,8 +357,8 @@ struct Context
 	{
 		switch(matrixMode)
 		{
-			case SGL_MODELVIEW	: P_stack.push_back( current_MV ); break;
-			default				: P_stack.push_back( current_P  ); break;
+			case SGL_MODELVIEW	: P_stack.push_back( current_M ); break;
+			default				: P_stack.push_back( current_P ); break;
 		}
 	}
 
@@ -387,7 +368,7 @@ struct Context
 		{
 			case SGL_MODELVIEW	:
 				M_changed	= true;
-				current_MV	= matrix;
+				current_M	= matrix;
 			break;
 
 			default				:
@@ -427,7 +408,7 @@ struct Context
 		{
 			case SGL_MODELVIEW	:
 				M_changed = true;
-				current_MV = P_stack.back();
+				current_M = P_stack.back();
 			break;
 
 			default				:
@@ -449,10 +430,8 @@ struct Context
 
 	inline void clearDepthBuffer()
 	{
-		float clear = std::numeric_limits<float>::max();
-
 	    for(uint_fast32_t i = 0; i < storage.w_h; ++i)
-	        storage.depth[i] = clear;
+	        storage.depth[i] = FLT_MAX;
 	}
 
 	inline bool check_MP()
@@ -461,7 +440,7 @@ struct Context
 		{
 			M_changed	= false;
 			P_changed	= false;
-			MP			= current_P * current_MV;
+			MP			= current_P * current_M;
 			return true;
 		}
 		return false;
