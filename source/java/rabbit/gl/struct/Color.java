@@ -45,5 +45,11 @@ public class Color
 
 	public int getRGB()
 	{ return ((int)(a * 255.0f) << 24) | ((int)(r * 255.0f) << 16) | ((int)(g * 255.0f) << 8) | ((int)(b * 255.0f)); }
+
+	public static int mix(Color c, int color, float alpha)
+	{
+		float rem = 1.0f-alpha;
+		return -16777216 | ((int)((c.r*255 * alpha) + ((color >> 16) & 0xFF) * rem)<<16) | ((int)((c.g*255 * alpha) + ((color >> 8) & 0xFF) * rem)<<8) | (int)((c.b*255 * alpha) + ((color) & 0xFF) * rem);
+	}
 	 
 }

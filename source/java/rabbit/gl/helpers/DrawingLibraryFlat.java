@@ -2,6 +2,7 @@ package rabbit.gl.helpers;
 
 import rabbit.gl.engine.Chunk;
 import rabbit.gl.math.SimpleMath;
+import rabbit.gl.struct.Color;
 import rabbit.gl.struct.Edge;
 import rabbit.gl.struct.Vertex;
 
@@ -59,38 +60,83 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 	///######### API STARTS HERE ###############################################################
 
-		public void drawLine2D(Vertex a, Vertex b, Chunk context)
+		public void drawBezier( Vertex a, Vertex b, Vertex c, Chunk context )
+		{
+			int xa = bezier_dot( a.x , b.x , 0 );
+			int ya = bezier_dot( a.y , b.y , 0 );
+			int xb = bezier_dot( b.x , c.x , 0 );
+			int yb = bezier_dot( b.y , c.y , 0 );
+
+
+			int x = bezier_dot( xa, xb, 0 );
+			int y = bezier_dot( ya, yb, 0 );
+			int last_x = 0;
+			int last_y = 0;
+			
+			for( float i = 0.05f ; i < 1 ; i += 0.05f )
+			{
+			    xa = bezier_dot( a.x , b.x , i );
+			    ya = bezier_dot( a.y , b.y , i );
+			    xb = bezier_dot( b.x , c.x , i );
+			    yb = bezier_dot( b.y , c.y , i );
+
+			    last_x	= x;
+			    last_y	= y;
+			    x		= bezier_dot( xa, xb, i );
+			    y		= bezier_dot( ya, yb, i );
+
+			    this.drawLine2D(x, y, last_x, last_y, context);
+			}
+			
+		}
+
+		public void drawLine2D( Vertex a, Vertex b, Chunk context )
 		{
 			if(a == null || b == null) return;
-				
-				//obtain the points
-				int x1, x2, y1, y2;
-				x1 = SimpleMath.round(a.x);
-				y1 = SimpleMath.round(a.y);
-				x2 = SimpleMath.round(b.x);
-				y2 = SimpleMath.round(b.y);
+		
+			int x1 = SimpleMath.round(a.x);
+			int y1 = SimpleMath.round(a.y);
+			int x2 = SimpleMath.round(b.x);
+			int y2 = SimpleMath.round(b.y);
 
-				int dx = SimpleMath.abs(x2 - x1);
-				int dy = SimpleMath.abs(y2 - y1);
+			int dx = SimpleMath.abs(x2 - x1);
+			int dy = SimpleMath.abs(y2 - y1);
 				
-				if (dx > dy)
-					if (x1 < x2)	bresenham_x(x1, y1, x2, y2, context);
-					else			bresenham_x(x2, y2, x1, y1, context);
-				else
-					if (y1 < y2)	bresenham_y(y1, x1, y2, x2, context);
-					else			bresenham_y(y2, x2, y1, x1, context);
+			if (dx > dy)
+				if (x1 < x2)	bresenham_x(x1, y1, x2, y2, context);
+				else			bresenham_x(x2, y2, x1, y1, context);
+			else
+				if (y1 < y2)	bresenham_y(y1, x1, y2, x2, context);
+				else			bresenham_y(y2, x2, y1, x1, context);
+		}
+		
+		public void drawLine2D(int x1, int y1, int x2, int y2, Chunk context )
+		{
+			int dx = SimpleMath.abs(x2 - x1);
+			int dy = SimpleMath.abs(y2 - y1);
+				
+			if (dx > dy)
+				if (x1 < x2)	bresenham_x(x1, y1, x2, y2, context);
+				else			bresenham_x(x2, y2, x1, y1, context);
+			else
+				if (y1 < y2)	bresenham_y(y1, x1, y2, x2, context);
+				else			bresenham_y(y2, x2, y1, x1, context);
 		}
 
-		void setPixel(float x, float y, Chunk context)
+		private void setPixel(float x, float y, Chunk context)
 		{
 			int index = (int)(x+Chunk.max_w*(context.h-((int)y)));
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h /*&& z < context.depth[index]*/)
+			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
 			{
-				context.lastSetPixelIndex			= index;
-				Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
+				context.lastSetPixelIndex					= index;
+				renderPixel(index, context.color.a, context);
 			}
 		}
-
+		
+		private void renderPixel(int index, float alpha, Chunk context)
+		{
+			Chunk._pixels[index]	= Color.mix(context.color,Chunk._pixels[index],alpha);
+		}
 		void setPixel_x( Chunk context )
 		{
 			context.lastSetPixelIndex += 1;
@@ -225,7 +271,31 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 				drawLine2D(context.vertices.get(size), context.vertices.get(0), context);
 			}catch(Throwable t){/*ignore*/}
 		}
+		
+		public void drawLineBezier( Chunk context )
+		{
 
+			try
+			{
+				int size = context.vertices.size()-1;
+			
+				if(size<2)return;
+				
+				Vertex A = context.vertices.get(0);
+				Vertex B = context.vertices.get(1);
+				Vertex C = context.vertices.get(2);
+				
+				for (int i = 2; i < size; i++)
+				{
+					drawBezier( A, B, C, context );
+
+					A = B;
+					B = C;
+					C = context.vertices.get(i);
+				}
+			}catch(Throwable t){/*ignore*/}
+		}
+		
 		public void drawPolygon( Chunk context )
 		{
 				try
@@ -242,29 +312,27 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 		public void drawCircle( Vertex v,float r, Chunk context)
 		{
-
 			try
 			{
-			int x = 0;
-			int y = (int)r;
-			int p = 3 - ((int)r << 1);
+				int x = 0;
+				int y = (int)r;
+				int p = 3 - ((int)r << 1);
 
-			while( x<y )
-			{
-				setSymPixel(x, y, v.x, v.y, context);
-				if (p < 0)
+				while( x<y )
 				{
-					p += (x << 2) + 6;
+					setSymPixel(x, y, v.x, v.y, context);
+					if (p < 0)
+					{
+						p += (x << 2) + 6;
+					}
+					else
+					{
+						p += ((x - y) << 2) + 10;
+						y -= 1;
+					}
+					x += 1;
 				}
-				else
-				{
-					p += ((x - y) << 2) + 10;
-					y -= 1;
-				}
-				x += 1;
-			}
-			if( x==y ) setSymPixel(x, y, v.x, v.y, context);
-			
+				if( x==y ) setSymPixel(x, y, v.x, v.y, context);
 			}
 			catch(Throwable t){ t.printStackTrace(); }
 		}
@@ -623,4 +691,8 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 			}catch(Throwable t){context.lastSetPixelIndex--;}
 		}
 
+		static int bezier_dot( float n1 , float n2 , float perc )
+		{ return (int)(n1 + ( (n2 - n1) * perc )); }
+
+		
 }

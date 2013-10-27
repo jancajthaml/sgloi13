@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import javax.swing.JPanel;
+
+import main.SGLTest;
 import rabbit.gl.engine.HUB;
 
 @SuppressWarnings("serial")
@@ -55,6 +57,8 @@ public class sglCanvas extends JPanel
 			
 			g.setColor(Color.white);
 			g.drawString("duration: "+time+"s", 10, 20);
+			if(!SGLTest.movement.equals(""))
+				g.drawString("moving: "+SGLTest.movement, 10, 40);
 		}catch(Throwable t){}
 	}
 	

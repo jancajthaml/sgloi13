@@ -1,6 +1,7 @@
 package rabbit.gl.helpers;
 
 import rabbit.gl.engine.Chunk;
+import rabbit.gl.struct.Color;
 import rabbit.gl.struct.Edge;
 import rabbit.gl.struct.Vertex;
 
@@ -63,16 +64,26 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 			//FIXME incorporate z COORDINATE
 			DrawingLibraryFlat.instance.drawLine2D(a, b, context); }
 		
+		public void drawBezier( Vertex a, Vertex b, Vertex c, Chunk context )
+		{
+			//FIXME incorporate z COORDINATE
+			DrawingLibraryFlat.instance.drawBezier(a, b, c, context);
+		}
+		
 		private void setPixel(float x, float y, float z, Chunk context)
 		{
 			int index = (int)(x+Chunk.max_w*(context.h-((int)y)));
-			
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h && Chunk.depth[index] > z)
 			{
-				context.lastSetPixelIndex			= index;
-				Chunk.depth[index]		= z;
-				Chunk._pixels[context.lastSetPixelIndex]	= context.color.getRGB();
+				context.lastSetPixelIndex					= index;
+				Chunk.depth[index]							= z;
+				renderPixel(index, context.color.a, context);
 			}
+		}
+
+		private void renderPixel(int index, float alpha, Chunk context)
+		{
+			Chunk._pixels[index]	= Color.mix(context.color,Chunk._pixels[index],alpha);
 		}
 
 		/*
@@ -190,6 +201,11 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 			}catch(Throwable t){/*ignore*/}
 		}
 
+		public void drawLineBezier( Chunk context )
+		{
+			DrawingLibraryFlat.instance.drawLineBezier(context);
+		}
+		
 		public void drawPolygon( Chunk context )
 		{
 				try

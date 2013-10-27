@@ -201,6 +201,7 @@ public class HUB
 			case SGL_LINES				:
 			case SGL_LINE_STRIP			:
 			case SGL_LINE_LOOP			:
+			case SGL_LINE_BEZIER		:
 			case SGL_TRIANGLES			:
 			case SGL_POLYGON			:
 			case SGL_AREA_LIGHT			:
@@ -398,8 +399,6 @@ public class HUB
 		sglTranslate(-centerx, -centery, 0.0f);
 	}
 
-	// ? rotates what ? Context or scene ?
-	// ? around what Y axis? Base or context?
 	public static void sglRotateY(float angle)
 	{ current().multiplyCurrentMatrix(Matrix.rotateY(angle)); }
 	
@@ -409,56 +408,36 @@ public class HUB
 	public static void sglRotateZ(float angle)
 	{ current().multiplyCurrentMatrix(Matrix.rotateZ(angle)); }
 	
-	// ?
 	public static void sglOrtho(float left, float right, float bottom, float top, float near, float far)
-	{
-/*
- * if(current()->BeginBeforeEnd())
-	{
-	    setErrCode(SGL_INVALID_OPERATION);
-	    return;
-	}
- */
-		Matrix ortho = Matrix.ortho(left, right, bottom, top, near, far);
-		current().multiplyCurrentMatrix(ortho);
-		
-		//Matrix ortho = new Matrix(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
-		//current().multiplyCurrentMatrix(ortho);
-	}
+	{ current().multiplyCurrentMatrix(Matrix.ortho(left, right, bottom, top, near, far)); }
 
-	// ?
 	public static void sglFrustum(float left, float right, float bottom, float top, float near, float far)
+	{ current().multiplyCurrentMatrix(Matrix.frustum(left, right, bottom, top, near, far)); }
+	
+	public static void sglPerspective( float fovy, float aspect, float zNear, float zFar )
 	{
-		/*
-		 * if(current()->BeginBeforeEnd())
-	{
-	    setErrCode(SGL_INVALID_OPERATION);
-	    return;
-	}
-		 */
-
-		Matrix frustum = Matrix.frustum(left, right, bottom, top, near, far);
-		current().multiplyCurrentMatrix(frustum);
+		fovy *= 0.017453292519943295;
+		float h2 = (float)Math.tan(fovy/2)*zNear;
+		float w2 = h2*aspect;
+		sglFrustum(-w2,w2,-h2,h2,zNear,zFar);
 	}
 
-	//Sets scene viewport
 	public static void sglViewport(int x, int y, int width, int height)
-	{
-		current().setViewport(x, y, width, height);
-	}
+	{ current().setViewport(x, y, width, height); }
 
 	//---------------------------------------------------------------------------
 	// Attribute functions
 	//---------------------------------------------------------------------------
 
 	//RGB Color
-	public static void sglColor3f(float r, float g, float b)
+	public static void sglColor3f( float r, float g, float b )
 	{ current().storage.color = new Color(r, g, b); }
+	
+	public static void sglColor3f( float r, float g, float b, float a )
+	{ current().storage.color = new Color(r, g, b, a); }
 
-	// ?
 	public static void sglAreaMode(sglEAreaMode mode)
 	{
-		
 		switch(mode)
 		{
 			case SGL_POINT	: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)

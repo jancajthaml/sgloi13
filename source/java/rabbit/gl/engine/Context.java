@@ -99,22 +99,23 @@ public class Context
 			{
             	case SGL_POINT          : g.drawPoints ( storage )    ; break;
 
-            	default                 : switch( type )	//LINES of FILLING
+            	default                   : switch( type )	//LINES of FILLING
             	{
-                	case SGL_POINTS     : g.drawPoints    ( storage ) ; break;
-                	case SGL_LINES      : g.drawLines     ( storage ) ; break;
-                	case SGL_LINE_STRIP : g.drawLineStrip ( storage ) ; break;
-                	case SGL_LINE_LOOP  : g.drawLineLoop  ( storage ) ; break;
-                	case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
+                	case SGL_POINTS       : g.drawPoints    ( storage ) ; break;
+                	case SGL_LINES        : g.drawLines     ( storage ) ; break;
+                	case SGL_LINE_STRIP   : g.drawLineStrip ( storage ) ; break;
+                	case SGL_LINE_LOOP    : g.drawLineLoop  ( storage ) ; break;
+                	case SGL_LINE_BEZIER  : g.drawLineBezier  ( storage ) ; break;
+                	case SGL_TRIANGLES    : switch( drawType )  //TRIANGLE LINE/FILL
                 	{
-                		case SGL_LINE   : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
-                		default         : g.fillTrianglesFan ( storage ) ; break;
+                		case SGL_LINE     : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
+                		default           : g.fillTrianglesFan ( storage ) ; break;
                 	}
                 	break;
-                	case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
+                	case SGL_POLYGON      : switch( drawType )  //POLYGON LINE/FILL
                 	{
-                    	case SGL_LINE   : g.drawPolygon   ( storage ) ; break;
-                    	default         : g.fillPolygon   ( storage ) ; break;
+                    	case SGL_LINE     : g.drawPolygon   ( storage ) ; break;
+                    	default           : g.fillPolygon   ( storage ) ; break;
                 	}
                 	break;
 

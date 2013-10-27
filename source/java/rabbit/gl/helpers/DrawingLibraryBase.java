@@ -17,6 +17,7 @@ public class DrawingLibraryBase implements DrawingLibraryInterface
 		public void drawLineStrip	( Chunk context ){ state.drawLineStrip( context ); }
 		
 		public void drawLineLoop	( Chunk context ){ state.drawLineLoop(context ); }
+		public void drawLineBezier	( Chunk context ){ state.drawLineBezier(context ); }
 		
 		public void drawPolygon	( Chunk context ){ state.drawPolygon( context ); }
 		

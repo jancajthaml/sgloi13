@@ -5,7 +5,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
+import rabbit.gl.engine.HUB;
 import rabbit.gl.scheme.sglCanvas;
+import rabbit.gl.type.sglEClearBit;
 import tests.Test1;
 import tests.Test2;
 import tests.TestAnimation;
@@ -24,9 +27,14 @@ public class SGLTest
    static int h = 600;
    
    static int scene = 0;
-	
+   public static String movement = "";
    static int repaint = 0;
-   
+
+   static boolean LEFT  = false;
+   static boolean RIGHT = false;
+   static boolean UP    = false;
+   static boolean DOWN  = false;
+
 	@SuppressWarnings("serial")
 	static sglCanvas component = new sglCanvas()
 	{
@@ -34,6 +42,7 @@ public class SGLTest
 		public void paint()
 		{
 			sglClear(SGL_COLOR_BUFFER_BIT);
+			sglClear(sglEClearBit.SGL_DEPTH_BUFFER_BIT);
 			
 			switch(scene)
 			{
@@ -56,13 +65,52 @@ public class SGLTest
 			this.setFocusable(true);
 			
 			this.addKeyListener(new KeyListener(){
-				@Override public void keyPressed(KeyEvent arg0)
+				@Override public void keyPressed(KeyEvent e)
 				{
-					
+					switch(e.getKeyCode())
+					{
+						case KeyEvent.VK_LEFT   :
+						{
+							if(UP)        { movement = "LEFT-UP";   }
+							else if(DOWN) { movement = "LEFT-DOWN"; }
+							else          { movement = "LEFT"    ;  }
+							LEFT=true;
+						}
+						break;
+						
+						case KeyEvent.VK_RIGHT  :
+						{
+							if(UP)        { movement = "RIGHT-UP";   }
+							else if(DOWN) { movement = "RIGHT-DOWN"; }
+							else          { movement = "RIGHT"    ;  }
+							RIGHT=true;
+						}
+						break;
+						
+						case KeyEvent.VK_UP     :
+						{
+							if(LEFT)       { movement = "LEFT-UP";  }
+							else if(RIGHT) { movement = "RIGHT-UP"; }
+							else           { movement = "UP"    ;   }
+							UP=true;
+						}
+						break;
+						
+						case KeyEvent.VK_DOWN   :
+						{
+							if(LEFT)       { movement = "LEFT-DOWN";  }
+							else if(RIGHT) { movement = "RIGHT-DOWN"; }
+							else           { movement = "DOWN"    ;   }
+							DOWN=true;
+						}
+						break;
+					}
 				}
 
 				@Override public void keyReleased(KeyEvent e)
 				{
+					movement = "";
+					LEFT=RIGHT=UP=DOWN=false;
 					switch(e.getKeyCode())
 					{
 						case KeyEvent.VK_0	:	scene=0; break;
