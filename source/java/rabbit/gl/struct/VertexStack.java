@@ -9,7 +9,7 @@ import rabbit.gl.util.ReferenceManager;
 public class VertexStack implements Iterable<Vertex>, Iterator<Vertex>
 {
 
-	private static int BASIC_STACK_SIZE  =  500;
+	private static int BASIC_STACK_SIZE  =  100;
 
 	private SoftReference<Vertex>[]	stack;
 	int					currentSize;	//16bit = 65536
@@ -21,7 +21,7 @@ public class VertexStack implements Iterable<Vertex>, Iterator<Vertex>
 	{
 		currentSize	= BASIC_STACK_SIZE;
 		index		= 0;
-		stack		= new SoftReference[currentSize];;
+		stack		= new SoftReference[currentSize];
 	}
 
 	
@@ -33,27 +33,33 @@ public class VertexStack implements Iterable<Vertex>, Iterator<Vertex>
 
     public Vertex pop()
     {
-    	return stack[index--].get();
+    	Vertex v =  stack[index].get();
+    	stack[index--].clear();
+    	return v;
     }
 
     @SuppressWarnings("unchecked")
 	void realloc()
 	{
-    	int old_size =currentSize; 
-		currentSize <<= 1;
-		SoftReference<Vertex>[] tmp = this.stack;
-		this.stack		= new SoftReference[currentSize];
+    	int old_size                   =  currentSize; 
+		currentSize                  <<=  1;
+		SoftReference<Vertex>[] tmp    =  this.stack;
+		this.stack		               =  new SoftReference[currentSize];
 
 		System.arraycopy(tmp, 0, this.stack, 0, old_size);
 	}
 
 	public Vertex get(int i)
 	{
-		try{return stack[i].get();}
+		try{ return stack[i].get(); }
 		catch(java.lang.ArrayIndexOutOfBoundsException e){return null;}
 	}
 
-	public int size() { return index;}
+	public int size()
+	{
+		//System.out.println(index+" "+this.stack.length);
+		return index;
+	}
 
 	@Override public boolean hasNext()
 	{ return pointer<index; }

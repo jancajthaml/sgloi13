@@ -6,7 +6,9 @@ import java.awt.event.KeyListener;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import rabbit.gl.engine.HUB;
+import rabbit.gl.helpers.Movement;
+import rabbit.gl.io.NFFStore;
+import rabbit.gl.io.TestNFF;
 import rabbit.gl.scheme.sglCanvas;
 import rabbit.gl.type.sglEClearBit;
 import tests.Test1;
@@ -22,11 +24,11 @@ public class SGLTest
 {
 
 	static int current_context = 0;
-	
+	static NFFStore store = null;
    static int w = 800;
    static int h = 600;
    
-   static int scene = 0;
+   static int scene = 7;
    public static String movement = "";
    static int repaint = 0;
 
@@ -56,11 +58,16 @@ public class SGLTest
 				case 4 : Test2.DrawTestScene2A(800,600)		; return;
 				case 5 : Test2.DrawTestScene2B(800,600)		; return;
 				case 6 : Test2.DrawTestScene2C(800,600)		; return;
+				case 7 : TestNFF.draw(800, 600,store); return;
 				
 			}
 		}
 		
 		{
+			
+			store=TestNFF.load("./cornell-blocks.nff");
+			//store=TestNFF.load("./cornell-spheres.nff");
+			//store=TestNFF.load("./butan.nff");
 			
 			this.setFocusable(true);
 			
@@ -71,46 +78,63 @@ public class SGLTest
 					{
 						case KeyEvent.VK_LEFT   :
 						{
-							if(UP)        { movement = "LEFT-UP";   }
-							else if(DOWN) { movement = "LEFT-DOWN"; }
-							else          { movement = "LEFT"    ;  }
+							if(UP)         { Movement.leftUp(); movement = "LEFT-UP"   ; }
+							else if(DOWN)  { Movement.leftDown();movement = "LEFT-DOWN" ; }
+							else if(RIGHT) { movement = ""          ; }
+							else           { Movement.left(); movement = "LEFT"      ; }
 							LEFT=true;
 						}
 						break;
 						
 						case KeyEvent.VK_RIGHT  :
 						{
-							if(UP)        { movement = "RIGHT-UP";   }
-							else if(DOWN) { movement = "RIGHT-DOWN"; }
-							else          { movement = "RIGHT"    ;  }
+							if(UP)        { Movement.rightUp(); movement = "RIGHT-UP";   }
+							else if(DOWN) { Movement.rightDown(); movement = "RIGHT-DOWN"; }
+							else if(LEFT) { movement = "";           }
+							else          { Movement.right(); movement = "RIGHT"    ;  }
 							RIGHT=true;
 						}
 						break;
 						
 						case KeyEvent.VK_UP     :
 						{
-							if(LEFT)       { movement = "LEFT-UP";  }
-							else if(RIGHT) { movement = "RIGHT-UP"; }
-							else           { movement = "UP"    ;   }
+							if(LEFT)       { Movement.leftUp(); movement = "LEFT-UP";  }
+							else if(RIGHT) { Movement.rightUp(); movement = "RIGHT-UP"; }
+							else if(DOWN)  { movement = "";         }
+							else           { Movement.up(); movement = "UP"    ;   }
 							UP=true;
 						}
 						break;
 						
 						case KeyEvent.VK_DOWN   :
 						{
-							if(LEFT)       { movement = "LEFT-DOWN";  }
-							else if(RIGHT) { movement = "RIGHT-DOWN"; }
-							else           { movement = "DOWN"    ;   }
+							if(LEFT)       { Movement.leftDown(); movement = "LEFT-DOWN";  }
+							else if(RIGHT) { Movement.rightDown(); movement = "RIGHT-DOWN"; }
+							else if(UP)    { movement = "";           }
+							else           { Movement.down(); movement = "DOWN"    ;   }
 							DOWN=true;
 						}
 						break;
 					}
+					repaint();
 				}
 
 				@Override public void keyReleased(KeyEvent e)
 				{
 					movement = "";
-					LEFT=RIGHT=UP=DOWN=false;
+					
+					switch(e.getKeyCode())
+					{
+						case KeyEvent.VK_UP    : UP    = false; break;
+						case KeyEvent.VK_DOWN  : DOWN  = false; break;
+						case KeyEvent.VK_LEFT  : LEFT  = false; break;
+						case KeyEvent.VK_RIGHT : RIGHT = false; break;
+					}
+					if(UP)    movement = "UP";
+					if(DOWN)  movement = "DOWN";
+					if(LEFT)  movement = "LEFT";
+					if(RIGHT) movement = "RIGHT";
+					
 					switch(e.getKeyCode())
 					{
 						case KeyEvent.VK_0	:	scene=0; break;
@@ -120,6 +144,7 @@ public class SGLTest
 						case KeyEvent.VK_4	:	scene=4; break;
 						case KeyEvent.VK_5	:	scene=5; break;
 						case KeyEvent.VK_6	:	scene=6; break;
+						case KeyEvent.VK_7  :   scene=7; break;
 					}
 					repaint();
 				}
@@ -146,9 +171,7 @@ public class SGLTest
 		sglClearColor(0,0,0,1);
 
 		//set viewport
-		 
-
-		
+		 		
 		//branch(10,1.2f);
 		//box();
 		
@@ -156,8 +179,8 @@ public class SGLTest
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		component.setUpdateDelay(30);
-		component.enterMainLoop();
+		component.setUpdateDelay(10);
+		//component.enterMainLoop();
 		//try {
 		
 	//for(int i=0; i<200; i++)

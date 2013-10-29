@@ -15,9 +15,9 @@ public class Color
 	
 	public Color(float r, float g, float b)
 	{
-		this.r = SimpleMath.min(1.0f,r);
-		this.g = SimpleMath.min(1.0f,g);
-		this.b = SimpleMath.min(1.0f,b);
+		this.r = SimpleMath.min( 1.0f , r );
+		this.g = SimpleMath.min( 1.0f , g );
+		this.b = SimpleMath.min( 1.0f , b );
 		this.a = 1.0f;
 	}
 	
@@ -51,5 +51,7 @@ public class Color
 		float rem = 1.0f-alpha;
 		return -16777216 | ((int)((c.r*255 * alpha) + ((color >> 16) & 0xFF) * rem)<<16) | ((int)((c.g*255 * alpha) + ((color >> 8) & 0xFF) * rem)<<8) | (int)((c.b*255 * alpha) + ((color) & 0xFF) * rem);
 	}
+	
+	public float max() { return (r>g) ? (r>b?r:b) : (g>b?r:b); }
 	 
 }

@@ -274,7 +274,8 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 		public void fillPolygon( Chunk context )
 		{
 			int size		= context.vertices.size();
-			if(size==0){
+			if(size==0)
+			{
 				System.err.println("ZERO");
 				return;
 			}
@@ -396,13 +397,13 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 			 }
 		}
 		
-		@Override
-		public void fillTrianglesFan(Chunk context) {
+		@Override public void fillTrianglesFan(Chunk context)
+		{
 			DrawingLibraryFlat.instance.fillTrianglesFan(context);
 		}
 
-		@Override
-		public void fillTrianglesStrip(Chunk context) {
+		@Override public void fillTrianglesStrip(Chunk context)
+		{
 			DrawingLibraryFlat.instance.fillTrianglesStrip(context);
 			
 		}

@@ -8,9 +8,13 @@ import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_VALUE;
 import static rabbit.gl.type.sglEErrorCode.SGL_NO_ERROR;
 import static rabbit.gl.type.sglEErrorCode.SGL_STACK_UNDERFLOW;
 
+import rabbit.gl.math.SimpleMath;
+import rabbit.gl.struct.Camera;
+import rabbit.gl.struct.CameraManager;
 import rabbit.gl.struct.Color;
 import rabbit.gl.struct.ContextManager;
 import rabbit.gl.struct.Matrix;
+import rabbit.gl.struct.Vertex;
 import rabbit.gl.type.sglEAreaMode;
 import rabbit.gl.type.sglEElementType;
 import rabbit.gl.type.sglEEnableFlags;
@@ -94,9 +98,19 @@ public class HUB
 		int number_of_contexts = ContextManager.contexts.size();
 		
 		
-		ContextManager.contexts.push(ReferenceManager.create(new Context(width, height)));//.push_back(c);
+		ContextManager.contexts.push(ReferenceManager.create(new Context(width, height)));
 
 		return number_of_contexts;
+	}
+	
+	public static int sglCreateCamera(Camera camera)
+	{
+		int number_of_cameras = CameraManager.cameras.size();
+		
+		
+		CameraManager.cameras.push(ReferenceManager.create(camera));
+
+		return number_of_cameras;
 	}
 
 	//LongName Function
@@ -110,11 +124,18 @@ public class HUB
 		 }
 
 		 ContextManager.deleteContext(id);
-		 
-		// delete manager.contexts[id]->buffer;
-		 //delete manager.contexts[id];
 	}
 
+	public static void sglDestroyCamera(int id)
+	{
+		 if(CameraManager.cameras.isEmpty() || in_range(id,0,CameraManager.cameras.size()-1))
+		 {
+			 setErrCode(SGL_INVALID_VALUE);
+			 return;
+		 }
+
+		 CameraManager.deleteCamera(id);
+	}
 	//LongName Function
 	static void sglSetContext(int id)
 	{
@@ -124,10 +145,18 @@ public class HUB
 			 return;
 		 }
 		 ContextManager.setContext(id);
-
-		 //ContextManager.current = id;
 	}
 
+	static void sglSetCamera(int id)
+	{
+		 if(!in_range(id,0,CameraManager.cameras.size()-1))
+		 {
+			 setErrCode(SGL_INVALID_VALUE);
+			 return;
+		 }
+		 CameraManager.setCamera(id);
+	}
+	
 	//LongName Function
 	static int sglGetContext()
 	{
@@ -140,6 +169,16 @@ public class HUB
 		return ContextManager.current;
 	}
 
+	static int sglGetCamera()
+	{
+		if(CameraManager.current < 0)
+		{
+			setErrCode(SGL_INVALID_OPERATION);
+			return -1;
+		}
+
+		return CameraManager.current;
+	}
 	
 	//LongName Function
 	public static BufferedImage sglGetColorBufferPointer()
@@ -240,10 +279,9 @@ public class HUB
 	//[x,y,z]
 	public static void sglVertex3f(float x, float y, float z)
 	{
-		//normalize(x, y);
-		//VERTICES.push_back(Vertex (x, y, z));
+		//System.out.println("adding "+x+","+y+","+z);
 		try{ current().setVertex3f(x,y,z); }
-		catch(Throwable t){/*ignore*/}
+		catch(Throwable t){ t.printStackTrace(); }
 	}
 
 
@@ -422,6 +460,47 @@ public class HUB
 		sglFrustum(-w2,w2,-h2,h2,zNear,zFar);
 	}
 
+	/// like gluLookAt
+	public static void sglLookAt(float eyex   , float eyey   , float eyez,
+	                float centerx, float centery, float centerz,
+	                float upx    , float upy    , float upz)
+	{
+	  float    sqrmag;
+
+	  /* Make rotation matrix */
+
+	  /* Z vector */
+	  Vertex z = new Vertex(eyex-centerx,eyey-centery,eyez-centerz);
+		
+	  sqrmag = z.magnitude();
+	  z.div(SimpleMath.sqrt(sqrmag));
+
+	  /* Y vector */
+	  Vertex y = new Vertex(upx,upy,upz);
+
+	  /* X vector = Y cross Z */
+	  Vertex x = Vertex.crossProduct(y,z);
+
+	  sqrmag = x.magnitude();
+	  x.div(SimpleMath.sqrt(sqrmag));
+
+	  /* Recompute Y = Z cross X */
+	  y = Vertex.crossProduct(z, x);
+
+	  sqrmag = y.magnitude();
+	  y.div(SimpleMath.sqrt(sqrmag));
+
+	  float m[] = {
+	    x.x, y.x, z.x, 0, // col 1
+	    x.y, y.y, z.y, 0, // col 2
+	    x.z, y.z, z.z, 0, // col 3
+	    - eyex*x.x - eyey*x.y - eyez*x.z , // col 4
+	    - eyex*y.x - eyey*y.y - eyez*y.z , // col 4
+	    - eyex*z.x - eyey*z.y - eyez*z.z , // col 4
+	    1.0f};                              // col 4
+
+		sglMultMatrix(m);
+	}
 	public static void sglViewport(int x, int y, int width, int height)
 	{ current().setViewport(x, y, width, height); }
 
@@ -431,7 +510,9 @@ public class HUB
 
 	//RGB Color
 	public static void sglColor3f( float r, float g, float b )
-	{ current().storage.color = new Color(r, g, b); }
+	{
+		current().storage.color = new Color(r, g, b);
+	}
 	
 	public static void sglColor3f( float r, float g, float b, float a )
 	{ current().storage.color = new Color(r, g, b, a); }
