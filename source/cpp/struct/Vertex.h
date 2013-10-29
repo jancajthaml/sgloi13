@@ -7,11 +7,12 @@
 
 #ifndef VERTEX_H_
 #define VERTEX_H_
-#include <stdint.h>
 
-//Vertex
+
+//TODO COMMENT !!!!!!!
 struct Vertex
 {
+
 	float x;
 	float y;
 	float z;
@@ -46,6 +47,7 @@ struct Vertex
 		z = Z;
 		w = W;
 	}
+
 };
 
 #endif /* VERTEX_H_ */

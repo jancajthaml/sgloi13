@@ -27,12 +27,15 @@ import static rabbit.gl.type.sglEElementType.SGL_LINE_STRIP;
 import static rabbit.gl.type.sglEElementType.SGL_POINTS;
 import static rabbit.gl.type.sglEMatrixMode.SGL_MODELVIEW;
 import static rabbit.gl.type.sglEMatrixMode.SGL_PROJECTION;
+import rabbit.gl.engine.HUB;
+import rabbit.gl.type.sglEClearBit;
 
 public class Test1
 {
 
 	public static void DrawTestScene1A(int WIDTH, int HEIGHT) 
 	{
+		HUB.sglClear(sglEClearBit.SGL_COLOR_BUFFER_BIT);
 	//  sglDisable(SGL_DEPTH_TEST);
 
 	  // set viewport
@@ -143,6 +146,7 @@ public class Test1
 
 	public static void DrawTestScene1B() 
 	{
+		HUB.sglClear(sglEClearBit.SGL_COLOR_BUFFER_BIT);
 	  //sglDisable(SGL_DEPTH_TEST);
 	  sglAreaMode(SGL_LINE);
 
@@ -266,6 +270,7 @@ public class Test1
 
 	public static void DrawTestScene1C() 
 	{
+		HUB.sglClear(sglEClearBit.SGL_COLOR_BUFFER_BIT);
 		//sglDisable(SGL_DEPTH_TEST);
 
 		// set viewport

@@ -1,11 +1,11 @@
 #ifndef CONTEXTMANAGER_H
 #define CONTEXTMANAGER_H
-#include <exception>
-#include <vector>
-#include <cstdio>
-#include <stdint.h>
-#include "sgl.h"
-#include "Context.h"
+
+#include "./CrossReferenceDispatcher.h"
+#include "./Context.h"
+
+//TODO COMMENT !!!!!!!
+
 /**
  * Context manager
  * \author Jan Brejcha
@@ -22,14 +22,14 @@ struct ContextManager
 
 	inline void setContext(int_fast8_t id)
 	{
-		if ((id >= 0) && (id < int_fast32_t(contexts.size())))
+		if ((id >= 0) && (id < int_fast8_t(contexts.size())))
 			current = id;
 		else throw std::exception();
 	}
 
 	inline void deleteContext(int_fast8_t id)
 	{
-		if (id >= 0 && id < (int_fast32_t)contexts.size())
+		if (id >= 0 && id < int_fast8_t(contexts.size()))
 			contexts.erase(contexts.begin() + id);
 	}
 

@@ -10,12 +10,15 @@ import static rabbit.gl.math.SimpleMath.cos;
 import static rabbit.gl.math.SimpleMath.sin;
 import static rabbit.gl.type.sglEElementType.SGL_LINES;
 import static rabbit.gl.type.sglEElementType.SGL_POINTS;
+import rabbit.gl.engine.HUB;
+import rabbit.gl.type.sglEClearBit;
 
 public class Test0
 {
 
 	public static void DrawTestScene0A(int HEIGHT) 
 	{
+		
 	  float centerX=0;
 	  float centerY=0;
 

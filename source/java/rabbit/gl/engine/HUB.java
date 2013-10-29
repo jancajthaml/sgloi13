@@ -1,6 +1,6 @@
 package rabbit.gl.engine;
 
-import java.awt.image.MemoryImageSource;
+import java.awt.image.BufferedImage;
 
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_ENUM;
 import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_OPERATION;
@@ -8,11 +8,9 @@ import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_VALUE;
 import static rabbit.gl.type.sglEErrorCode.SGL_NO_ERROR;
 import static rabbit.gl.type.sglEErrorCode.SGL_STACK_UNDERFLOW;
 
-
 import rabbit.gl.struct.Color;
 import rabbit.gl.struct.ContextManager;
 import rabbit.gl.struct.Matrix;
-import rabbit.gl.struct.Vertex;
 import rabbit.gl.type.sglEAreaMode;
 import rabbit.gl.type.sglEElementType;
 import rabbit.gl.type.sglEEnableFlags;
@@ -20,7 +18,6 @@ import rabbit.gl.type.sglEErrorCode;
 import rabbit.gl.type.sglEMatrixMode;
 import rabbit.gl.type.sglEClearBit;
 import rabbit.gl.util.ReferenceManager;
-
 
 public class HUB
 {
@@ -145,8 +142,11 @@ public class HUB
 
 	
 	//LongName Function
-	public static MemoryImageSource sglGetColorBufferPointer()
-	{ return Context.buffer; }
+	public static BufferedImage sglGetColorBufferPointer()
+	{
+		return Chunk.buffer;
+		//return Context.buffer;
+	}
 
 	//---------------------------------------------------------------------------
 	// Drawing functions
@@ -160,9 +160,9 @@ public class HUB
 		int rgb = new Color(r,g,b).getRGB();
 		
 
-		for(int i=0; i<Context.clearbuff.length; i++)
+		for(int i=0; i<Chunk.clearbuff.length; i++)
 		{
-			Context.clearbuff[i]=rgb;
+			Chunk.clearbuff[i]=rgb;
 		}
 			
 		//System.arraycopy(current, 0, arg2, arg3, arg4)
@@ -181,6 +181,7 @@ public class HUB
 			break;
 			
 			case SGL_DEPTH_BUFFER_BIT :
+				current().clearDepthBuffer();
 			break;
 			
 			default :
@@ -200,6 +201,7 @@ public class HUB
 			case SGL_LINES				:
 			case SGL_LINE_STRIP			:
 			case SGL_LINE_LOOP			:
+			case SGL_LINE_BEZIER		:
 			case SGL_TRIANGLES			:
 			case SGL_POLYGON			:
 			case SGL_AREA_LIGHT			:
@@ -219,7 +221,9 @@ public class HUB
 
 	//LongName Function
 	public static void sglEnd()
-	{ current().draw(); }
+	{
+		current().rasterize();
+	}
 
 	//Vertex with 3 float coords in homogenous coordinates
 	//[x,y,z,w]
@@ -228,14 +232,18 @@ public class HUB
 	{
 		//normalize(x, y);
 		//VERTICES.push_back(Vertex (x, y, z, w));
+		try{ current().setVertex4f(x,y,z,w); }
+		catch(Throwable t){/*ignore*/}
 	}
 
 	//Vertex with 3 float coords
 	//[x,y,z]
-	static void sglVertex3f(float x, float y, float z)
+	public static void sglVertex3f(float x, float y, float z)
 	{
 		//normalize(x, y);
 		//VERTICES.push_back(Vertex (x, y, z));
+		try{ current().setVertex3f(x,y,z); }
+		catch(Throwable t){/*ignore*/}
 	}
 
 
@@ -262,7 +270,7 @@ public class HUB
 			setErrCode(SGL_INVALID_VALUE);
 			return;
 		}
-		
+
 		current().drawCricle(x,y,z,r);
 	}
 
@@ -288,19 +296,6 @@ public class HUB
 		}
 		
 		current().drawEllipse(x, y, z, a, b);
-	}
-
-	//Line
-	//Breceanuv algoritmus
-	//DDA algoritmus (jednoduzsi)
-	//@see https://www.google.cz/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDwQFjAB&url=http%3A%2F%2Fwww.cs.toronto.edu%2F~smalik%2F418%2Ftutorial2_bresenham.pdf&ei=m9ZJUselBqTm7AbmpICgAg&usg=AFQjCNF6Bfg6OxtgTUATu1aTlDUmTy0aYw&bvm=bv.53217764,d.ZGU
-	static void sglDrawLine(Vertex start, Vertex end)
-	{ current().drawLine2D(start, end); }
-
-	//Line
-	static void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
-	{
-
 	}
 
 
@@ -404,57 +399,55 @@ public class HUB
 		sglTranslate(-centerx, -centery, 0.0f);
 	}
 
-	// ? rotates what ? Context or scene ?
-	// ? around what Y axis? Base or context?
-	static void sglRotateY(float angle)
-	{ }
+	public static void sglRotateY(float angle)
+	{ current().multiplyCurrentMatrix(Matrix.rotateY(angle)); }
+	
+	public static void sglRotateX(float angle)
+	{ current().multiplyCurrentMatrix(Matrix.rotateX(angle)); }
 
-	// ?
+	public static void sglRotateZ(float angle)
+	{ current().multiplyCurrentMatrix(Matrix.rotateZ(angle)); }
+	
 	public static void sglOrtho(float left, float right, float bottom, float top, float near, float far)
-	{
+	{ current().multiplyCurrentMatrix(Matrix.ortho(left, right, bottom, top, near, far)); }
 
-		Matrix ortho = new Matrix(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
-		current().multiplyCurrentMatrix(ortho);
+	public static void sglFrustum(float left, float right, float bottom, float top, float near, float far)
+	{ current().multiplyCurrentMatrix(Matrix.frustum(left, right, bottom, top, near, far)); }
+	
+	public static void sglPerspective( float fovy, float aspect, float zNear, float zFar )
+	{
+		fovy *= 0.017453292519943295;
+		float h2 = (float)Math.tan(fovy/2)*zNear;
+		float w2 = h2*aspect;
+		sglFrustum(-w2,w2,-h2,h2,zNear,zFar);
 	}
 
-	// ?
-	static void sglFrustum(float left, float right, float bottom, float top, float near, float far)
-	{
-		if(current().invalidTypeStack())
-		{
-			setErrCode(SGL_INVALID_OPERATION);
-			return;
-		}
-
-		Matrix frustum = new Matrix((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
-		current().multiplyCurrentMatrix(frustum);
-	}
-
-	//Sets scene viewport
 	public static void sglViewport(int x, int y, int width, int height)
-	{
-		
-		
-		current().setViewport(width, height, x, y);
-	}
+	{ current().setViewport(x, y, width, height); }
 
 	//---------------------------------------------------------------------------
 	// Attribute functions
 	//---------------------------------------------------------------------------
 
 	//RGB Color
-	public static void sglColor3f(float r, float g, float b)
-	{ current().color = new Color(r, g, b); }
+	public static void sglColor3f( float r, float g, float b )
+	{ current().storage.color = new Color(r, g, b); }
+	
+	public static void sglColor3f( float r, float g, float b, float a )
+	{ current().storage.color = new Color(r, g, b, a); }
 
-	// ?
 	public static void sglAreaMode(sglEAreaMode mode)
 	{
 		switch(mode)
 		{
-			case SGL_FILL : case SGL_LINE : case SGL_POINT : break;
-			default :
+			case SGL_POINT	: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
+			case SGL_LINE	: //Draw only borders of graphics elements (lines)
+			case SGL_FILL	: //Draw filled elements, default.
+				current().drawType = mode;
+			break;
+			default:
 				setErrCode(SGL_INVALID_ENUM);
-				return;
+			return;
 		}
 	}
 
@@ -467,19 +460,27 @@ public class HUB
 	    	return;
 	    }
 
-	    current().size = (int)size;
+	    current().storage.size = (int)size;
 	}
 
 	//Enable given flag
-	static void sglEnable(sglEEnableFlags cap)
+	public static void sglEnable(sglEEnableFlags flag)
 	{
-
+		switch( flag )
+		{
+			case SGL_DEPTH_TEST : current().enableDepthTest(); break;//depth test is off by default
+			default				: setErrCode(SGL_INVALID_ENUM); return;
+		}
 	}
 
 	//Disable given flag
-	static void sglDisable(sglEEnableFlags cap)
+	public static void sglDisable(sglEEnableFlags flag)
 	{
-
+		switch( flag )
+		{
+			case SGL_DEPTH_TEST : current().disableDepthTest(); break;//depth test is off by default
+			default				: setErrCode(SGL_INVALID_ENUM); return;
+		}
 	}
 
 	//---------------------------------------------------------------------------

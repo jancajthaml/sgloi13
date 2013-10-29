@@ -7,12 +7,10 @@
 
 #ifndef VERTEXSTACK_H_
 #define VERTEXSTACK_H_
-#include "Vertex.h"
-#include <stdlib.h>
-#include <cstdio>
-#include <stdint.h>
 
-#define BASIC_STACK_SIZE 500
+#include "./Vertex.h"
+
+//TODO COMMENT !!!!!!!
 class VertexStack
 {
 	private:
@@ -24,9 +22,9 @@ class VertexStack
 
 	VertexStack()
 	{
-		currentSize	= BASIC_STACK_SIZE;
-		index		= 0;
-		stack		= (Vertex*)(malloc(sizeof(Vertex) * currentSize));
+		currentSize  =  BASIC_STACK_SIZE;
+		index        =  0;
+		stack        =  (Vertex*)(malloc(sizeof(Vertex) * currentSize));
 	}
 
 	~VertexStack()

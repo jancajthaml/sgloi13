@@ -53,15 +53,9 @@
  *
  */
 
-#include "Context.h"
-#include "ContextManager.h"
-#include <vector>
-#include <stdint.h>
-
-Matrix MatrixCache::R = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::S = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::I = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-Matrix MatrixCache::T = Matrix(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+#include "core/CrossReferenceDispatcher.h"
+#include "core/Context.h"
+#include "core/ContextManager.h"
 
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
@@ -192,7 +186,7 @@ int sglGetContext(void)
 //LongName Function
 float* sglGetColorBufferPointer(void)
 {
-	return (float*)current()->buffer;
+	return (float*)current()->storage.buffer;
     //return (float *) current()->buffer;
 }
 
@@ -213,11 +207,23 @@ void sglClear(unsigned what)
 		return;
 	}
 
-	switch(what)
+	if( what==SGL_COLOR_BUFFER_BIT )
 	{
-		case SGL_COLOR_BUFFER_BIT :  current()->clearColorBuffer();  break;
-		case SGL_DEPTH_BUFFER_BIT :  current()->clearDepthBuffer();  break;
-		default                   :  setErrCode(SGL_INVALID_VALUE);  return;
+		current()->clearColorBuffer();
+	}
+	else if (what==SGL_DEPTH_BUFFER_BIT)
+	{
+		current()->clearDepthBuffer();
+	}
+	else if (what==(SGL_COLOR_BUFFER_BIT | SGL_DEPTH_BUFFER_BIT))
+	{
+		current()->clearColorBuffer();
+		current()->clearDepthBuffer();
+	}
+	else
+	{
+		setErrCode(SGL_INVALID_VALUE);
+		return;
 	}
 
 	setErrCode(SGL_NO_ERROR);
@@ -258,7 +264,7 @@ void sglEnd(void)
 	 }
 
 	 current()->end();
-	 current()->draw();
+	 current()->rasterize();
 }
 
 //Vertex with 3 float coords in homogenous coordinates
@@ -266,16 +272,16 @@ void sglEnd(void)
 //
 void sglVertex4f(float x, float y, float z, float w)
 {
-	//normalize(x, y);
-	//VERTICES.push_back(Vertex (x, y, z, w));
+	current()->setVertex4f(x, y, z, w);
+	//printf("before transform -> vertex4: x=%f, y=%f, z=%f, w=%f\n",x,y,z,w);
 }
 
 //Vertex with 3 float coords
 //[x,y,z]
 void sglVertex3f(float x, float y, float z)
 {
-	//normalize(x, y);
-	//VERTICES.push_back(Vertex (x, y, z));
+	current()->setVertex3f(x, y, z);
+	//printf("before transform -> vertex3: x=%f, y=%f, z=%f\n",x,y,z);
 }
 
 //Vertex with 2 float coords
@@ -283,8 +289,7 @@ void sglVertex3f(float x, float y, float z)
 void sglVertex2f(float x, float y)
 {
 	current()->setVertex2f(x, y);
-
-	//current()->setVertex2f(x,y);
+	//printf("before transform -> vertex2: x=%f, y=%f\n",x,y);
 }
 
 //2D Circle
@@ -303,15 +308,13 @@ void sglCircle(float x, float y, float z, float r)
 		return;
 	}
 
-		//sglEErrorCode err;
-		//SGLContext c = ctx_mgr.getContext(&err);
-	//Context c = ;
-		//setErrCode(err);
-	//if (!c.beginEndCheck())
+	//if (current()->BeginBeforeEnd())
+	//{
 		//setErrCode(SGL_INVALID_OPERATION);
-	current()->drawCricle(x, y, z, r);
+		//return;
+	//}
 
-//	current()->drawCricle(x,y,z,r);
+	current()->drawCricle(x, y, z, r);
 }
 
 //2D Ellipse
@@ -335,28 +338,14 @@ void sglEllipse(float x, float y, float z, float a, float b)
 		return;
 	}
 
-
-
-	//SGLContext c = ctx_mgr.getContext(&err);
-	//setErrCode(err);
-
-	//if (!c.beginEndCheck())
-	//setErrCode(SGL_INVALID_OPERATION);
-
-	//setErrCode(err);
-	//if (!c.beginEndCheck())
+	//if (current()->BeginBeforeEnd())
+	//{
 		//setErrCode(SGL_INVALID_OPERATION);
+		//return;
+	//}
+
 	current()->drawEllipse(x, y, z, a, b);
-
-	//current()->drawEllipse(x, y, z, a, b);
 }
-
-//Line
-void sglDrawPolygon(float x1, float y1, float z, float x2, float y2)
-{
-
-}
-
 
 //2D Arc
 //
@@ -374,13 +363,8 @@ void sglArc(float x, float y, float z, float radius, float from, float to)
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
-	//sglEErrorCode err;
-	//ctx_mgr.getContext(&err).drawArc(x, y, z, radius, from, to);
-	//setErrCode(err);
 
 	current()->drawArc2D(x, y, z, radius, from, to);
-
-//	current()->drawArc2D(x,y,z,radius,from,to);
 }
 
 //---------------------------------------------------------------------------
@@ -402,8 +386,6 @@ void sglMatrixMode( sglEMatrixMode mode )
 		case SGL_PROJECTION	:
 		{
 			current()->setMatrixMode(mode);
-
-			//current()->setMatrixMode(mode);
 		}
 		break;
 
@@ -421,8 +403,6 @@ void sglPushMatrix(void)
 	}
 
 	current()->pushMatrix();
-
-	//current()->pushMatrix();
 }
 
 //Pop Matrix from transformation Stack
@@ -440,8 +420,6 @@ void sglPopMatrix(void)
 	}
 
 	current()->popMatrix();
-
-//	current()->popMatrix();
 }
 
 void sglLoadIdentity(void)
@@ -451,9 +429,7 @@ void sglLoadIdentity(void)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	//ERROR HERE
 
-	//current().setCurrentMatrix(Matrix::identity());
 	current()->setCurrentMatrix(MatrixCache::identity());
 }
 
@@ -464,84 +440,105 @@ void sglLoadMatrix(const float* matrix)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	//ERROR HERE
-	current()->setCurrentMatrix(Matrix(matrix));
 
-	//current()->setCurrentMatrix(Matrix(matrix));
+	current()->setCurrentMatrix(Matrix(matrix));
 }
 
 //Multiply two matrices
 void sglMultMatrix(const float* matrix)
 {
-
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
 
 	Matrix mat = Matrix(matrix);
 	current()->multiplyCurrentMatrix(mat);
-	//current()->multiplyCurrentMatrix(mat);
 }
 
 //Translate coordinates
 void sglTranslate(float x, float y, float z)
 {
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
 	Matrix translate = MatrixCache::translate(x,y,z);
 	current()->multiplyCurrentMatrix(translate);
-
-	//current()->multiplyCurrentMatrix(translate);
 }
 
 //Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
 	Matrix scale = MatrixCache::scale(scalex, scaley, scalez);
 	current()->multiplyCurrentMatrix(scale);
 
-	//current()->multiplyCurrentMatrix(scale);
 }
 
 //Rotate **** around the centerx,centery axis with given angle
 void sglRotate2D(float angle, float centerx, float centery)
 {
-	//Matrix rotate = Matrix::rotate2D(angle, centerx, centery);
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
 
 	sglTranslate(centerx, centery, 0.0f);
 	Matrix rotate = MatrixCache::rotate2D(angle, centerx, centery);
 	current()->multiplyCurrentMatrix(rotate);
 	sglTranslate(-centerx, -centery, 0.0f);
-
-	//current()->multiplyCurrentMatrix(rotate);
 }
 
 // ? rotates what ? Context or scene ?
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
+	Matrix rotate = MatrixCache::rotateY(angle);
+	current()->multiplyCurrentMatrix(rotate);
 }
 
 // ?
 void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
 
-	Matrix ortho(2/(right - left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(far-near), 0, -((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -((far+near)/(far-near)), 1);
-	//current()->multiplyCurrentMatrix(ortho);
+	Matrix ortho = MatrixCache::ortho(left, right, bottom, top, near, far);
 	current()->multiplyCurrentMatrix(ortho);
 }
 
 // ?
 void sglFrustum(float left, float right, float bottom, float top, float near, float far)
 {
-//	if(current()->invalidTypeStack())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
+	if( far < 0 || near < 0 ) return;
 
-	//Matrix frustum((2*near)/(right-left), 0, 0, 0, 0, (2*near)/(top-bottom), 0, 0, (right+left)/(right-left), (top+bottom)/(top-bottom), -(far+near)/(far-near), -1.0f, 0, 0, -(2.0f*far*near)/(far-near), 1);
-	//current()->multiplyCurrentMatrix(frustum);
+	if(current()->BeginBeforeEnd())
+	{
+	    setErrCode(SGL_INVALID_OPERATION);
+	    return;
+	}
+
+	Matrix frustum = MatrixCache::frustum(left, right, bottom, top, near, far);
+	current()->multiplyCurrentMatrix(frustum);
 }
 
 //Sets scene viewport
@@ -560,8 +557,6 @@ void sglViewport(int x, int y, int width, int height)
 	}
 
 	current()->setViewport(x, y, width, height);
-
-	//current()->setViewport(width, height, x, y);
 }
 
 //---------------------------------------------------------------------------
@@ -571,9 +566,7 @@ void sglViewport(int x, int y, int width, int height)
 //RGB Color
 void sglColor3f(float r, float g, float b)
 {
-	current()->color = Color(r, g, b);
-
-	//current()->color = Color(r, g, b);
+	current()->storage.color = Color(r, g, b);
 }
 
 // ?
@@ -587,9 +580,10 @@ void sglAreaMode(sglEAreaMode mode)
 
 	switch(mode)
 	{
-		case SGL_POINT: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
-		case SGL_LINE: //Draw only borders of graphics elements (lines)
-		case SGL_FILL : //Draw filled elements, default.
+		case SGL_POINT	: //Draw only vertices (or center for sglCircle, sglEllipse, sglArc)
+		case SGL_LINE	: //Draw only borders of graphics elements (lines)
+		case SGL_FILL	: //Draw filled elements, default.
+			current()->drawType = mode;
 		break;
 		default:
 			setErrCode(SGL_INVALID_ENUM);
@@ -611,7 +605,7 @@ void sglPointSize(float size)
     	return;
     }
 
-    current()->size = size;
+    current()->storage.size = size;
 }
 
 //Enable given flag
@@ -624,10 +618,8 @@ void sglEnable(sglEEnableFlags flag)
 	}
 	switch(flag)
 	{
-		case SGL_DEPTH_TEST : break;//depth test is off by default
-
-		setErrCode(SGL_INVALID_ENUM);
-		return;
+		case SGL_DEPTH_TEST : current()->enableDepthTest(); break;
+		default				: setErrCode(SGL_INVALID_ENUM); return;
 	}
 }
 
@@ -641,10 +633,8 @@ void sglDisable(sglEEnableFlags flag)
 	}
 	switch(flag)
 	{
-		case SGL_DEPTH_TEST : break;//depth test is off by default
-
-		setErrCode(SGL_INVALID_ENUM);
-		return;
+		case SGL_DEPTH_TEST : current()->disableDepthTest(); break;
+		default				: setErrCode(SGL_INVALID_ENUM) ; return;
 	}
 }
 

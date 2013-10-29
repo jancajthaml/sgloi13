@@ -1,5 +1,7 @@
 package rabbit.gl.struct;
 
+import rabbit.gl.math.SimpleMath;
+
 public class Color
 {
 
@@ -13,9 +15,9 @@ public class Color
 	
 	public Color(float r, float g, float b)
 	{
-		this.r = r;
-		this.g = g;
-		this.b = b;
+		this.r = SimpleMath.min(1.0f,r);
+		this.g = SimpleMath.min(1.0f,g);
+		this.b = SimpleMath.min(1.0f,b);
 		this.a = 1.0f;
 	}
 	
@@ -42,6 +44,12 @@ public class Color
 	}
 
 	public int getRGB()
-	{ return ((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | ((int)(b * 255)); }
+	{ return ((int)(a * 255.0f) << 24) | ((int)(r * 255.0f) << 16) | ((int)(g * 255.0f) << 8) | ((int)(b * 255.0f)); }
+
+	public static int mix(Color c, int color, float alpha)
+	{
+		float rem = 1.0f-alpha;
+		return -16777216 | ((int)((c.r*255 * alpha) + ((color >> 16) & 0xFF) * rem)<<16) | ((int)((c.g*255 * alpha) + ((color >> 8) & 0xFF) * rem)<<8) | (int)((c.b*255 * alpha) + ((color) & 0xFF) * rem);
+	}
 	 
 }

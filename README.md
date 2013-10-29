@@ -10,3 +10,31 @@ The Java solution is entirely independent and both buffer and main loop are part
 
 
 No future ports intended.
+
+
+***
+
+Running the shell script
+========================
+
+run:
+----
+
+build.sh -- *run testapp*
+
+build.sh clean -- *clean & run testapp*
+
+build.sh debug -- *run testapp in debug mode*
+
+build.sh clean debug -- *clean & run testapp in debug mode*
+
+using debug mode:
+-----------------
+
+**run** -- to run debug
+
+**quit** -- to kill debug
+
+**list** -- to print last executed code where exception happened
+
+***
