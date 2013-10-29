@@ -1,1 +1,3 @@
-zip publish.zip ../source/cpp/Color.h ../source/cpp/ContextManager.h ../source/cpp/Matrix.h ../source/cpp/sgl.cpp ../source/cpp/sgl.h ../source/cpp/Context.h ../source/cpp/Vertex.h ../source/cpp/Viewport.h ../source/cpp/VertexStack.h ../source/cpp/MatrixCache.h
+cd ../source/cpp
+zip publish.zip Color.h ContextManager.h Matrix.h sgl.cpp sgl.h Context.h Vertex.h Viewport.h VertexStack.h MatrixCache.h
+mv publish.zip ../../www/publish.zip
