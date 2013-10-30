@@ -1,12 +1,11 @@
 package rabbit.gl.struct;
 
-import java.lang.ref.SoftReference;
 import java.util.LinkedList;
 
 public class CameraManager
 {
 
-	public static LinkedList<SoftReference<Camera>> cameras = new LinkedList<SoftReference<Camera>>();
+	public static LinkedList<Camera> cameras = new LinkedList<Camera>();
 	public static int current;
 
 	private CameraManager(){}

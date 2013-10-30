@@ -9,19 +9,21 @@ import static rabbit.gl.type.sglEErrorCode.SGL_NO_ERROR;
 import static rabbit.gl.type.sglEErrorCode.SGL_STACK_UNDERFLOW;
 
 import rabbit.gl.math.SimpleMath;
+import rabbit.gl.primitive.Sphere;
 import rabbit.gl.struct.Camera;
 import rabbit.gl.struct.CameraManager;
 import rabbit.gl.struct.Color;
 import rabbit.gl.struct.ContextManager;
 import rabbit.gl.struct.Matrix;
+import rabbit.gl.struct.MatrixStack;
 import rabbit.gl.struct.Vertex;
+import rabbit.gl.struct.VertexStack;
 import rabbit.gl.type.sglEAreaMode;
 import rabbit.gl.type.sglEElementType;
 import rabbit.gl.type.sglEEnableFlags;
 import rabbit.gl.type.sglEErrorCode;
 import rabbit.gl.type.sglEMatrixMode;
 import rabbit.gl.type.sglEClearBit;
-import rabbit.gl.util.ReferenceManager;
 
 public class HUB
 {
@@ -95,20 +97,15 @@ public class HUB
 	//LongName Function
 	public static int sglCreateContext(int width, int height)
 	{
-		int number_of_contexts = ContextManager.contexts.size();
 		
-		
-		ContextManager.contexts.push(ReferenceManager.create(new Context(width, height)));
-
-		return number_of_contexts;
+		return ContextManager.create(width,height);
 	}
 	
 	public static int sglCreateCamera(Camera camera)
 	{
 		int number_of_cameras = CameraManager.cameras.size();
-		
-		
-		CameraManager.cameras.push(ReferenceManager.create(camera));
+				
+		CameraManager.cameras.push(camera);
 
 		return number_of_cameras;
 	}
@@ -415,11 +412,11 @@ public class HUB
 	{ current().setCurrentMatrix(Matrix.identity()); }
 
 	static void sglLoadMatrix(float[] matrix)
-	{ current().setCurrentMatrix(new Matrix(matrix)); }
+	{ current().setCurrentMatrix(MatrixStack.create(matrix)); }
 
 	//Multiply two matrices
 	static void sglMultMatrix(float[] matrix)
-	{ current().multiplyCurrentMatrix(new Matrix(matrix)); }
+	{ current().multiplyCurrentMatrix(MatrixStack.create(matrix)); }
 
 	//Translate coordinates
 	public static void sglTranslate(float x, float y, float z)
@@ -575,26 +572,23 @@ public class HUB
 	}
 
 	// ? End of what scene ? whole scene or sub scene ?
-	static void sglEndScene()
+	public static void sglEndScene()
 	{
 
 	}
 
-	//3D Sphere
-	//
-	// x	- center.x
-	// y	- center.y
-	// z	- center.z
-	// r	- radius
-	static void sglSphere(float x, float y, float z, float r)
+	public static void sglSphere(float x, float y, float z, float r)
+	{ sglSphere(new Sphere(VertexStack.create(x, y, z, 1.0f), r)); }
+	
+	public static void sglSphere(Sphere s)
 	{
-
+		//TODO work with primitive
 	}
 
 	//Material ******
-	static void sglMaterial(float r, float g, float b, float kd, float ks, float shine, float T, float ior)
+	public static void sglMaterial(float r, float g, float b, float kd, float ks, float shine, float T, float ior)
 	{
-
+		  sglColor3f( r*kd , g*kd , b*kd );
 	}
 
 	//Point Light
@@ -639,6 +633,6 @@ public class HUB
 	{ return ((int)(number-low) <= (high-low)); }
 
 	static Context current()
-	{ return ContextManager.contexts.get(ContextManager.current).get(); }
+	{ return ContextManager.working; }
 
 }

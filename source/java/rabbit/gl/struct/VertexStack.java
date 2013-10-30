@@ -1,84 +1,72 @@
 package rabbit.gl.struct;
 
-import java.lang.ref.SoftReference;
-import java.util.ConcurrentModificationException;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.Iterator;
+import rabbit.struct.common.GenericStack;
 
-import rabbit.gl.util.ReferenceManager;
-
-public class VertexStack implements Iterable<Vertex>, Iterator<Vertex>
+public class VertexStack implements Iterable<Vertex>
 {
-
-	private static int BASIC_STACK_SIZE  =  100;
-
-	private SoftReference<Vertex>[]	stack;
-	int					currentSize;	//16bit = 65536
-	int					index;			//16bit = 65536
-	private int pointer = 0;
 	
-	@SuppressWarnings("unchecked")
+	private GenericStack<Vertex>	stack		= null					;
+	private static HashSet<Vertex>	using		= new HashSet<Vertex>()	;
+	private static HashSet<Vertex>	available	= new HashSet<Vertex>()	;
+
 	public VertexStack()
-	{
-		currentSize	= BASIC_STACK_SIZE;
-		index		= 0;
-		stack		= new SoftReference[currentSize];
-	}
+	{ stack = new GenericStack<Vertex>(); }
 
-	
     public void push( Vertex id )
-    {
-    	if (index == currentSize)	realloc();
-		stack[index++] = ReferenceManager.get(id);
-    }
+    { stack.push(get(id)); }
 
     public Vertex pop()
     {
-    	Vertex v =  stack[index].get();
-    	stack[index--].clear();
+    	Vertex v =  stack.pop();
+    	release(v);
     	return v;
     }
 
-    @SuppressWarnings("unchecked")
-	void realloc()
-	{
-    	int old_size                   =  currentSize; 
-		currentSize                  <<=  1;
-		SoftReference<Vertex>[] tmp    =  this.stack;
-		this.stack		               =  new SoftReference[currentSize];
-
-		System.arraycopy(tmp, 0, this.stack, 0, old_size);
-	}
-
 	public Vertex get(int i)
-	{
-		try{ return stack[i].get(); }
-		catch(java.lang.ArrayIndexOutOfBoundsException e){return null;}
-	}
+	{ return stack.peek(i); }
 
 	public int size()
-	{
-		//System.out.println(index+" "+this.stack.length);
-		return index;
-	}
-
-	@Override public boolean hasNext()
-	{ return pointer<index; }
-
-	@Override public Vertex next()
-	{ return stack[pointer++].get(); }
-
-	@Override public void remove()
-	{ throw new ConcurrentModificationException(); }
+	{ return stack.size(); }
 
 	@Override public Iterator<Vertex> iterator()
-	{
-		pointer=0;
-		return this;
-	}
+	{ return stack.iterator(); }
 
 	public void clear()
+	{ stack.clear(); }
+
+	public static Vertex create(float x, float y, float z, float w)
 	{
-		index=0;	
+		Vertex v					= new Vertex(x,y,z,w);
+		WeakReference<Vertex> ref	= new WeakReference<Vertex>(get(v));
+		v							= null;
+		
+		return ref.get();		
+	}
+	
+	private synchronized static Vertex get(Vertex f)
+	{
+		if( available.size() > 0 )
+		{
+			for( Vertex t : available )
+			{
+				available . remove ( t ) ;
+				using     . add    ( t ) ;
+				return t;
+			}
+		}
+		
+		using.add(f);
+		
+		return f;
+	}
+
+	private synchronized static void release(Vertex v)
+	{
+		using     . remove ( v ) ;
+		available . add    ( v ) ;
 	}
 
 }

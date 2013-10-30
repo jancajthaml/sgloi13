@@ -30,10 +30,10 @@ public class sglCanvas extends JPanel
 	{}
 	
 	public final void revalidate()
-	{
-	}
+	{}
 	
-	public final void validate(){ }
+	public final void validate()
+	{}
 	
 	public final boolean isValid()
 	{ return true; }
@@ -48,7 +48,7 @@ public class sglCanvas extends JPanel
 			long t = System.nanoTime();
 			
 			paint();
-			
+			g.setClip(getBounds());
 			g.drawImage(HUB.sglGetColorBufferPointer(), 0,0,null);
 			
 			time = (float) ((System.nanoTime()-t)/1000000000.0);

@@ -4,6 +4,7 @@ import rabbit.gl.math.SimpleMath;
 
 public class Matrix implements Cloneable
 {
+
 	static Matrix identity	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix scale		= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 	static Matrix translate	= new Matrix( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
@@ -16,13 +17,13 @@ public class Matrix implements Cloneable
 	
 	public float[] matrix	= new float[16];
 	
-	public Matrix()
+	Matrix()
 	{}
 	
-	public Matrix(float[] f)
+	Matrix(float[] f)
 	{ System.arraycopy(f, 0, matrix, 0, 16); }
 	
-	public Matrix(float m11, float m21, float m31, float m41, float m12, float m22, float m32, float m42, float m13, float m23, float m33, float m43,  float m14, float m24, float m34, float m44)
+	Matrix(float m11, float m21, float m31, float m41, float m12, float m22, float m32, float m42, float m13, float m23, float m33, float m43,  float m14, float m24, float m34, float m44)
 	{
 		this.matrix[0] = m11;
 		this.matrix[1] = m21;
@@ -168,6 +169,15 @@ public class Matrix implements Cloneable
 
 	public Vertex multiply(Vertex other)
 	{
+		return VertexStack.create
+		(
+			other.x * matrix[0] + other.y * matrix[4] + other.z * matrix[8] + other.w * matrix[12],
+			other.x * matrix[1] + other.y * matrix[5] + other.z * matrix[9] + other.w * matrix[13],
+			other.x * matrix[2] + other.y * matrix[6] + other.z * matrix[10] + other.w * matrix[14],
+			other.x * matrix[3] + other.y * matrix[7] + other.z * matrix[11] + other.w * matrix[15]
+		);
+		//FIXME recycle/pool this instance
+		/*
 		return new Vertex
 		(
 			other.x * matrix[0] + other.y * matrix[4] + other.z * matrix[8] + other.w * matrix[12],
@@ -175,6 +185,7 @@ public class Matrix implements Cloneable
 			other.x * matrix[2] + other.y * matrix[6] + other.z * matrix[10] + other.w * matrix[14],
 			other.x * matrix[3] + other.y * matrix[7] + other.z * matrix[11] + other.w * matrix[15]
 		);
+		*/
 	}
 
 	public Matrix clone()

@@ -1,6 +1,8 @@
 package main;
 
 import java.awt.GridLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JFrame;
@@ -8,6 +10,7 @@ import javax.swing.SwingUtilities;
 
 import rabbit.gl.helpers.Movement;
 import rabbit.gl.io.NFFStore;
+import rabbit.gl.io.ObjectLoader;
 import rabbit.gl.io.TestNFF;
 import rabbit.gl.scheme.sglCanvas;
 import rabbit.gl.type.sglEClearBit;
@@ -17,30 +20,42 @@ import tests.TestAnimation;
 import static rabbit.gl.engine.HUB.sglClear;
 import static rabbit.gl.engine.HUB.sglClearColor;
 import static rabbit.gl.engine.HUB.sglCreateContext;
-import static rabbit.gl.engine.HUB.sglViewport;
 import static rabbit.gl.type.sglEClearBit.SGL_COLOR_BUFFER_BIT;
 
 public class SGLTest
 {
-
 	static int current_context = 0;
 	static NFFStore store = null;
-   static int w = 800;
-   static int h = 600;
+	static int w = 800;
+	static int h = 600;
    
-   static int scene = 7;
-   public static String movement = "";
-   static int repaint = 0;
+	static int scene = 7;
+	public static String movement = "";
+	static int repaint = 0;
 
-   static boolean LEFT  = false;
-   static boolean RIGHT = false;
-   static boolean UP    = false;
-   static boolean DOWN  = false;
+	static boolean LEFT  = false;
+	static boolean RIGHT = false;
+	static boolean UP    = false;
+	static boolean DOWN  = false;
 
 	@SuppressWarnings("serial")
 	static sglCanvas component = new sglCanvas()
 	{
-	
+		{
+			this.addComponentListener
+			(
+				new ComponentAdapter()
+				{
+					@Override public void componentResized(ComponentEvent e)
+					{
+						w=getWidth();
+						h=getHeight();
+						current_context=sglCreateContext(w, h);
+					}
+				}
+			);
+		}
+
 		public void paint()
 		{
 			sglClear(SGL_COLOR_BUFFER_BIT);
@@ -48,26 +63,25 @@ public class SGLTest
 			
 			switch(scene)
 			{
-				case 0 : TestAnimation.DrawAnimation(800,600); return;
-				case 1 : Test1.DrawTestScene1A(800, 600)	; return;
-				//case 1 : Test0.DrawTestScene0B(s)			; return true;
-				//case 2 : Test0.DrawTestScene0A(s)			; return true;
+				case 0 : TestAnimation.DrawAnimation(w,h)	; return;
+				
+				case 1 : Test1.DrawTestScene1A(w, h)		; return;
 				case 2 : Test1.DrawTestScene1B()			; return;
 				case 3 : Test1.DrawTestScene1C()			; return;
 				
-				case 4 : Test2.DrawTestScene2A(800,600)		; return;
-				case 5 : Test2.DrawTestScene2B(800,600)		; return;
-				case 6 : Test2.DrawTestScene2C(800,600)		; return;
-				case 7 : TestNFF.draw(800, 600,store); return;
+				case 4 : Test2.DrawTestScene2A(w, h)		; return;
+				case 5 : Test2.DrawTestScene2B(w, h)		; return;
+				case 6 : Test2.DrawTestScene2C(w, h)		; return;
+				case 7 : TestNFF.draw(w, h, store)			; return;
 				
 			}
 		}
 		
 		{
 			
-			store=TestNFF.load("./cornell-blocks.nff");
-			//store=TestNFF.load("./cornell-spheres.nff");
-			//store=TestNFF.load("./butan.nff");
+			//store=ObjectLoader.load("./cornell-blocks.nff");	//<--- OK
+			store=ObjectLoader.load("./cornell-spheres.nff");	//<--- OK
+			//store=TestNFF.load("./butan.nff");	//<--- FAILED
 			
 			this.setFocusable(true);
 			
@@ -167,7 +181,7 @@ public class SGLTest
 		frame.setLocation(100, 100);
 		
 		current_context=sglCreateContext(w, h);
-		sglViewport(0,0,800,600);
+		
 		sglClearColor(0,0,0,1);
 
 		//set viewport
@@ -179,8 +193,9 @@ public class SGLTest
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		component.setUpdateDelay(10);
+		component.setUpdateDelay(30);
 		//component.enterMainLoop();
+		
 		//try {
 		
 	//for(int i=0; i<200; i++)

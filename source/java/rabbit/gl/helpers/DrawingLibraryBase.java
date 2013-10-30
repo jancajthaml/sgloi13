@@ -27,8 +27,8 @@ public class DrawingLibraryBase implements DrawingLibraryInterface
 		
 		public void fillPolygon	( Chunk context ) { state.fillPolygon( context ); }
 
-		public void fillTrianglesFan	( Chunk context ) {state.fillTrianglesFan(context);}
-		public void fillTrianglesStrip	( Chunk context ) {state.fillTrianglesStrip(context);}
+		public void fillTrianglesFan	( Chunk context ) { state.fillTrianglesFan(context); }
+		public void fillTrianglesStrip	( Chunk context ) { state.fillTrianglesStrip(context); }
 		
 		public void set (DrawingLibraryInterface newState){ state = newState; }
 

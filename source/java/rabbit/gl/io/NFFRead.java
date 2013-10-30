@@ -16,7 +16,7 @@ public class NFFRead
 	{
 		NFFStore store = new NFFStore(false);
 		try
-		{ read(new File("./cornell-blocks.nff"),store); }
+		{ read(new File("./butan.nff"),store); }
 		catch (FileNotFoundException e) { e.printStackTrace(); }
 	}
 
@@ -26,7 +26,7 @@ public class NFFRead
         try
         {
 		  String nexttok	=  "";
-	
+		  
 		  reader:while( (nexttok=fio.nextLine())!=null )
 		  {
 			  if(nexttok.length()==0 || nexttok.startsWith("#"))
@@ -34,6 +34,7 @@ public class NFFRead
 				  continue;
 			  }
 
+			  System.out.println(nexttok);
 		    switch(nexttok.charAt(0))
 		    {
 		    
@@ -232,20 +233,13 @@ public class NFFRead
 		        col.b = Float.valueOf(fio.next());
 		        
 		        
-		        kd = Float.valueOf(fio.next());
-		        ks = Float.valueOf(fio.next());
-		        shine = Float.valueOf(fio.next());
-		        T = Float.valueOf(fio.next());
-		        ior = Float.valueOf(fio.next());
-		        /*
-		        ret = fscanf(fin," %g %g %g %g %g %g %g %g",
-		          &(col.r),&(col.g),&(col.b),
-		          &(kd),&(ks),&(shine),&(T),&(ior));
-*/
-	
-
-		        callbacks.SetMaterial(col,kd,ks,shine,T,ior);
+		        kd		= Float.valueOf(fio.next());
+		        ks		= Float.valueOf(fio.next());
+		        shine	= Float.valueOf(fio.next());
+		        T		= Float.valueOf(fio.next());
+		        ior		= Float.valueOf(fio.next());
 		        
+		        callbacks.SetMaterial(col,kd,ks,shine,T,ior);
 		      }
 		      break;
 
@@ -255,9 +249,11 @@ public class NFFRead
 		      // ------------------------------
 		      {
 		    	  
+		    	  
 		        Vertex c = new Vertex();
 		        float    r = 0.0f;
 
+		        fio.back();
 		        c.x = fio.nextDecimal();
 		        c.y = fio.nextDecimal();
 		        c.z = fio.nextDecimal();
@@ -269,7 +265,18 @@ public class NFFRead
 		        
 		      }
 		      break;
-
+		    case 'c':
+			      // ------------------------------
+			      //  'c' cube or cone???
+			      // ------------------------------
+			      {
+			    	  
+			    	  fio.nextLine();
+			    	  fio.nextLine();
+			    	  //DO NOTHING -- not implemented
+			        
+			      }
+			      break;
 		    case 'p': 
 		      {
 		    	  
