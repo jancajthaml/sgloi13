@@ -54,33 +54,33 @@ public class NFFRead
 		    	  int height      = 0;
 
 		    	  fio.next();
-		    	  from.x=Float.valueOf(fio.next());
-		        from.y=Float.valueOf(fio.next());
-		        from.z=Float.valueOf(fio.next());
+		    	  from.v.x=fio.nextDecimal();
+		        from.v.y=fio.nextDecimal();
+		        from.v.z=fio.nextDecimal();
 		        
 		        fio.next();
 		        
-		        at.x=Float.valueOf(fio.next());
-		        at.y=Float.valueOf(fio.next());
-		        at.z=Float.valueOf(fio.next());
+		        at.v.x=fio.nextDecimal();
+		        at.v.y=fio.nextDecimal();
+		        at.v.z=fio.nextDecimal();
 
 		        fio.next();
 		        
-		        up.x=Float.valueOf(fio.next());
-		        up.y=Float.valueOf(fio.next());
-		        up.z=Float.valueOf(fio.next());
+		        up.v.x=fio.nextDecimal();
+		        up.v.y=fio.nextDecimal();
+		        up.v.z=fio.nextDecimal();
 		        
 		        fio.next();
-		        angle=Float.valueOf(fio.next());
-		        
-		        fio.next();
-		        
-		        hither=Float.valueOf(fio.next());
+		        angle=fio.nextDecimal();
 		        
 		        fio.next();
 		        
-		        width=Integer.valueOf(fio.next());
-		        height=Integer.valueOf(fio.next());
+		        hither=fio.nextDecimal();
+		        
+		        fio.next();
+		        
+		        width=fio.nextInt();
+		        height=fio.nextInt();
 		     
 		        callbacks.Camera(from,at,up,angle,hither,width,height);
 		        
@@ -115,9 +115,9 @@ public class NFFRead
 		        Vertex pos = new Vertex();
 		        Color i = new Color();
 
-		        pos.x=Float.valueOf(fio.next());
-		        pos.y=Float.valueOf(fio.next());
-		        pos.z=Float.valueOf(fio.next());
+		        pos.v.x=fio.nextDecimal();
+		        pos.v.y=fio.nextDecimal();
+		        pos.v.z=fio.nextDecimal();
 		        if(L.length<5)
 		        	i.r = i.g = i.b = 1.0f;
 		        else
@@ -172,9 +172,9 @@ public class NFFRead
 				
 				if(fio.next().contains("a"))
 				{					
-					atten.x = fio.nextDecimal();
-					atten.y = fio.nextDecimal();
-					atten.z = fio.nextDecimal();
+					atten.v.x = fio.nextDecimal();
+					atten.v.y = fio.nextDecimal();
+					atten.v.z = fio.nextDecimal();
 
 					i.r *= m/SimpleMath.PI;
 					i.g *= m/SimpleMath.PI;
@@ -184,9 +184,9 @@ public class NFFRead
 				}
 				else
 				{
-					atten.x = 0;
-					atten.y = 0;
-					atten.z = 0;
+					atten.v.x = 0;
+					atten.v.y = 0;
+					atten.v.z = 0;
 					
 					
 					i.r *= m/SimpleMath.PI;
@@ -254,9 +254,9 @@ public class NFFRead
 		        float    r = 0.0f;
 
 		        fio.back();
-		        c.x = fio.nextDecimal();
-		        c.y = fio.nextDecimal();
-		        c.z = fio.nextDecimal();
+		        c.v.x = fio.nextDecimal();
+		        c.v.y = fio.nextDecimal();
+		        c.v.z = fio.nextDecimal();
 		        
 		        r = fio.nextDecimal();
 		        //ret = fscanf(fin, " %g %g %g %g\n", &(c.x), &(c.y), &(c.z), &r);
@@ -306,9 +306,9 @@ public class NFFRead
 
 			        Vertex  vertex	= new Vertex();
 			        Vertex normal		= new Vertex();
-		        	vertex.x = Float.valueOf(fio.next());
-		        	vertex.y = Float.valueOf(fio.next());
-		        	vertex.z = Float.valueOf(fio.next());
+		        	vertex.v.x = Float.valueOf(fio.next());
+		        	vertex.v.y = Float.valueOf(fio.next());
+		        	vertex.v.z = Float.valueOf(fio.next());
 		          //ret = fscanf(fin, " %g %g %g", &(vertex.x),&(vertex.y),&(vertex.z) );
 		          //if(ret != 3 ) {
 		        	//  System.err.println("Could not read polygon / patch vertex #"+i+".");
@@ -319,9 +319,9 @@ public class NFFRead
 
 		          if(!patch) continue;
 		          
-		          normal.x = Float.valueOf(fio.next());
-		          normal.y = Float.valueOf(fio.next());
-		          normal.z = Float.valueOf(fio.next());
+		          normal.v.x = Float.valueOf(fio.next());
+		          normal.v.y = Float.valueOf(fio.next());
+		          normal.v.z = Float.valueOf(fio.next());
 		          
 		          //ret = fscanf(fin, " %g %g %g", &(normal.x),&(normal.y),&(normal.z) );
 		          //if(ret != 3 ) {

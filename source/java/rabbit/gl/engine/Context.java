@@ -28,7 +28,7 @@ public class Context
 	public int id							= 0;
 
 	public Chunk storage;
-	static Vertex vertex_calculation_helper	= new Vertex (0,0,0,1);
+	static Vertex vertex_calculation_helper	= new Vertex();
 
 	static DrawingLibraryBase g = new DrawingLibraryBase();
 	
@@ -132,18 +132,18 @@ public class Context
 
 	private Vertex create(float x, float y, float z, float w)
 	{
-		vertex_calculation_helper.x = x;
-		vertex_calculation_helper.y = y;
-		vertex_calculation_helper.z = z;
-		vertex_calculation_helper.w = w;
+		vertex_calculation_helper.v.x = x;
+		vertex_calculation_helper.v.y = y;
+		vertex_calculation_helper.v.z = z;
+		vertex_calculation_helper.v.w = w;
 		
 		checkPMVMatrix();
 
 		Vertex v = MVP.multiply(vertex_calculation_helper);
 		
-		v.x /= v.w;
-		v.y /= v.w;
-		v.z /= v.w;
+		v.v.x /= v.v.w;
+		v.v.y /= v.v.w;
+		v.v.z /= v.v.w;
 		
 		return  v;
 	}

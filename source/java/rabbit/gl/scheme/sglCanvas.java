@@ -2,6 +2,8 @@ package rabbit.gl.scheme;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Toolkit;
+
 import javax.swing.JPanel;
 import main.SGLTest;
 import rabbit.gl.engine.HUB;
@@ -18,10 +20,14 @@ public class sglCanvas extends JPanel
 	{
 	    super.addNotify();
 	    setIgnoreRepaint(true);
+	    super.setBackground(Color.black);
+	    super.setOpaque(false);
 	}
 	
 	public final void paint(Graphics g)
-	{}
+	{
+		paintComponent(g);
+	}
 	
 	public final void update(Graphics g)
 	{ super.paint(g); }
@@ -45,10 +51,10 @@ public class sglCanvas extends JPanel
 	{
 		try
 		{
+		
 			long t = System.nanoTime();
 			
 			paint();
-			g.setClip(getBounds());
 			g.drawImage(HUB.sglGetColorBufferPointer(), 0,0,null);
 			
 			time = (float) ((System.nanoTime()-t)/1000000000.0);
@@ -66,11 +72,15 @@ public class sglCanvas extends JPanel
 		
 		repainting	= true;
 		
-        this.paintComponent(this.getGraphics());
+		super.repaint(0, 0, getWidth(),getHeight());
+        Toolkit.getDefaultToolkit().sync();
         
-        //Toolkit.getDefaultToolkit().sync();
+        //this.paintComponent(this.getGraphics());
         
-        try { Thread.sleep(currentUpdateSpeed); }
+        try
+        {
+        	Thread.sleep(currentUpdateSpeed);
+        }
 		catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         
         repainting=false;

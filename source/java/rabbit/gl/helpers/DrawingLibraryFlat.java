@@ -62,10 +62,10 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 		public void drawBezier( Vertex a, Vertex b, Vertex c, Chunk context )
 		{
-			int xa = bezier_dot( a.x , b.x , 0 );
-			int ya = bezier_dot( a.y , b.y , 0 );
-			int xb = bezier_dot( b.x , c.x , 0 );
-			int yb = bezier_dot( b.y , c.y , 0 );
+			int xa = bezier_dot( a.v.x , b.v.x , 0 );
+			int ya = bezier_dot( a.v.y , b.v.y , 0 );
+			int xb = bezier_dot( b.v.x , c.v.x , 0 );
+			int yb = bezier_dot( b.v.y , c.v.y , 0 );
 
 
 			int x = bezier_dot( xa, xb, 0 );
@@ -75,10 +75,10 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 			
 			for( float i = 0.05f ; i < 1 ; i += 0.05f )
 			{
-			    xa = bezier_dot( a.x , b.x , i );
-			    ya = bezier_dot( a.y , b.y , i );
-			    xb = bezier_dot( b.x , c.x , i );
-			    yb = bezier_dot( b.y , c.y , i );
+			    xa = bezier_dot( a.v.x , b.v.x , i );
+			    ya = bezier_dot( a.v.y , b.v.y , i );
+			    xb = bezier_dot( b.v.x , c.v.x , i );
+			    yb = bezier_dot( b.v.y , c.v.y , i );
 
 			    last_x	= x;
 			    last_y	= y;
@@ -94,10 +94,10 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 		{
 			if(a == null || b == null) return;
 		
-			int x1 = SimpleMath.round(a.x);
-			int y1 = SimpleMath.round(a.y);
-			int x2 = SimpleMath.round(b.x);
-			int y2 = SimpleMath.round(b.y);
+			int x1 = SimpleMath.round(a.v.x);
+			int y1 = SimpleMath.round(a.v.y);
+			int x2 = SimpleMath.round(b.v.x);
+			int y2 = SimpleMath.round(b.v.y);
 
 			int dx = SimpleMath.abs(x2 - x1);
 			int dy = SimpleMath.abs(y2 - y1);
@@ -186,33 +186,33 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 					case 1 :
 					{
 						for(Vertex v_it : context.vertices)
-							setPixel(v_it.x, v_it.y, context);
+							setPixel(v_it.v.x, v_it.v.y, context);
 					} break;
 					case 2 :
 					{
 						for(Vertex v_it : context.vertices)
 						{
-							setPixel(v_it.x  , v_it.y-1, context);
-							setPixel(v_it.x  , v_it.y  , context);
-							setPixel(v_it.x-1, v_it.y-1, context);
-							setPixel(v_it.x-1, v_it.y  , context);
+							setPixel(v_it.v.x  , v_it.v.y-1, context);
+							setPixel(v_it.v.x  , v_it.v.y  , context);
+							setPixel(v_it.v.x-1, v_it.v.y-1, context);
+							setPixel(v_it.v.x-1, v_it.v.y  , context);
 						}
 					} break;
 					case 3 :
 					{
 						for(Vertex v_it : context.vertices)
 						{
-							setPixel(v_it.x+1, v_it.y-1, context);
-							setPixel(v_it.x+1, v_it.y  , context);
-							setPixel(v_it.x+1, v_it.y+1, context);
+							setPixel(v_it.v.x+1, v_it.v.y-1, context);
+							setPixel(v_it.v.x+1, v_it.v.y  , context);
+							setPixel(v_it.v.x+1, v_it.v.y+1, context);
 						
-							setPixel(v_it.x-1, v_it.y-1, context);
-							setPixel(v_it.x-1, v_it.y  , context);
-							setPixel(v_it.x-1, v_it.y+1, context);
+							setPixel(v_it.v.x-1, v_it.v.y-1, context);
+							setPixel(v_it.v.x-1, v_it.v.y  , context);
+							setPixel(v_it.v.x-1, v_it.v.y+1, context);
 						
-							setPixel(v_it.x  , v_it.y-1, context);
-							setPixel(v_it.x  , v_it.y  , context);
-							setPixel(v_it.x  , v_it.y+1, context);
+							setPixel(v_it.v.x  , v_it.v.y-1, context);
+							setPixel(v_it.v.x  , v_it.v.y  , context);
+							setPixel(v_it.v.x  , v_it.v.y+1, context);
 						}
 					} break;
 				default :
@@ -223,7 +223,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 					for(Vertex v_it : context.vertices)
 					for(int i = -thickness; i<s; i++)
 					for(int j = -thickness; j<s; j++)
-						setPixel(v_it.x+j, v_it.y+i, context);
+						setPixel(v_it.v.x+j, v_it.v.y+i, context);
 				} break;
 			
 			}
@@ -320,7 +320,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 				while( x<y )
 				{
-					setSymPixel(x, y, v.x, v.y, context);
+					setSymPixel(x, y, v.v.x, v.v.y, context);
 					if (p < 0)
 					{
 						p += (x << 2) + 6;
@@ -332,7 +332,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 					}
 					x += 1;
 				}
-				if( x==y ) setSymPixel(x, y, v.x, v.y, context);
+				if( x==y ) setSymPixel(x, y, v.v.x, v.v.y, context);
 			}
 			catch(Throwable t){ t.printStackTrace(); }
 		}
@@ -349,7 +349,7 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 
 			while(x <= y)
 			{
-				fillSymPixel( x, y, v.x, v.y, context);
+				fillSymPixel( x, y, v.v.x, v.v.y, context);
 
 				if (p < 0)
 				{
@@ -375,16 +375,16 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 			
 			for(int i=0; i<size; i++) edges[i]=new Edge();
 
-			x[0] = (int)(context.vertices.get(0).x+1.0f);
-			y[0] = (int)(context.vertices.get(0).y+1.0f);
+			x[0] = (int)(context.vertices.get(0).v.x+1.0f);
+			y[0] = (int)(context.vertices.get(0).v.y+1.0f);
 
 			int    min_y  =  y[0]  ;
 			int    max_y  =  y[0]  ;
 
 			for( int i=1; i<size; i++ )
 			{
-			    x[i] = (int)(context.vertices.get(i).x+1.0f);
-			    y[i] = (int)(context.vertices.get(i).y+1.0f);
+			    x[i] = (int)(context.vertices.get(i).v.x+1.0f);
+			    y[i] = (int)(context.vertices.get(i).v.y+1.0f);
 
 			    if( y[i]<min_y )  min_y = y[i];
 			    if( y[i]>max_y )  max_y = y[i];
@@ -456,8 +456,6 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 				  for( i=0; i<count; i=i+2 )
 					  setPixelChunk(Y+1, (int)draw[i], (int)(draw[i+1]-1), context);
 			  }
-			  
-			  context.vertices.clear();
 		}
 
 		public void bresenham_x(int x1, int y1, int x2, int y2, Chunk context)
@@ -567,12 +565,12 @@ public class DrawingLibraryFlat implements DrawingLibraryInterface
 		private void drawTriangle(Vertex v0, Vertex v1, Vertex v2, Chunk context)
 		{
 
-			int x0 = (int)v0.x;
-			int y0 = (int)v0.y;
-			int x1 = (int)v1.x;
-			int y1 = (int)v1.y;
-			int x2 = (int)v2.x;
-			int y2 = (int)v2.y;
+			int x0 = (int)v0.v.x;
+			int y0 = (int)v0.v.y;
+			int x1 = (int)v1.v.x;
+			int y1 = (int)v1.v.y;
+			int x2 = (int)v2.v.x;
+			int y2 = (int)v2.v.y;
 
 			if (y0 > y2)
 			{

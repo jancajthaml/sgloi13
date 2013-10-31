@@ -13,52 +13,42 @@ import rabbit.struct.common.GenericStack;
 
 public class NFFStore implements NFFCallbacks
 {
+	public class PointLight
+	{
+		public Vertex position;
+		public Color intensity;
+		
+		public PointLight()
+		{
+			this.position = new Vertex();
+			this.intensity = new Color(1,1,1);
+		}
 
-	/// material specification
+		public PointLight( Vertex pos, Color inten)
+		{
+			this.position  = pos;
+			this.intensity = inten;
+		}
+	};
 	
-		/// triangle geometry
-
-
-	
-
-	  public class PointLight
-	  {
-		  public Vertex position;
-		  public Color intensity;
+	/// one material with a list of geometry that has the meteria assigned to it
+	public class LightGroup
+	{
+		public Color intensity;
+		public Vertex atten;
 		
-		  public PointLight()
-		  {
-			  this.position = new Vertex(0,0,0);
-			  this.intensity = new Color(1,1,1);
-		  }
-		  public PointLight( Vertex pos, Color inten)
-		  {
-			  this.position  = pos;
-			  this.intensity = inten;
-		  }
-		};
-		
+		public GenericStack<Triangle> geometry = new GenericStack<Triangle>();
+		public GenericStack<Sphere> spheres = new GenericStack<Sphere>();
+	  
+		public LightGroup(Color i, Vertex a)
+		{
+			this.intensity = i;
+			this.atten     = a;
+		}
+	};
 
-
-	    /// one material with a list of geometry that has the meteria assigned to it
-	  public class LightGroup
-	  {
-	  
-		  public Color intensity;
-		  public Vertex atten;
-		
-		  public GenericStack<Triangle> geometry = new GenericStack<Triangle>();
-		  public GenericStack<Sphere> spheres = new GenericStack<Sphere>();
-	  
-		  public LightGroup(Color i, Vertex a)
-		  {
-			  this.intensity = i;
-			  this.atten     = a;
-		  }
-	  };
-	  
-	  /// one material with a list of geometry that has the meteria assigned to it
-	  public class MaterialGroup
+	/// one material with a list of geometry that has the meteria assigned to it
+	public class MaterialGroup
 	  {
 		  public Material        material ;
 		  public GenericStack<Triangle>  geometry = new GenericStack<Triangle>() ;
@@ -75,22 +65,22 @@ public class NFFStore implements NFFCallbacks
 	  
 	  
 	  /// background
-	  Color bg_col;
+	  public Color bg_col;
 
 	  //HDRLoaderResult envMap;
 	  
 	  /// camera
-	  Vertex from;
-	  Vertex at;
-	  Vertex up;
-	  float angle;
-	  float hither;
-	  int width;
-	  int height;
+	  public Vertex from;
+	  public Vertex at;
+	  public Vertex up;
+	  public float angle;
+	  public float hither;
+	  public int width;
+	  public int height;
 	  
-	  GenericStack<MaterialGroup> matgroups = new GenericStack<MaterialGroup>();
-	  GenericStack<LightGroup> lightgroups = new GenericStack<LightGroup>();
-	  GenericStack<PointLight> pointLights = new GenericStack<PointLight>();
+	  public GenericStack<MaterialGroup> matgroups = new GenericStack<MaterialGroup>();
+	  public GenericStack<LightGroup> lightgroups = new GenericStack<LightGroup>();
+	  public GenericStack<PointLight> pointLights = new GenericStack<PointLight>();
 
 	  public NFFStore(boolean ts)
 	  {
@@ -135,10 +125,10 @@ public class NFFStore implements NFFCallbacks
 	  }
 
 	  /// convert spherical coordinates to a 3D vector in cartesian coordinates
-	  public Vertex sph2cart(float theta,float phi)
+	  public Vertex.Geometric sph2cart(float theta,float phi)
 	  { 
 	    float sin_theta = SimpleMath.sin(theta);
-	    return new Vertex( sin_theta*SimpleMath.cos(phi), sin_theta*SimpleMath.sin(phi), SimpleMath.cos(theta) );
+	    return new Vertex.Geometric( sin_theta*SimpleMath.cos(phi), sin_theta*SimpleMath.sin(phi), SimpleMath.cos(theta) );
 	  }
 
 	  /// helper class for sphere triangulation
@@ -172,15 +162,23 @@ public class NFFStore implements NFFCallbacks
 			Stack<TD> stack = new Stack<TD>();
 
 	    // generate octahedron faces
-	    Vertex[] v = {
-	      new Vertex( 0, 0, 0),
-	      new Vertex( 1, 0, 0),
-	      new Vertex(-1, 0, 0),
-	      new Vertex( 0, 1, 0),
-	      new Vertex( 0,-1, 0),
-	      new Vertex( 0, 0, 1),
-	      new Vertex( 0, 0,-1)
-	    };
+			
+			Vertex _1 = new Vertex();
+			Vertex _2 = new Vertex();
+			Vertex _3 = new Vertex();
+			Vertex _4 = new Vertex();
+			Vertex _5 = new Vertex();
+			Vertex _6 = new Vertex();
+			Vertex _7 = new Vertex();
+			
+			_2.v.x=1;
+			_3.v.x=-1;
+			_4.v.y=1;
+			_5.v.y=-1;
+			_6.v.z=1;
+			_7.v.z=-1;
+			
+	    Vertex[] v = { _1,_2,_3,_4,_5,_6,_7 };
 
 	    stack.push(new TD(v[1],v[3],v[5],0));
 	    stack.push(new TD(v[3],v[1],v[6],0));

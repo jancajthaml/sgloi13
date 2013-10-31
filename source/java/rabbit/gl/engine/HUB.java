@@ -16,7 +16,6 @@ import rabbit.gl.struct.Color;
 import rabbit.gl.struct.ContextManager;
 import rabbit.gl.struct.Matrix;
 import rabbit.gl.struct.MatrixStack;
-import rabbit.gl.struct.Vertex;
 import rabbit.gl.struct.VertexStack;
 import rabbit.gl.type.sglEAreaMode;
 import rabbit.gl.type.sglEElementType;
@@ -458,46 +457,41 @@ public class HUB
 	}
 
 	/// like gluLookAt
-	public static void sglLookAt(float eyex   , float eyey   , float eyez,
-	                float centerx, float centery, float centerz,
-	                float upx    , float upy    , float upz)
+	public static void sglLookAt(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz)
 	{
-	  float    sqrmag;
-
-	  /* Make rotation matrix */
-
-	  /* Z vector */
-	  Vertex z = new Vertex(eyex-centerx,eyey-centery,eyez-centerz);
+		float X = eyex-centerx;
+		float Y = eyey-centery;
+		float Z = eyez-centerz;
+		float _X = upx;
+		float _Y = upy;
+		float _Z = upz;
 		
-	  sqrmag = z.magnitude();
-	  z.div(SimpleMath.sqrt(sqrmag));
+		float a = 1.0f/SimpleMath.sqrt(X*X + Y*Y + Z*Z);
+		X *= a;
+		Y *= a;
+		Z *= a;
 
-	  /* Y vector */
-	  Vertex y = new Vertex(upx,upy,upz);
+		float __X = _Y * Z - _Z * Y;
+		float __Y = _Z * X - _X * Z;
+		float __Z = _X * Y - _Y * X;
+		
+		a = 1.0f/SimpleMath.sqrt( __X*__X + __Y*__Y + __Z*__Z );
+		__X*=a;
+		__Y*=a;
+		__Z*=a;
 
-	  /* X vector = Y cross Z */
-	  Vertex x = Vertex.crossProduct(y,z);
+		_X = Y * __Z - Z * __Y;
+		_Y = Z * __X - X * __Z;
+		_Z = X * __Y - Y * __X;
+		
+		a = 1.0f/SimpleMath.sqrt( _X*_X + _Y*_Y + _Z*_Z );
+		_X *= a;
+		_Y *= a;
+		_Z *= a;
 
-	  sqrmag = x.magnitude();
-	  x.div(SimpleMath.sqrt(sqrmag));
-
-	  /* Recompute Y = Z cross X */
-	  y = Vertex.crossProduct(z, x);
-
-	  sqrmag = y.magnitude();
-	  y.div(SimpleMath.sqrt(sqrmag));
-
-	  float m[] = {
-	    x.x, y.x, z.x, 0, // col 1
-	    x.y, y.y, z.y, 0, // col 2
-	    x.z, y.z, z.z, 0, // col 3
-	    - eyex*x.x - eyey*x.y - eyez*x.z , // col 4
-	    - eyex*y.x - eyey*y.y - eyez*y.z , // col 4
-	    - eyex*z.x - eyey*z.y - eyez*z.z , // col 4
-	    1.0f};                              // col 4
-
-		sglMultMatrix(m);
+		sglMultMatrix( new float[]{ __X, _X, X, 0.0f, __Y, _Y, Y, 0.0f, __Z, _Z, Z, 0.0f, -eyex*__X - eyey*__Y - eyez*__Z, -eyex*_X - eyey*_Y - eyez*_Z, -eyex*X - eyey*Y - eyez*Z, 1.0f } );
 	}
+	
 	public static void sglViewport(int x, int y, int width, int height)
 	{ current().setViewport(x, y, width, height); }
 

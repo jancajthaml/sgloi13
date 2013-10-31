@@ -11,12 +11,12 @@ import javax.swing.SwingUtilities;
 import rabbit.gl.helpers.Movement;
 import rabbit.gl.io.NFFStore;
 import rabbit.gl.io.ObjectLoader;
-import rabbit.gl.io.TestNFF;
 import rabbit.gl.scheme.sglCanvas;
 import rabbit.gl.type.sglEClearBit;
 import tests.Test1;
 import tests.Test2;
 import tests.TestAnimation;
+import tests.TestNFF;
 import static rabbit.gl.engine.HUB.sglClear;
 import static rabbit.gl.engine.HUB.sglClearColor;
 import static rabbit.gl.engine.HUB.sglCreateContext;
@@ -194,7 +194,7 @@ public class SGLTest
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		component.setUpdateDelay(30);
-		//component.enterMainLoop();
+		component.enterMainLoop();
 		
 		//try {
 		

@@ -171,10 +171,10 @@ public class Matrix implements Cloneable
 	{
 		return VertexStack.create
 		(
-			other.x * matrix[0] + other.y * matrix[4] + other.z * matrix[8] + other.w * matrix[12],
-			other.x * matrix[1] + other.y * matrix[5] + other.z * matrix[9] + other.w * matrix[13],
-			other.x * matrix[2] + other.y * matrix[6] + other.z * matrix[10] + other.w * matrix[14],
-			other.x * matrix[3] + other.y * matrix[7] + other.z * matrix[11] + other.w * matrix[15]
+			other.v.x * matrix[0] + other.v.y * matrix[4] + other.v.z * matrix[8] + other.v.w * matrix[12],
+			other.v.x * matrix[1] + other.v.y * matrix[5] + other.v.z * matrix[9] + other.v.w * matrix[13],
+			other.v.x * matrix[2] + other.v.y * matrix[6] + other.v.z * matrix[10] + other.v.w * matrix[14],
+			other.v.x * matrix[3] + other.v.y * matrix[7] + other.v.z * matrix[11] + other.v.w * matrix[15]
 		);
 		//FIXME recycle/pool this instance
 		/*
@@ -189,6 +189,16 @@ public class Matrix implements Cloneable
 	}
 
 	public Matrix clone()
-	{ return new Matrix(matrix); }
+	{ return MatrixStack.create(matrix); }
 
+	public boolean equals(Object other)
+	{
+		if(!(other instanceof Matrix)) return false;
+		Matrix v = (Matrix)other;
+		for (int i = 0; i < 16; i++)
+		{
+			if (v.matrix[i] != matrix[i]) return false;    
+        }
+		return true;
+	}
 }
