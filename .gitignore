@@ -37,3 +37,5 @@ source/cpp/testapp/struct/MatrixCache.h
 source/cpp/testapp/struct/Vertex.h
 source/cpp/testapp/struct/VertexStack.h
 .vimrc
+xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/xcshareddata/libsgl.xccheckout
+xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
