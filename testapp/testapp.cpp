@@ -8,7 +8,7 @@
 /// uncomment the tests you wish to run
 
 //#define TEST0
-#define TEST1
+//#define TEST1
 //#define TEST2
 //#define TEST3
 //#define TEST4
@@ -67,8 +67,8 @@
 #include <fstream>
 
 #if USE_GUI
-#include <GL/glut.h>
-#include <GL/gl.h>
+#include <GLUT/glut.h>
+#include <OpenGL/gl.h>
 #endif
 
 #include "sgl.h"

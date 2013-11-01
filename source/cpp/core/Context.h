@@ -8,6 +8,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 
+#include "./RootSceneNode.h"
 #include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
 #include "./../struct/Vertex.h"
@@ -70,11 +71,12 @@ struct Context
 	static DrawingLibraryDepth depth;
 
 	//State
-	bool BEGIN  ;
-	bool Z_TEST ;
+	bool BEGIN			;
+	bool BEGIN_SCENE	;
+	bool Z_TEST			;
 
 	//Transformation matrices
-	Matrix current_M ;
+	Matrix current_M  ;
 	Matrix current_P  ;
 
 	Matrix MP  ;
@@ -84,10 +86,15 @@ struct Context
 	bool M_changed ;
 
 	//FIXME don't use a std::vector stack for this, implement custom
+	//WHY??? - brejcja1
 	std::vector<sglEElementType> types ;
 
 	//FIXME don't use a std::vector stack for this, implement custom
+	//WHY??? - brejcja1
 	std::vector<Matrix> P_stack        ;
+	
+	///ScenGraph root node
+	RootSceneNode scene;
 
 
 	Context(uint_fast16_t width, uint_fast16_t height)
@@ -109,6 +116,7 @@ struct Context
 		//Initialise Flags
 		//storage.depth  = false;
 		BEGIN			= false;
+		BEGIN_SCENE		= false;
 		Z_TEST			= false;
 		//----------------------//
 
@@ -129,13 +137,31 @@ struct Context
 	}
 
 	inline void setVertex2f(float x, float y)
-	{ storage.vertices.push_back(create(x, y, 0.0f, 1.0f)); }
+	{
+		//@deprecated, still used because of not fully implemented SceneGraph
+		storage.vertices.push_back(create(x, y, 0.0f, 1.0f));
+		
+		Vertex v(x, y, 0.0f, 1.0f);
+		scene.getCurrentNode()->addVertex(v);
+	}
 
 	inline void setVertex3f(float x, float y, float z)
-	{ storage.vertices.push_back(create(x, y, z, 1.0f)); }
+	{
+		//@deprecated, still used because of not fully implemented SceneGraph
+		storage.vertices.push_back(create(x, y, z, 1.0f));
+
+		Vertex v(x, y, z, 1.0f);
+		scene.getCurrentNode()->addVertex(v);
+	}
 
 	inline void setVertex4f(float x, float y, float z, float w)
-	{ storage.vertices.push_back(create(x, y, z, w)); }
+	{
+		//@deprecated, still used because of not fully implemented SceneGraph
+		storage.vertices.push_back(create(x, y, z, w));
+		
+		Vertex v(x, y, z, w);
+		scene.getCurrentNode()->addVertex(v);
+	}
 
 	inline void rasterize()
 	{
@@ -149,7 +175,7 @@ struct Context
             default                 : switch( type )	//LINES of FILLING
             {
                 case SGL_POINTS     : g.drawPoints       ( storage ) ; break;
-                case SGL_LINES      : g.drawLines        ( storage ) ; break;
+                case SGL_LINES      : /*scene.rasterize()*/				 ; break;
                 case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
                 case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
                 case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
@@ -379,17 +405,70 @@ struct Context
 	inline void setMatrixMode(sglEMatrixMode mode)
 	{ matrixMode = mode; }
 
+	//WHY for god begins name of function with CAPITAL letter?
 	inline bool BeginBeforeEnd()
 	{ return BEGIN; }
+	
+	inline bool beginSceneBeforeEnd()
+	{
+		return BEGIN_SCENE;
+	}
+	
+	inline void beginScene()
+	{
+		BEGIN_SCENE = true;
+	}
+	
+	inline void endScene()
+	{
+		BEGIN_SCENE = false;
+	}
 
-	inline void begin()
+	inline void begin(sglEElementType mode)
 	{
 		storage.vertices.index = 0;
 		BEGIN                  = true;
+		pushTypeState(mode);
+		
+		check_MVP();
+		if (mode == SGL_LINES)
+		{
+			Model *m = new Model(g, storage);
+			scene.beginNewNode(new SceneNode(m, MVP));
+		}
 	}
 
 	inline void end()
-	{ BEGIN=false; }
+	{
+		BEGIN=false;
+		/*
+		//handle creation of models and add them to scene (RootSceneNode)
+		sglEElementType type = types.back();
+		
+		switch( type )
+		{
+			//case SGL_LINES      : scene.commitCurrentNode(); break;
+			/*case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
+			case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
+			case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
+			{
+				case SGL_LINE   : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
+				default         : g.fillTrianglesFan ( storage ) ; break;
+			}
+				break;
+			case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
+			{
+				case SGL_LINE   : g.drawPolygon      ( storage ) ; break;
+				default         : g.fillPolygon      ( storage ) ; break;
+			}
+				break;
+				
+			case SGL_AREA_LIGHT        : 					     ; break;
+			case SGL_LAST_ELEMENT_TYPE : 					     ; break;
+			default                    :                         ; break;
+        }*/
+
+	}
 
 	inline bool stackEmpty()
 	{ return (P_stack.size() == 0); }

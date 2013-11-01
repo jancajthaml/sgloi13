@@ -9,6 +9,7 @@
 #define MATRIX_H_
 
 #include "./../core/CrossReferenceDispatcher.h"
+#include "Vertex.h"
 
 static const int SIZE_FLOAT = sizeof(float) << 4;
 
@@ -175,6 +176,16 @@ struct Matrix
 		matrix[13] -= other.matrix[13];
 		matrix[14] -= other.matrix[14];
 		matrix[15] -= other.matrix[15];
+	}
+	
+	void print()
+	{
+		printf("%f %f %f %f \n%f %f %f %f \n%f %f %f %f \n%f %f %f %f \n",
+			   matrix[0], matrix[4], matrix[8], matrix[12],
+			   matrix[1], matrix[5], matrix[9], matrix[13],
+			   matrix[2], matrix[6], matrix[10], matrix[14],
+			   matrix[3], matrix[7], matrix[11], matrix[15]);
+		
 	}
 };
 

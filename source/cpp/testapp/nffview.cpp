@@ -10,7 +10,7 @@
 #include <list>
 #include <iostream>
 // OpenGL headers
-#include <GL/glut.h>
+#include <GLUT/glut.h>
 
 // project headers
 #include "nffread.h"
@@ -150,7 +150,7 @@ void myDraw()
    glBegin(GL_TRIANGLES);
    NFFStore::TMatGroupList::const_iterator giter = nffstore.matgroups.begin();
    for ( ; giter != nffstore.matgroups.end(); ++giter) {
-     const NFFStore::CMaterial &m = giter->material;
+     const NFFStore::Material &m = giter->material;
      glColor3f(m.col.r*m.kd, m.col.g*m.kd, m.col.b*m.kd );
      const NFFStore::TriangleList &tlist = giter->geometry;
      NFFStore::TriangleList::const_iterator titer = tlist.begin();

@@ -8,7 +8,7 @@
 #ifndef DRAWINGLIBRARYFLAT_H_
 #define DRAWINGLIBRARYFLAT_H_
 
-#include "../sgl.h";
+#include "../sgl.h"
 
 class DrawingLibraryFlat : public DrawingLibraryInterface
 {

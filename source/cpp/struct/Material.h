@@ -1,47 +1,61 @@
-/*
- * Material.h
- *
- *  Created on: 27.10.2013
- *      Author: jancajthaml
+//
+//  Material.h
+//  libsgl
+//
+//  Created by Jan Brejcha on 01.11.13.
+//  Copyright (c) 2013 brejchajan. All rights reserved.
+//
+
+#ifndef libsgl_Material_h
+#define libsgl_Material_h
+
+#include "../struct/Color.h"
+
+/**
+ Definition of material used on particular models.
  */
-
-#ifndef MATERIAL_H_
-#define MATERIAL_H_
-
 struct Material
 {
-
-	Color color;				// COLOR material component
-	float diffuse;				// DIFFUSE material component
-	float specular;				// SPECULAR material component
-	float shine;				// cos power for highlights
-	float T;					// TRANSMITTANCE
-	float index_of_refraction;
-
-	Material()
+	
+	///Color of the material
+	Color color;
+	
+	///diffuse coefficient
+	float kd;
+	
+	///specular coefficient
+	float ks;
+	
+	///Phong cosine power for highlights.
+	float shine;
+	
+	///transmittance (fraction of contribution of the transmitting ray).
+	float trn;
+	
+	///index of refraction
+	float ior;
+	
+	/**
+	 Material constructor
+	 @param _color	color of the material
+	 @param _kd		diffuse coefficient
+	 @param _ks		specular coefficient
+	 @param _shine	phong cosine power for highlights
+	 @param _trn	transmittance (fraction of contribution of the transmitting ray).
+	 @param _ior	index of refraction
+	 */
+	Material(Color _color, const float _kd, const float _ks, const float _shine, const float _trn, const float _ior)
 	{
-		color.r				= 1.0f;
-		color.g				= 1.0f;
-		color.b				= 1.0f;
-		diffuse				= 0.5f;
-		specular			= 0.5f;
-		shine				= 1.0f;
-		T					= 0.5f;
-		index_of_refraction	= 0.5f;
+		this->color = _color;
+		this->kd = _kd;
+		this->ks = _ks;
+		this->shine = _shine;
+		this->trn = _trn;
+		this->ior = _ior;
 	}
-
-	Material(float r, float g, float b, float diffuse, float specular, float shine, float T, float index_of_refraction)
-	{
-		this->color.r				= r;
-		this->color.g				= g;
-		this->color.b				= b;
-		this->diffuse				= diffuse;
-		this->specular				= specular;
-		this->shine					= shine;
-		this->T						= T;
-		this->index_of_refraction	= index_of_refraction;
-	}
-
+	
+	Material(){}
+	
 };
 
-#endif /* MATERIAL_H_ */
+#endif

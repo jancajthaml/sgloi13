@@ -47,6 +47,11 @@ struct Vertex
 		z = Z;
 		w = W;
 	}
+	
+	void print()
+	{
+		printf("[%f, %f, %f, %f]\n", x, y, z, w);
+	}
 
 };
 

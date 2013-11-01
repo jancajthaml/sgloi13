@@ -250,8 +250,7 @@ void sglBegin(sglEElementType mode)
     	return;
     }
 
-	current()->begin();
-	current()->pushTypeState(mode);
+	current()->begin(mode);
 }
 
 //LongName Function
@@ -264,7 +263,11 @@ void sglEnd(void)
 	 }
 
 	 current()->end();
-	 current()->rasterize();
+	
+	 //if the raytracing is OFF
+	 //we can rasterize
+	 if (!current()->beginSceneBeforeEnd())
+		 current()->rasterize();
 }
 
 //Vertex with 3 float coords in homogenous coordinates
@@ -643,13 +646,16 @@ void sglDisable(sglEEnableFlags flag)
 //---------------------------------------------------------------------------
 
 // ? Begin of what scene ? whole scene or sub scene ?
+// I think there are no sub scenes - brejcja1
 void sglBeginScene()
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginSceneBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+	
+	current()->beginScene();
 }
 
 // ? End of what scene ? whole scene or sub scene ?
