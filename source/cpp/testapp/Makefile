@@ -7,7 +7,7 @@ COMPILERFLAGS = -Wall -g -DUSE_GUI=0
 CC = g++
 CFLAGS = $(COMPILERFLAGS) $(INCLUDE) 
 
-LIBRARIES = -lglut -lGL -lGLU  #-lXext -lX11 -lm
+LIBRARIES = -framework GLUT -framework OpenGL #-lXext -lX11 -lm
 #LIBRARIES = -lm
 OBJS = testapp.o ../sgl.o nffread.o timer.o hdrloader.o
 OBJS2 = raytracer.o sgl/sgl.o nffread.o timer.o hdrloader.o

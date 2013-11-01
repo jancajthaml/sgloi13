@@ -36,3 +36,4 @@ source/cpp/testapp/struct/Matrix.h
 source/cpp/testapp/struct/MatrixCache.h
 source/cpp/testapp/struct/Vertex.h
 source/cpp/testapp/struct/VertexStack.h
+.vimrc
