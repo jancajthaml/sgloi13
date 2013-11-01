@@ -20,4 +20,13 @@ public class Edge {
 		z          = 0.0f;
 	}
 
+	public boolean equals(Object other)
+	{
+		if(!(other instanceof Edge)) return false;
+		
+		Edge v = (Edge)other;
+
+		return min_y==v.min_y && max_y==v.max_y && delta_x==v.delta_x && delta_z==v.delta_z && x==v.x && z==v.z;		
+	}
+
 }

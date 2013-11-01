@@ -40,7 +40,6 @@ public class TestAnimation
 		  
 		  float tx=0, ty=-1, tz=0;
 			
-			sglClear(SGL_DEPTH_BUFFER_BIT);
 			sglViewport(0, 0, WIDTH, HEIGHT);
 
 			  // set the projection matrix
@@ -115,7 +114,7 @@ public class TestAnimation
 	/// render a 4-sided polygon
 	private static void poly4(int[] idx, float[][] p)
 	{
-	  sglBegin(SGL_LINE_BEZIER);
+	  sglBegin(SGL_POLYGON);
 	  for(int i=0; i<4; i++)
 	    sglVertex3f(p[idx[i]][0],p[idx[i]][1],p[idx[i]][2]);
 	  sglEnd();

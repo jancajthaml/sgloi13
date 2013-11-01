@@ -10,7 +10,7 @@ public class Viewport
 	int y;
 	public boolean ready;
 
-	Matrix viewportMatrix;
+	Matrix viewportMatrix = Matrix.identity().clone();
 	public boolean viewportMatrixChanged;
 
 	public Viewport()
@@ -41,27 +41,25 @@ public class Viewport
 	{
 		if( ready )
 		{
-			v.x = x + (v.x + 1) * width_2_x;
-			v.y = y + (v.y + 1) * height_2_y;
+			v.v.x = x + (v.v.x + 1) * width_2_x;
+			v.v.y = y + (v.v.y + 1) * height_2_y;
 		}
 	}
 
 	public void changeViewport(int x, int y, int width, int height)
 	{
-		this.width					=  width;
-		this.height				=  height;
-		this.width_2_x				=  width>>1;
-		this.height_2_y			=  height>>1;
-		this.x						=  x;
-		this.y						=  y;
+		this.width			=  width;
+		this.height			=  height;
+		this.width_2_x		=  width>>1;
+		this.height_2_y		=  height>>1;
+		this.x				=  x;
+		this.y				=  y;
 
-		this.viewportMatrix		=  new Matrix
-		(
-			width_2_x, 0.0f, 0.0f, 0.0f,
-			0.0f, height_2_y, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			width_2_x + x, height_2_y + x, 0.0f, 1.0f
-		);
+		this.viewportMatrix.matrix[0]  = width_2_x;
+		this.viewportMatrix.matrix[5]  = height_2_y;
+		this.viewportMatrix.matrix[12] = width_2_x + x;
+		this.viewportMatrix.matrix[13] = height_2_y + y;
+		
 		this.ready		=  true;
 		this.viewportMatrixChanged	=  true;
 	}

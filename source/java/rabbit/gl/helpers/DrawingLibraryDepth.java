@@ -114,33 +114,33 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 					case 1 :
 					{
 						for(Vertex v_it : context.vertices)
-							setPixel(v_it.x, v_it.y, v_it.z, context);
+							setPixel(v_it.v.x, v_it.v.y, v_it.v.z, context);
 					} break;
 					case 2 :
 					{
 						for(Vertex v_it : context.vertices)
 						{
-							setPixel(v_it.x  , v_it.y-1, v_it.z, context);
-							setPixel(v_it.x  , v_it.y  , v_it.z, context);
-							setPixel(v_it.x-1, v_it.y-1, v_it.z, context);
-							setPixel(v_it.x-1, v_it.y  , v_it.z, context);
+							setPixel(v_it.v.x  , v_it.v.y-1, v_it.v.z, context);
+							setPixel(v_it.v.x  , v_it.v.y  , v_it.v.z, context);
+							setPixel(v_it.v.x-1, v_it.v.y-1, v_it.v.z, context);
+							setPixel(v_it.v.x-1, v_it.v.y  , v_it.v.z, context);
 						}
 					} break;
 					case 3 :
 					{
 						for(Vertex v_it : context.vertices)
 						{
-							setPixel(v_it.x+1, v_it.y-1, v_it.z, context);
-							setPixel(v_it.x+1, v_it.y  , v_it.z, context);
-							setPixel(v_it.x+1, v_it.y+1, v_it.z, context);
+							setPixel(v_it.v.x+1, v_it.v.y-1, v_it.v.z, context);
+							setPixel(v_it.v.x+1, v_it.v.y  , v_it.v.z, context);
+							setPixel(v_it.v.x+1, v_it.v.y+1, v_it.v.z, context);
 						
-							setPixel(v_it.x-1, v_it.y-1, v_it.z, context);
-							setPixel(v_it.x-1, v_it.y  , v_it.z, context);
-							setPixel(v_it.x-1, v_it.y+1, v_it.z, context);
+							setPixel(v_it.v.x-1, v_it.v.y-1, v_it.v.z, context);
+							setPixel(v_it.v.x-1, v_it.v.y  , v_it.v.z, context);
+							setPixel(v_it.v.x-1, v_it.v.y+1, v_it.v.z, context);
 						
-							setPixel(v_it.x  , v_it.y-1, v_it.z, context);
-							setPixel(v_it.x  , v_it.y  , v_it.z, context);
-							setPixel(v_it.x  , v_it.y+1, v_it.z, context);
+							setPixel(v_it.v.x  , v_it.v.y-1, v_it.v.z, context);
+							setPixel(v_it.v.x  , v_it.v.y  , v_it.v.z, context);
+							setPixel(v_it.v.x  , v_it.v.y+1, v_it.v.z, context);
 						}
 					} break;
 				default :
@@ -151,7 +151,7 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 					for(Vertex v_it : context.vertices)
 					for(int i = -thickness; i<s; i++)
 					for(int j = -thickness; j<s; j++)
-						setPixel(v_it.x+j, v_it.y+i, v_it.z, context);
+						setPixel(v_it.v.x+j, v_it.v.y+i, v_it.v.z, context);
 				} break;
 			
 			}
@@ -228,7 +228,7 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 
 			while( x<y )
 			{
-				setSymPixel(x, y, v.x, v.y, context);
+				setSymPixel(x, y, v.v.x, v.v.y, context);
 				if (p < 0)
 				{
 					p += (x << 2) + 6;
@@ -240,7 +240,7 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 				}
 				x += 1;
 			}
-			if( x==y ) setSymPixel(x, y, v.x, v.y, context);
+			if( x==y ) setSymPixel(x, y, v.v.x, v.v.y, context);
 		}
 
 	//-----------------------------------------------------------------------------
@@ -255,7 +255,7 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 
 			while(x <= y)
 			{
-				fillSymPixel( x, y, v.x, v.y, context);
+				fillSymPixel( x, y, v.v.x, v.v.y, context);
 
 				if (p < 0)
 				{
@@ -274,7 +274,8 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 		public void fillPolygon( Chunk context )
 		{
 			int size		= context.vertices.size();
-			if(size==0){
+			if(size==0)
+			{
 				System.err.println("ZERO");
 				return;
 			}
@@ -285,16 +286,16 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 			
 			for(int i=0; i<size; i++) edges[i]=new Edge();
 
-			x[0] = (int)(context.vertices.get(0).x+1.0f);
-			y[0] = (int)(context.vertices.get(0).y+1.0f);
+			x[0] = (int)(context.vertices.get(0) . v . x + 1.0f);
+			y[0] = (int)(context.vertices.get(0) . v . y + 1.0f);
 
 			int    min_y  =  y[0]  ;
 			int    max_y  =  y[0]  ;
 
 			for( int i=1; i<size; i++ )
 			{
-			    x[i] = (int)(context.vertices.get(i).x+1.0f);
-			    y[i] = (int)(context.vertices.get(i).y+1.0f);
+			    x[i] = (int)(context.vertices.get(i) . v . x + 1.0f);
+			    y[i] = (int)(context.vertices.get(i) . v . y + 1.0f);
 
 			    if( y[i]<min_y )  min_y = y[i];
 			    if( y[i]>max_y )  max_y = y[i];
@@ -304,19 +305,19 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 					edges[i].min_y  =  y[i]-1 ;
 					edges[i].max_y  =  y[i-1]   ;
 					edges[i].x      =  x[i];
-					edges[i].z      =  context.vertices.get(i)   . z   ;
+					edges[i].z      =  context.vertices.get(i) . v . z   ;
 				}
 				else
 				{
 					edges[i].min_y  =  y[i-1]-1 ;
 					edges[i].max_y  =  y[i]  ;
 					edges[i].x      =  x[i-1]   ;
-					edges[i].z      =  context.vertices.get(i-1) . z   ;
+					edges[i].z      =  context.vertices.get(i-1) . v . z   ;
 				}
 
 				delta            = (float)(y[i]-y[i-1]);
 				edges[i].delta_x = (float)(x[i]-x[i-1]) / delta;
-				edges[i].delta_z = (context.vertices.get(i).z-context.vertices.get(i-1).z) / delta;
+				edges[i].delta_z = (context.vertices.get(i). v .z-context.vertices.get(i-1). v . z) / delta;
 			  }
 
 			  if( y[0] < y[size-1] )
@@ -324,19 +325,19 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 				  edges[0].min_y  =  y[0]-1 ;
 				  edges[0].max_y  =  y[size-1]  ;
 				  edges[0].x      =  x[0] ;
-				  edges[0].z      =  context.vertices.get(0)      . z   ;
+				  edges[0].z      =  context.vertices.get(0)      . v . z   ;
 			  }
 			  else
 			  {
 				  edges[0].min_y  =  y[size-1]-1 ;
 				  edges[0].max_y  =  y[0]   ;
 				  edges[0].x      =  x[size-1]  ;
-				  edges[0].z      =  context.vertices.get(size-1) . z   ;
+				  edges[0].z      =  context.vertices.get(size-1) . v . z   ;
 			  }
 
 			  delta             =  (float)(y[0]-y[size-1]);
 			  edges[0].delta_x  =  (float)(x[0]-x[size-1]) / delta;
-			  edges[0].delta_z  =  (context.vertices.get(0).z-context.vertices.get(size-1).z) / delta;
+			  edges[0].delta_z  =  (context.vertices.get(0).v.z-context.vertices.get(size-1) . v . z) / delta;
 
 			  float[] draw   =  new float[size] ;
 			  float[] drawZ  =  new float[size] ;
@@ -383,8 +384,6 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 				  for( i=0 ; i<count ; i=i+2 )
 					  setPixelChunk( Y+1, (int)draw[i], (int)draw[i+1], drawZ[i], (drawZ[i+1]-drawZ[i])/(draw[i+1]-draw[i]), context );
 			  }
-
-			  context.vertices.clear();
 		}
 
 		private void setPixelChunk( int y, int start, int end, float z, float z_growth, Chunk context )
@@ -396,13 +395,13 @@ public class DrawingLibraryDepth implements DrawingLibraryInterface
 			 }
 		}
 		
-		@Override
-		public void fillTrianglesFan(Chunk context) {
+		@Override public void fillTrianglesFan(Chunk context)
+		{
 			DrawingLibraryFlat.instance.fillTrianglesFan(context);
 		}
 
-		@Override
-		public void fillTrianglesStrip(Chunk context) {
+		@Override public void fillTrianglesStrip(Chunk context)
+		{
 			DrawingLibraryFlat.instance.fillTrianglesStrip(context);
 			
 		}

@@ -3,8 +3,8 @@ package rabbit.gl.scheme;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Toolkit;
-import javax.swing.JPanel;
 
+import javax.swing.JPanel;
 import main.SGLTest;
 import rabbit.gl.engine.HUB;
 
@@ -19,11 +19,15 @@ public class sglCanvas extends JPanel
 	public void addNotify()
 	{
 	    super.addNotify();
-	    setIgnoreRepaint(false);
+	    setIgnoreRepaint(true);
+	    super.setBackground(Color.black);
+	    super.setOpaque(false);
 	}
 	
 	public final void paint(Graphics g)
-	{}
+	{
+		paintComponent(g);
+	}
 	
 	public final void update(Graphics g)
 	{ super.paint(g); }
@@ -32,10 +36,10 @@ public class sglCanvas extends JPanel
 	{}
 	
 	public final void revalidate()
-	{
-	}
+	{}
 	
-	public final void validate(){ }
+	public final void validate()
+	{}
 	
 	public final boolean isValid()
 	{ return true; }
@@ -47,10 +51,10 @@ public class sglCanvas extends JPanel
 	{
 		try
 		{
+		
 			long t = System.nanoTime();
 			
 			paint();
-			
 			g.drawImage(HUB.sglGetColorBufferPointer(), 0,0,null);
 			
 			time = (float) ((System.nanoTime()-t)/1000000000.0);
@@ -68,27 +72,19 @@ public class sglCanvas extends JPanel
 		
 		repainting	= true;
 		
-		long nanoTimeAtStartOfUpdate = System.nanoTime();
-        this.paintComponent(this.getGraphics());
+		super.repaint(0, 0, getWidth(),getHeight());
         Toolkit.getDefaultToolkit().sync();
-        cool(nanoTimeAtStartOfUpdate);
+        
+        //this.paintComponent(this.getGraphics());
+        
+        try
+        {
+        	Thread.sleep(currentUpdateSpeed);
+        }
+		catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         
         repainting=false;
         if(loop) repaint();
-	}
-	
-	public void cool(long nanoTimeCurrentUpdateStartedOn)
-	{
-
-		if( currentUpdateSpeed > 0 )
-		{
-			long timeToSleep = currentUpdateSpeed - ((System.nanoTime() - nanoTimeCurrentUpdateStartedOn) / 10000000);
-			
-			if (timeToSleep <= 0) return;
-			
-			try { Thread.sleep(timeToSleep); }
-			catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-		}
 	}
 
 	public void enterMainLoop()

@@ -28,7 +28,7 @@ public class Context
 	public int id							= 0;
 
 	public Chunk storage;
-	static Vertex vertex_calculation_helper	= new Vertex (0,0,0,1);
+	static Vertex vertex_calculation_helper	= new Vertex();
 
 	static DrawingLibraryBase g = new DrawingLibraryBase();
 	
@@ -48,7 +48,7 @@ public class Context
 	public sglEMatrixMode matrixMode;
 
 	public ArrayDeque <sglEElementType> types	= new ArrayDeque<sglEElementType>();		
-	public ArrayDeque <Matrix> P_stack			= new ArrayDeque<Matrix>();
+	public ArrayDeque <Matrix> matrix_stack			= new ArrayDeque<Matrix>();
 
 	public Context(int width, int height)
 	{
@@ -132,18 +132,18 @@ public class Context
 
 	private Vertex create(float x, float y, float z, float w)
 	{
-		vertex_calculation_helper.x = x;
-		vertex_calculation_helper.y = y;
-		vertex_calculation_helper.z = z;
-		vertex_calculation_helper.w = w;
+		vertex_calculation_helper.v.x = x;
+		vertex_calculation_helper.v.y = y;
+		vertex_calculation_helper.v.z = z;
+		vertex_calculation_helper.v.w = w;
 		
 		checkPMVMatrix();
 
 		Vertex v = MVP.multiply(vertex_calculation_helper);
 		
-		v.x /= v.w;
-		v.y /= v.w;
-		v.z /= v.w;
+		v.v.x /= v.v.w;
+		v.v.y /= v.v.w;
+		v.v.z /= v.v.w;
 		
 		return  v;
 	}
@@ -293,8 +293,8 @@ public class Context
 		//switch is faster than if 
 		switch(matrixMode)
 		{
-			case SGL_MODELVIEW : P_stack.push(current_M); break;
-			default :            P_stack.push(current_P); break;
+			case SGL_MODELVIEW : matrix_stack.push(current_M); break;
+			default :            matrix_stack.push(current_P); break;
 		}
 		//if (matrixMode == SGL_MODELVIEW)	projectionStack.push(currentModelviewMatrix);//push_back
 		//else 								projectionStack.push(currentProjectionMatrix);//push_back
@@ -328,13 +328,13 @@ public class Context
 	{ return (types.size() > 0); }
 
 	public boolean stackEmpty()
-	{ return (P_stack.size() == 0); }
+	{ return (matrix_stack.size() == 0); }
 
 	public void popMatrix()
 	{
 		try
 		{
-			if (P_stack.size() == 0)
+			if (matrix_stack.size() == 0)
 			{
 			//*err = SGL_STACK_UNDERFLOW;
 		       	return;
@@ -342,12 +342,12 @@ public class Context
 			if (matrixMode == SGL_MODELVIEW)
 			{
 				M_changed	= true;
-				current_M	= P_stack.pop();
+				current_M	= matrix_stack.pop();
 			}
 			else
 			{
 				P_changed	= true;
-				current_P	= P_stack.pop();
+				current_P	= matrix_stack.pop();
 			}
 		}
 		catch(Throwable t)

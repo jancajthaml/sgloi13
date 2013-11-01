@@ -8,16 +8,21 @@ import static rabbit.gl.type.sglEErrorCode.SGL_INVALID_VALUE;
 import static rabbit.gl.type.sglEErrorCode.SGL_NO_ERROR;
 import static rabbit.gl.type.sglEErrorCode.SGL_STACK_UNDERFLOW;
 
+import rabbit.gl.math.SimpleMath;
+import rabbit.gl.primitive.Sphere;
+import rabbit.gl.struct.Camera;
+import rabbit.gl.struct.CameraManager;
 import rabbit.gl.struct.Color;
 import rabbit.gl.struct.ContextManager;
 import rabbit.gl.struct.Matrix;
+import rabbit.gl.struct.MatrixStack;
+import rabbit.gl.struct.VertexStack;
 import rabbit.gl.type.sglEAreaMode;
 import rabbit.gl.type.sglEElementType;
 import rabbit.gl.type.sglEEnableFlags;
 import rabbit.gl.type.sglEErrorCode;
 import rabbit.gl.type.sglEMatrixMode;
 import rabbit.gl.type.sglEClearBit;
-import rabbit.gl.util.ReferenceManager;
 
 public class HUB
 {
@@ -91,12 +96,17 @@ public class HUB
 	//LongName Function
 	public static int sglCreateContext(int width, int height)
 	{
-		int number_of_contexts = ContextManager.contexts.size();
 		
-		
-		ContextManager.contexts.push(ReferenceManager.create(new Context(width, height)));//.push_back(c);
+		return ContextManager.create(width,height);
+	}
+	
+	public static int sglCreateCamera(Camera camera)
+	{
+		int number_of_cameras = CameraManager.cameras.size();
+				
+		CameraManager.cameras.push(camera);
 
-		return number_of_contexts;
+		return number_of_cameras;
 	}
 
 	//LongName Function
@@ -110,11 +120,18 @@ public class HUB
 		 }
 
 		 ContextManager.deleteContext(id);
-		 
-		// delete manager.contexts[id]->buffer;
-		 //delete manager.contexts[id];
 	}
 
+	public static void sglDestroyCamera(int id)
+	{
+		 if(CameraManager.cameras.isEmpty() || in_range(id,0,CameraManager.cameras.size()-1))
+		 {
+			 setErrCode(SGL_INVALID_VALUE);
+			 return;
+		 }
+
+		 CameraManager.deleteCamera(id);
+	}
 	//LongName Function
 	static void sglSetContext(int id)
 	{
@@ -124,10 +141,18 @@ public class HUB
 			 return;
 		 }
 		 ContextManager.setContext(id);
-
-		 //ContextManager.current = id;
 	}
 
+	static void sglSetCamera(int id)
+	{
+		 if(!in_range(id,0,CameraManager.cameras.size()-1))
+		 {
+			 setErrCode(SGL_INVALID_VALUE);
+			 return;
+		 }
+		 CameraManager.setCamera(id);
+	}
+	
 	//LongName Function
 	static int sglGetContext()
 	{
@@ -140,6 +165,16 @@ public class HUB
 		return ContextManager.current;
 	}
 
+	static int sglGetCamera()
+	{
+		if(CameraManager.current < 0)
+		{
+			setErrCode(SGL_INVALID_OPERATION);
+			return -1;
+		}
+
+		return CameraManager.current;
+	}
 	
 	//LongName Function
 	public static BufferedImage sglGetColorBufferPointer()
@@ -240,10 +275,9 @@ public class HUB
 	//[x,y,z]
 	public static void sglVertex3f(float x, float y, float z)
 	{
-		//normalize(x, y);
-		//VERTICES.push_back(Vertex (x, y, z));
+		//System.out.println("adding "+x+","+y+","+z);
 		try{ current().setVertex3f(x,y,z); }
-		catch(Throwable t){/*ignore*/}
+		catch(Throwable t){ t.printStackTrace(); }
 	}
 
 
@@ -377,11 +411,11 @@ public class HUB
 	{ current().setCurrentMatrix(Matrix.identity()); }
 
 	static void sglLoadMatrix(float[] matrix)
-	{ current().setCurrentMatrix(new Matrix(matrix)); }
+	{ current().setCurrentMatrix(MatrixStack.create(matrix)); }
 
 	//Multiply two matrices
 	static void sglMultMatrix(float[] matrix)
-	{ current().multiplyCurrentMatrix(new Matrix(matrix)); }
+	{ current().multiplyCurrentMatrix(MatrixStack.create(matrix)); }
 
 	//Translate coordinates
 	public static void sglTranslate(float x, float y, float z)
@@ -422,6 +456,42 @@ public class HUB
 		sglFrustum(-w2,w2,-h2,h2,zNear,zFar);
 	}
 
+	/// like gluLookAt
+	public static void sglLookAt(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz)
+	{
+		float X = eyex-centerx;
+		float Y = eyey-centery;
+		float Z = eyez-centerz;
+		float _X = upx;
+		float _Y = upy;
+		float _Z = upz;
+		
+		float a = 1.0f/SimpleMath.sqrt(X*X + Y*Y + Z*Z);
+		X *= a;
+		Y *= a;
+		Z *= a;
+
+		float __X = _Y * Z - _Z * Y;
+		float __Y = _Z * X - _X * Z;
+		float __Z = _X * Y - _Y * X;
+		
+		a = 1.0f/SimpleMath.sqrt( __X*__X + __Y*__Y + __Z*__Z );
+		__X*=a;
+		__Y*=a;
+		__Z*=a;
+
+		_X = Y * __Z - Z * __Y;
+		_Y = Z * __X - X * __Z;
+		_Z = X * __Y - Y * __X;
+		
+		a = 1.0f/SimpleMath.sqrt( _X*_X + _Y*_Y + _Z*_Z );
+		_X *= a;
+		_Y *= a;
+		_Z *= a;
+
+		sglMultMatrix( new float[]{ __X, _X, X, 0.0f, __Y, _Y, Y, 0.0f, __Z, _Z, Z, 0.0f, -eyex*__X - eyey*__Y - eyez*__Z, -eyex*_X - eyey*_Y - eyez*_Z, -eyex*X - eyey*Y - eyez*Z, 1.0f } );
+	}
+	
 	public static void sglViewport(int x, int y, int width, int height)
 	{ current().setViewport(x, y, width, height); }
 
@@ -431,7 +501,9 @@ public class HUB
 
 	//RGB Color
 	public static void sglColor3f( float r, float g, float b )
-	{ current().storage.color = new Color(r, g, b); }
+	{
+		current().storage.color = new Color(r, g, b);
+	}
 	
 	public static void sglColor3f( float r, float g, float b, float a )
 	{ current().storage.color = new Color(r, g, b, a); }
@@ -494,26 +566,23 @@ public class HUB
 	}
 
 	// ? End of what scene ? whole scene or sub scene ?
-	static void sglEndScene()
+	public static void sglEndScene()
 	{
 
 	}
 
-	//3D Sphere
-	//
-	// x	- center.x
-	// y	- center.y
-	// z	- center.z
-	// r	- radius
-	static void sglSphere(float x, float y, float z, float r)
+	public static void sglSphere(float x, float y, float z, float r)
+	{ sglSphere(new Sphere(VertexStack.create(x, y, z, 1.0f), r)); }
+	
+	public static void sglSphere(Sphere s)
 	{
-
+		//TODO work with primitive
 	}
 
 	//Material ******
-	static void sglMaterial(float r, float g, float b, float kd, float ks, float shine, float T, float ior)
+	public static void sglMaterial(float r, float g, float b, float kd, float ks, float shine, float T, float ior)
 	{
-
+		  sglColor3f( r*kd , g*kd , b*kd );
 	}
 
 	//Point Light
@@ -558,6 +627,6 @@ public class HUB
 	{ return ((int)(number-low) <= (high-low)); }
 
 	static Context current()
-	{ return ContextManager.contexts.get(ContextManager.current).get(); }
+	{ return ContextManager.working; }
 
 }
