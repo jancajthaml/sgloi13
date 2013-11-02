@@ -20,7 +20,7 @@ public:
 	 */
 	LineModel(DrawingLibraryBase _g, Chunk _context)
 	{
-		printf("Creating line model\n");
+		Model(_g, _context);
 		this->g = _g;
 		this->context = _context;
 	}
@@ -33,7 +33,7 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		printf("drawing line model\n");
+		//printf("drawing line model\n");
 		for (uint_fast32_t i = 0; i < vertices.size(); i += 2)
 			g.drawLine2D(vertices[i], vertices[i+1], context);
 	}

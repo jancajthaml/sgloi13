@@ -71,15 +71,11 @@ public:
 	 @param lights	lights affecting appearance of this model
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 */
-	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
-	{
-		printf("drawing model\n");
-	};
+	virtual void rasterize(std::vector<Light> lights, Matrix mpv){};
 	
 	
 	inline void addVertex(Vertex v)
 	{
-		printf("adding vertex\n");
 		vertices.push_back(v);
 	}
 	

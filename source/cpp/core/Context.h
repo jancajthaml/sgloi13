@@ -21,6 +21,7 @@
 #include "./../helpers/DrawingLibrary_FLAT.h"
 #include "./../helpers/DrawingLibrary_DEPTH.h"
 #include "./ContextChunk.h"
+#include "./LineModel.h"
 #include <cfloat>
 /*
  * Side-notes:
@@ -175,7 +176,7 @@ struct Context
             default                 : switch( type )	//LINES of FILLING
             {
                 case SGL_POINTS     : g.drawPoints       ( storage ) ; break;
-                case SGL_LINES      : /*scene.rasterize()*/				 ; break;
+                case SGL_LINES      : scene.rasterize()				 ; break;
                 case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
                 case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
                 case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
@@ -431,23 +432,23 @@ struct Context
 		pushTypeState(mode);
 		
 		check_MVP();
-		if (mode == SGL_LINES)
-		{
-			Model *m = new Model(g, storage);
+		//if (mode == SGL_LINES)
+		//{
+			Model *m = new LineModel(g, storage);
 			scene.beginNewNode(new SceneNode(m, MVP));
-		}
+		//}
 	}
 
 	inline void end()
 	{
 		BEGIN=false;
-		/*
+		
 		//handle creation of models and add them to scene (RootSceneNode)
 		sglEElementType type = types.back();
 		
 		switch( type )
 		{
-			//case SGL_LINES      : scene.commitCurrentNode(); break;
+			case SGL_LINES      : scene.commitCurrentNode(); break;
 			/*case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
 			case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
 			case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
@@ -465,8 +466,8 @@ struct Context
 				
 			case SGL_AREA_LIGHT        : 					     ; break;
 			case SGL_LAST_ELEMENT_TYPE : 					     ; break;
-			default                    :                         ; break;
-        }*/
+			default                    :                         ; break;*/
+        }
 
 	}
 

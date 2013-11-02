@@ -41,6 +41,8 @@ public:
 			delete model;
 	}
 	
+	//TODO copy assignment operator, to support RULE OF THREE.
+	
 	/**
 	 Constructor of the SceneNode
 	 @param _model	model that will be held by this SceneNode

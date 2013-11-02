@@ -58,6 +58,9 @@ public:
 	{
 		for (std::vector< SceneNode* >::iterator it = children.begin(); it != children.end(); ++it)
 			(*it)->rasterize(this->lights);
+		
+		//after rasterization delete all children to avoid redrawing.
+		children.clear();
 	}
 	
 	/**
