@@ -146,7 +146,7 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 		inline void setPixel(float x, float y, float z, Chunk &context)
 		{
-			uint_fast32_t index = uint_fast32_t(x + context.w * y);
+			uint_fast32_t index = uint_fast32_t((int)x + context.w * (int)y);
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h && context.depth[index] > z)
 			{
 				context.lastSetPixelIndex	= index;
