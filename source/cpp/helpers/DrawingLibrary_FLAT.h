@@ -145,7 +145,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 		{
 			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
 			{
-				context.lastSetPixelIndex = uint_fast32_t(x + context.w * y);
+				context.lastSetPixelIndex = uint_fast32_t((int)x + context.w * (int)y);
 				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
 			}
 		}
