@@ -175,7 +175,7 @@ struct Context
         storage.vertices.index = 0;
 	}
 
-	inline Vertex& create(float x, float y, float z, float w)
+	inline Vertex create(float x, float y, float z, float w)
 	{
 		check_MVP();
 		Vertex v(x, y, z, w);
