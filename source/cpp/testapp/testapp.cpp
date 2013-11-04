@@ -1079,7 +1079,7 @@ void mySpecial (int key, int x, int y)
   sglSetContext(_contexts[5]);
   sglClearColor(0, 0, 0, 1);
   sglClear(SGL_COLOR_BUFFER_BIT|SGL_DEPTH_BUFFER_BIT);
-  //DrawTestScene2C();
+  DrawTestScene2C();
 
   glutPostRedisplay();
 }

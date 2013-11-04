@@ -20,7 +20,7 @@ struct Helper
 	static inline int_fast32_t round(float x)
 	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
 
-	static void sort(float* &a, int n)
+	static void sort(float *a, int n)
 	{
 		int i = 1;
 		int j = 2;

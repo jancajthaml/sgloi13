@@ -12,7 +12,7 @@
 
 //God Fucking Damn you C++
 
-typedef struct { float f1; float f2; float f3;} __attribute__((packed)) __color;
+typedef struct { float f1; float f2; float f3;} /*__attribute__((packed))*/ __color;
 
 #include <vector>
 #include <list>

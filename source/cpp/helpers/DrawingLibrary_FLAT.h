@@ -143,10 +143,12 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 		inline void setPixel(float x, float y, Chunk &context)
 		{
-			if (x >= 0 && x < context.w && y >= 0 && y < context.h)
+			int x1 = (int)x;
+			int y1 = (int)y;
+			if (x1 >= 0 && x1 < context.w && y1 >= 0 && y1 < context.h)
 			{
-				context.lastSetPixelIndex = uint_fast32_t((int)x + context.w * (int)y);
-				*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+				context.lastSetPixelIndex = uint_fast32_t(x1 + context.w * y1);
+				context.buffer[context.lastSetPixelIndex] = context.color;
 			}
 		}
 
@@ -196,7 +198,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			return *theInstance;
 		}
 
-	//POINTS
+		//POINTS
 
 		inline void drawPoints( Chunk &context )
 		{
@@ -224,6 +226,8 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				}
 			}
 		}
+	
+	
 
 	//-----------------------------------------------------------------------------
 
@@ -306,13 +310,13 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			drawLine2D( context.vertices[size], context.vertices[0], context );
 		}
 
-		inline void drawCircle( Vertex v,float r, Chunk &context)
+		inline void drawCircle(Vertex v, float r, Chunk &context)
 		{
 			int_fast32_t x = 0;
 			int_fast32_t y = r;
 			int_fast32_t p = 3 - (int_fast32_t(r) << 1);
 
-			while( x<y )
+			while(x < y)
 			{
 				setSymPixel(x, y, v.x, v.y, context);
 				if (p < 0)
@@ -360,11 +364,14 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 
 		inline void setPixelChunk(int y, int start, int end, Chunk &context)
 		{
+			
 			int n						= end-start+1;
 			context.lastSetPixelIndex	= (start + context.w * y);
 
-			while( n >= 8 )
+			while( n >= 0 )
 			{
+				context.buffer[context.lastSetPixelIndex++] = context.color;
+				/*
 				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
 				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
 				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
@@ -373,20 +380,22 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
 				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
 				*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));
-				n -= 8;
+				*/
+				n--;
 			}
-
+			/*
 			switch( n )
 			{
-				case 8 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 7 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 6 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 5 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 4 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 3 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 2 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color));*((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-				case 1 : *((__color*) (context.buffer + context.lastSetPixelIndex++))	= *((__color*) &(context.color)); break;
-			}
+				case 7: context.buffer[context.lastSetPixelIndex++] = context.color;
+				case 6: context.buffer[context.lastSetPixelIndex++] = context.color;
+				case 5: context.buffer[context.lastSetPixelIndex++] = context.color;
+				case 4: context.buffer[context.lastSetPixelIndex++] = context.color;
+				case 3: context.buffer[context.lastSetPixelIndex++] = context.color;
+				case 2: context.buffer[context.lastSetPixelIndex++] = context.color;
+				case 1: context.buffer[context.lastSetPixelIndex++] = context.color;
+					break;
+			}*/
+			 
 		}
 
 		inline void drawTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
@@ -487,16 +496,16 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 			int  * x      =  new int[size]          ;
 			int  * y      =  new int[size]          ;
 
-			x[0] = int(context.vertices[0].x+1.0f);
-			y[0] = int(context.vertices[0].y+1.0f);
+			x[0] = int(context.vertices[0].x);
+			y[0] = int(context.vertices[0].y);
 
 			int    min_y  =  y[0]  ;
 			int    max_y  =  y[0]  ;
 
 			for(int i=1; i<size; i++)
 			{
-			    x[i] = int(context.vertices[i].x+1.0f);
-			    y[i] = int(context.vertices[i].y+1.0f);
+			    x[i] = int(context.vertices[i].x);
+			    y[i] = int(context.vertices[i].y);
 
 			    if( y[i]<min_y )  min_y = y[i];
 			    if( y[i]>max_y )  max_y = y[i];
@@ -549,7 +558,7 @@ class DrawingLibraryFlat : public DrawingLibraryInterface
 					  }
 				  }
 
-				  Helper::sort(draw,count);
+				  Helper::sort(draw, count);
 
 			    for( int i=0; i<count; i=i+2 )
 			    	setPixelChunk(y+1, draw[i], draw[i+1]-1, context);

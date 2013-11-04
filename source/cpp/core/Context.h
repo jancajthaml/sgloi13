@@ -202,7 +202,7 @@ struct Context
         storage.vertices.index = 0;
 	}
 
-	inline Vertex& create(float x, float y, float z, float w)
+	inline Vertex create(float x, float y, float z, float w)
 	{
 		check_MVP();
 		Vertex v(x, y, z, w);
@@ -503,7 +503,7 @@ struct Context
 
 	inline void clearColorBuffer()
 	{
-		memcpy(storage.buffer, storage.clear, storage.w_h);
+		memcpy(storage.buffer, storage.clear, sizeof(Color) * storage.w_h);
 	}
 
 	inline void clearDepthBuffer()
