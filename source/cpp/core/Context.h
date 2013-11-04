@@ -22,6 +22,7 @@
 #include "./../helpers/DrawingLibrary_DEPTH.h"
 #include "./ContextChunk.h"
 #include "./LineModel.h"
+#include "./PointModel.h"
 #include <cfloat>
 /*
  * Side-notes:
@@ -166,17 +167,20 @@ struct Context
 
 	inline void rasterize()
 	{
+		scene.rasterize();
+		
+		/*
 		sglEElementType type = types.back();
 		types.pop_back();
 
         switch( drawType )
         {
-            case SGL_POINT          : g.drawPoints ( storage )       ; break;
+            case SGL_POINT          : /*scene.rasterize()   ; break;
 
             default                 : switch( type )	//LINES of FILLING
             {
-                case SGL_POINTS     : g.drawPoints       ( storage ) ; break;
-                case SGL_LINES      : scene.rasterize()				 ; break;
+                case SGL_POINTS     : ; break;
+                case SGL_LINES      : /*scene.rasterize()		 ; break;
                 case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
                 case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
                 case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
@@ -199,7 +203,7 @@ struct Context
             break;
         }
 
-        storage.vertices.index = 0;
+        storage.vertices.index = 0;*/
 	}
 
 	inline Vertex create(float x, float y, float z, float w)
@@ -432,11 +436,16 @@ struct Context
 		pushTypeState(mode);
 		
 		check_MVP();
-		//if (mode == SGL_LINES)
-		//{
+		if (mode == SGL_POINTS)
+		{
+			Model *m = new PointModel(g, storage, storage.size);
+			scene.beginNewNode(new SceneNode(m, MVP));
+		}
+		else
+		{
 			Model *m = new LineModel(g, storage);
 			scene.beginNewNode(new SceneNode(m, MVP));
-		//}
+		}
 	}
 
 	inline void end()
@@ -448,6 +457,7 @@ struct Context
 		
 		switch( type )
 		{
+			case SGL_POINTS		: scene.commitCurrentNode(); break;
 			case SGL_LINES      : scene.commitCurrentNode(); break;
 			/*case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
 			case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;

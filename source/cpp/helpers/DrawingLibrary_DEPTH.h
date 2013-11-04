@@ -143,6 +143,11 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 				}
 			}
 		}
+	
+		inline void setPixel(float x, float y, Chunk &context)
+		{
+			setPixel(x, y, 0.0f, context);
+		}
 
 		inline void setPixel(float x, float y, float z, Chunk &context)
 		{

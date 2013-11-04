@@ -9,7 +9,6 @@
 #ifndef libsgl_LineModel_h
 #define libsgl_LineModel_h
 #include "Model.h"
-#include <cstdio>
 class LineModel : public Model
 {
 public:
@@ -33,7 +32,6 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		//printf("drawing line model\n");
 		for (uint_fast32_t i = 0; i < vertices.size(); i += 2)
 			g.drawLine2D(vertices[i], vertices[i+1], context);
 	}
