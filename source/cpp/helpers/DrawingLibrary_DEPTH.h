@@ -311,16 +311,16 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 			int  * x      =  new int[size]          ;
 			int  * y      =  new int[size]          ;
 
-			x[0] = int(context.vertices[0].x+1.0f);
-			y[0] = int(context.vertices[0].y+1.0f);
+			x[0] = int(context.vertices[0].x);
+			y[0] = int(context.vertices[0].y);
 
 			int    min_y  =  y[0];
 			int    max_y  =  y[0];
 
 			for( int i=1; i<size; i++ )
 			{
-			    x[i] = int(context.vertices[i].x+1.0f);
-			    y[i] = int(context.vertices[i].y+1.0f);
+			    x[i] = int(context.vertices[i].x);
+			    y[i] = int(context.vertices[i].y);
 
 			    if( y[i]<min_y )  min_y = y[i];
 			    if( y[i]>max_y )  max_y = y[i];
