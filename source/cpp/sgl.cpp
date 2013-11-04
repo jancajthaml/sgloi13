@@ -46,6 +46,58 @@
  *
  * */
 
+/**
+ RAYCASTING
+ 
+ where D is direction of the ray from front clipping plane.
+ 
+ 
+ rayTraceScene()
+ {
+	C = V*P*M
+	I = C^{-1}
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			A = I * [x y -1 1]
+			B = I * [x y 1 1]
+			D = (B - A) / ||B - A||
+			Ray ray;
+			ray.origin = A;
+			ray.direction = D;
+			Color c = castAndShade(ray);
+			buffer[x + width * y] = c;
+		}
+	}
+ }
+ 
+castAndShade(const Ray &ray)
+{
+	tmin = INT_MAX;
+	for (o in objects)
+	{
+		float t;
+ 
+		//find nearest object
+		if (o->findIntersection(ray, t))
+		{
+			if (t < tmin)
+			{
+				tmin = t;
+				omin = o;
+			}
+		}
+		normal = getNormal(ray->extrapolate(t));
+		return omin->color;
+	}
+}
+ 
+ 
+ */
+
+
+
 /*
  * useful links:
  * Bresenham's line algorithm - http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
