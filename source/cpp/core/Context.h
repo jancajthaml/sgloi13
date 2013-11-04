@@ -423,7 +423,7 @@ struct Context
 
 	inline void clearColorBuffer()
 	{
-		memcpy(storage.buffer, storage.clear, storage.w_h);
+		memcpy(storage.buffer, storage.clear, sizeof(Color) * storage.w_h);
 	}
 
 	inline void clearDepthBuffer()
