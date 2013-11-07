@@ -193,13 +193,16 @@ struct Context
 		check_MVP();
 
 		//Fast square root
-		float number = (MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]);
+		//NOT WORKING!!! reimplemented old working implementation.
+		//sglCircle had wrong radius because of this fault.
+		/*float number = (MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]);
 		float y = number;
 		long i = *(long*)&y;
 		i = 0x5f3759df - (i >> 1);
 		y = *(float*)&i;
 		y = y * (1.5f - ((number * 0.5f)*y*y));
-		return (static_cast<int>(1/y + 0.5f))/2.8284271247461903f;
+		return (static_cast<int>(1/y + 0.5f))/2.8284271247461903f;*/
+		return sqrt((MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]));
 
 	}
 
@@ -261,16 +264,15 @@ struct Context
 		sglEnd();
 	}
 
-
 	inline void drawArc2D(float x, float y, float z, float r, float from, float to)
 	{
 		float x2			= 0.0f					;
 		float y2			= 0.0f					;
-		float f				= to - from				;
-		float N				= f * 12.732395447351626861510701069801148962756771659236515f;
+		float f				= to - from 			;
+		float N				= 40 * f/(2 * M_PI);/*f * 12.732395447351626861510701069801148962756771659236515f;*/
 		float alpha			= f / N					;
 		float offset        = from / alpha			;
-		float from_offset	= (offset - 1)*alpha	;
+		float from_offset	= (offset-1)*alpha	;
 		float x1			= r * cosf(from_offset)	;
 		float y1			= r * sinf(from_offset)	;
 		float sa			= sinf(alpha)			;
