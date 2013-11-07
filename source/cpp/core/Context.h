@@ -269,7 +269,7 @@ struct Context
 		float x2			= 0.0f					;
 		float y2			= 0.0f					;
 		float f				= to - from 			;
-		float N				= 40 * f/(2 * M_PI);/*f * 12.732395447351626861510701069801148962756771659236515f;*/
+		float N				= 40.0/*f * 6* 12.732395447351626861510701069801148962756771659236515f*/;
 		float alpha			= f / N					;
 		float offset        = from / alpha			;
 		float from_offset	= (offset-1)*alpha	;
