@@ -31,6 +31,7 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
+		Model::multiplyVerticesWithMVP(mpv);
 		uint_fast16_t size = vertices.size();
 		if(size < 3) return;
 		

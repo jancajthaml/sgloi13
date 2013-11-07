@@ -23,9 +23,8 @@ public:
 	 @param _context	graphics context
 	 @param _size		size of the point
 	*/
-	PointModel(DrawingLibraryBase _g, Chunk _context, int _size)
+	PointModel(DrawingLibraryBase _g, Chunk _context, int _size) : Model(_g, _context)
 	{
-		Model(_g, _context);
 		this->g = _g;
 		this->context = _context;
 		this->size = _size;
@@ -39,6 +38,8 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
+		Model::multiplyVerticesWithMVP(mpv);
+		
 		int_fast32_t s = int_fast32_t(vertices.size());
 		
 		if(size==1)

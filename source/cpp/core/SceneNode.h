@@ -39,6 +39,10 @@ public:
 	{
 		if (model != NULL)
 			delete model;
+		for (std::vector<SceneNode *>::iterator it = children.begin(); it != children.end(); ++it)
+		{
+			delete *it;
+		}
 	}
 	
 	//TODO copy assignment operator, to support RULE OF THREE.
@@ -78,14 +82,7 @@ public:
 	
 	inline void addVertex(Vertex v)
 	{
-		//TODO multiply or not multiply now?
-		Vertex v2 = MVP * v;
-		v2.x/=v2.w;
-		v2.y/=v2.w;
-		v2.z/=v2.w;
-		
-		//v2.print();
-		model->addVertex(v2);
+		model->addVertex(v);
 	}
 	
 	

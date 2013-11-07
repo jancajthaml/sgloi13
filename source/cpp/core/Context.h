@@ -140,6 +140,8 @@ struct Context
 		matrixMode     = SGL_MODELVIEW                                ;
 
 		this->disableDepthTest();
+		
+		this->scene.context = storage;
 	}
 
 	inline void setVertex2f(float x, float y)
@@ -172,42 +174,6 @@ struct Context
 	inline void rasterize()
 	{
 		scene.rasterize();
-		
-		/*
-		sglEElementType type = types.back();
-		types.pop_back();
-
-        switch( drawType )
-        {
-            case SGL_POINT          : /*scene.rasterize()   ; break;
-
-            default                 : switch( type )	//LINES of FILLING
-            {
-                case SGL_POINTS     : ; break;
-                case SGL_LINES      : /*scene.rasterize()		 ; break;
-                case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
-                case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
-                case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
-                {
-                    case SGL_LINE   : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
-                    default         : g.fillTrianglesFan ( storage ) ; break;
-                }
-                break;
-                case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
-                {
-                    case SGL_LINE   : g.drawPolygon      ( storage ) ; break;
-                    default         : g.fillPolygon      ( storage ) ; break;
-                }
-                break;
-
-                case SGL_AREA_LIGHT        : 					     ; break;
-                case SGL_LAST_ELEMENT_TYPE : 					     ; break;
-                default                    :                         ; break;
-            }
-            break;
-        }
-
-        storage.vertices.index = 0;*/
 	}
 
 	inline Vertex create(float x, float y, float z, float w)
@@ -226,16 +192,7 @@ struct Context
 	inline float calculateRadiusScaleFactor()
 	{
 		check_MVP();
-
-		//Fast square root
-		float number = (MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]);
-		float y = number;
-		long i = *(long*)&y;
-		i = 0x5f3759df - (i >> 1);
-		y = *(float*)&i;
-		y = y * (1.5f - ((number * 0.5f)*y*y));
-		return (static_cast<int>(1/y + 0.5f))/2.8284271247461903f;
-
+		return sqrt((MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]));
 	}
 
 	inline void drawCricle( float x, float y, float z, float r )

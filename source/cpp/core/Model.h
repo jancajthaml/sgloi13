@@ -16,6 +16,7 @@
 #include "../struct/Vertex.h"
 #include "../helpers/DrawingLibraryBase.h"
 #include "ContextChunk.h"
+#include "../struct/Matrix.h"
 #include <vector>
 #include <cstdio>
 /**
@@ -102,6 +103,17 @@ public:
 			context.lastSetPixelIndex	= index;
 			context.depth[index]		= z;
 			*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
+	}
+	
+	inline void multiplyVerticesWithMVP(Matrix MVP)
+	{
+		for (std::vector<Vertex>::iterator it = vertices.begin(); it != vertices.end(); ++it)
+		{
+			(*it) = MVP * (*it);
+			(*it).x/=(*it).w;
+			(*it).y/=(*it).w;
+			(*it).z/=(*it).w;
 		}
 	}
 	

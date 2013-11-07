@@ -9,6 +9,7 @@
 #ifndef libsgl_RootSceneNode_h
 #define libsgl_RootSceneNode_h
 #include "SceneNode.h"
+#include "ContextChunk.h"
 #include <vector>
 
 
@@ -27,11 +28,14 @@ private:
 	SceneNode *currentNode;
 	
 public:
+	Chunk context;
+	
+	RootSceneNode(){}
 	
 	/**
 	 Constructor of root scene node
 	 */
-	RootSceneNode(){}
+	RootSceneNode(Chunk _context){ this->context = _context; }
 	
 	/**
 	 Adds light to the scene
@@ -61,6 +65,12 @@ public:
 		
 		//after rasterization delete all children to avoid redrawing.
 		children.clear();
+	}
+	
+	void raytrace()
+	{
+		//todo raytrace
+		
 	}
 	
 	/**

@@ -17,9 +17,8 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineModel(DrawingLibraryBase _g, Chunk _context)
+	LineModel(DrawingLibraryBase _g, Chunk _context) : Model(_g, _context)
 	{
-		Model(_g, _context);
 		this->g = _g;
 		this->context = _context;
 	}
@@ -32,6 +31,7 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
+		Model::multiplyVerticesWithMVP(mpv);
 		for (uint_fast32_t i = 0; i < vertices.size(); i += 2)
 			g.drawLine2D(vertices[i], vertices[i+1], context);
 	}

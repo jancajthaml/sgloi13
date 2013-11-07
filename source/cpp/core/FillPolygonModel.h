@@ -33,6 +33,8 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
+		Model::multiplyVerticesWithMVP(mpv);
+		
 		unsigned long    size   =  vertices.size()		;
 		Edge * edges  =  new Edge[size]         ;
 		float  delta  =  0.0f                   ;

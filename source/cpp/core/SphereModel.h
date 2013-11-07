@@ -1,26 +1,32 @@
 //
-//  LineStripModel.h
+//  SphereModel.h
 //  libsgl
 //
 //  Created by Jan Brejcha on 11.11.13.
 //  Copyright (c) 2013 brejchajan. All rights reserved.
 //
 
-#ifndef libsgl_LineStripModel_h
-#define libsgl_LineStripModel_h
+#ifndef libsgl_SphereModel_h
+#define libsgl_SphereModel_h
 
-class LineStripModel : public Model
+class SphereModel : public Model
 {
 public:
+	float x;
+	float y;
+	float z;
+	float r;
 	/**
-	 Constructor of model
+	 Constructor of Spehre model
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineStripModel(DrawingLibraryBase _g, Chunk _context) : Model(_g, _context)
+	SphereModel(DrawingLibraryBase _g, Chunk _context, const float _x, const float _y, const float _z, const float _r) : Model(_g, _context)
 	{
-		this->g = _g;
-		this->context = _context;
+		x = _x;
+		y = _y;
+		z = _z;
+		r = _r;
 	}
 	
 	
@@ -31,9 +37,7 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		Model::multiplyVerticesWithMVP(mpv);
-		for (uint_fast16_t i = 0; i < vertices.size() - 1; ++i)
-			g.drawLine2D(vertices[i], vertices[i+1], context);
+		throw std::runtime_error( "rasterization of parametric sphere is unsupported." );
 	}
 };
 

@@ -114,7 +114,7 @@ sphere.findIntersection(ray, t)
 #include "core/CrossReferenceDispatcher.h"
 #include "core/Context.h"
 #include "core/ContextManager.h"
-
+#include "core/SphereModel.h"
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
 //---------------------------------------------------------------------------
@@ -724,6 +724,7 @@ void sglEndScene()
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+	
 }
 
 //3D Sphere
@@ -739,6 +740,12 @@ void sglSphere(const float x, const float y, const float z, const float r)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+	
+	Context *c = current();
+	SphereModel *sphere = new SphereModel(c->g, c->storage, x, y, z, r);
+	c->check_MVP();
+	c->scene.beginNewNode(new SceneNode(sphere, c->MVP));
+	c->scene.commitCurrentNode();
 }
 
 //Material ******
@@ -766,7 +773,7 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 // ?
 void sglRayTraceScene()
 {
-
+	current()->scene.raytrace();
 }
 
 // ? fragmentation -> rasterization ? direct rasterization ? evaluation ? bad name for a function !
