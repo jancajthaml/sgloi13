@@ -17,11 +17,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineModel(DrawingLibraryBase _g, Chunk _context) : Model(_g, _context)
-	{
-		this->g = _g;
-		this->context = _context;
-	}
+	LineModel(DrawingLibraryBase _g, Chunk _context, Material _material) : Model(_g, _context, _material){}
 	
 	
 	/**

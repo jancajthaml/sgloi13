@@ -23,10 +23,8 @@ public:
 	 @param _context	graphics context
 	 @param _size		size of the point
 	*/
-	PointModel(DrawingLibraryBase _g, Chunk _context, int _size) : Model(_g, _context)
+	PointModel(DrawingLibraryBase _g, Chunk _context, int _size, Material _material) : Model(_g, _context, _material)
 	{
-		this->g = _g;
-		this->context = _context;
 		this->size = _size;
 	}
 	

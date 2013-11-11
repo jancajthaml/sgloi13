@@ -27,6 +27,7 @@
 #include "./FillTrianglesFanModel.h"
 #include "./FillPolygonModel.h"
 #include "./PointModel.h"
+#include "../struct/Material.h"
 #include <cfloat>
 /*
  * Side-notes:
@@ -101,6 +102,9 @@ struct Context
 	
 	///ScenGraph root node
 	RootSceneNode scene;
+	
+	//current material
+	Material material;
 
 
 	Context(uint_fast16_t width, uint_fast16_t height)
@@ -399,23 +403,23 @@ struct Context
 		check_MVP();
 		Model *m;
 		if (mode == SGL_POINTS)
-			m = new PointModel(g, storage, storage.size);
+			m = new PointModel(g, storage, storage.size, material);
 		else if (mode == SGL_LINES)
-			m = new LineModel(g, storage);
+			m = new LineModel(g, storage, material);
 		else if (mode == SGL_LINE_STRIP)
-			m = new LineStripModel(g, storage);
+			m = new LineStripModel(g, storage, material);
 		else if (mode == SGL_LINE_LOOP)
-			m = new LineLoopModel(g, storage);
+			m = new LineLoopModel(g, storage, material);
 		else if ((mode == SGL_TRIANGLES) && (drawType == SGL_LINE))
-			m = new LineLoopModel(g, storage);
+			m = new LineLoopModel(g, storage, material);
 		else if ((mode == SGL_TRIANGLES) && (drawType != SGL_LINE))
-			m = new FillTrianglesFanModel(g, storage);
+			m = new FillTrianglesFanModel(g, storage, material);
 		else if ((mode == SGL_POLYGON) && (drawType == SGL_LINE))
-			m = new LineLoopModel(g, storage);
+			m = new LineLoopModel(g, storage, material);
 		else if ((mode == SGL_POLYGON) && (drawType != SGL_LINE))
-			m = new FillPolygonModel(g, storage);
+			m = new FillPolygonModel(g, storage, material);
 		else
-			m = new Model(g, storage);
+			m = new Model(g, storage, material);
 
 		scene.beginNewNode(new SceneNode(m, MVP));
 	}

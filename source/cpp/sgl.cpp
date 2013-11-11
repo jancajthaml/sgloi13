@@ -115,6 +115,7 @@ sphere.findIntersection(ray, t)
 #include "core/Context.h"
 #include "core/ContextManager.h"
 #include "core/SphereModel.h"
+#include "struct/Material.h"
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
 //---------------------------------------------------------------------------
@@ -756,11 +757,23 @@ void sglMaterial(const float r, const float g, const float b, const float kd, co
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+	
+	Material &m = current()->material;
+	Color &c = m.color;
+	c.r = r;
+	c.g = g;
+	c.b = b;
+	m.kd = kd;
+	m.ks = ks;
+	m.shine = shine;
+	m.trn = T;
+	m.ior = ior;
 }
 
 //Point Light
 //
 // ? x,y,z base coords r,g,b color and where is the direction ?
+// there is no direction, it is treated as all directions light (OMNI light)
 void sglPointLight(const float x, const float y, const float z, const float r, const float g, const float b)
 {
 	if(current()->BeginBeforeEnd())

@@ -19,11 +19,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineLoopModel(DrawingLibraryBase _g, Chunk _context) : 	LineStripModel(_g, _context)
-	{
-		this->g = _g;
-		this->context = _context;
-	}
+	LineLoopModel(DrawingLibraryBase _g, Chunk _context, Material _material) : 	LineStripModel(_g, _context, _material){}
 	
 	
 	/**
