@@ -79,6 +79,32 @@ public:
 		vertices.push_back(v);
 	}
 	
+	inline void setPixelChunk( int y, int start, int end, float z, float z_growth, Chunk &context )
+	{
+		for( int x=start ; x<end ; x++ )
+		{
+			setPixel3D(x,y,z,context);
+			z+=z_growth;
+		}
+	}
+	
+	inline void setPixel3D(float x, float y, float z, Chunk &context)
+	{
+		uint_fast32_t index = uint_fast32_t((int)x + context.w * (int)y);
+		if (!context.depthTest)
+		{
+			context.lastSetPixelIndex	= index;
+			context.depth[index]		= z;
+			*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
+		else if (x >= 0 && x < context.w && y >= 0 && y < context.h && context.depth[index] > z)
+		{
+			context.lastSetPixelIndex	= index;
+			context.depth[index]		= z;
+			*((__color*) (context.buffer + context.lastSetPixelIndex))	= *((__color*) &(context.color));
+		}
+	}
+	
 };
 
 #endif

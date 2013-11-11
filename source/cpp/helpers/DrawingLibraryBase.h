@@ -32,6 +32,7 @@ public:
 	virtual void fillTrianglesStrip	( Chunk &context )						= 0;
 	virtual void fillPolygon		( Chunk &context )						= 0;
 	virtual void setPixel			( float x, float y, Chunk &context)		= 0;
+	virtual void drawTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context) = 0;
 	
 protected:
 	DrawingLibraryInterface()	{};
@@ -84,6 +85,12 @@ public:
 	{
 		state->setPixel(x, y, context);
 	}
+	
+	void drawTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
+	{
+		state->drawTriangle(v0, v1, v2, context);
+	}
+
 		
 	private:
     	friend class DrawingLibraryInterface;

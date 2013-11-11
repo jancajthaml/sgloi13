@@ -244,6 +244,9 @@ class DrawingLibraryDepth : public DrawingLibraryInterface
 
 		inline void fillTrianglesStrip( Chunk &context )
 		{ DrawingLibraryFlat::instance().fillTrianglesStrip(context); }
+	
+		inline void drawTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
+		{ DrawingLibraryFlat::instance().drawTriangle(v0, v1, v2, context); }
 
 		inline void drawPolygon( Chunk &context )
 		{

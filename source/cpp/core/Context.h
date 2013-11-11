@@ -22,6 +22,10 @@
 #include "./../helpers/DrawingLibrary_DEPTH.h"
 #include "./ContextChunk.h"
 #include "./LineModel.h"
+#include "./LineStripModel.h"
+#include "./LineLoopModel.h"
+#include "./FillTrianglesFanModel.h"
+#include "./FillPolygonModel.h"
 #include "./PointModel.h"
 #include <cfloat>
 /*
@@ -436,16 +440,27 @@ struct Context
 		pushTypeState(mode);
 		
 		check_MVP();
+		Model *m;
 		if (mode == SGL_POINTS)
-		{
-			Model *m = new PointModel(g, storage, storage.size);
-			scene.beginNewNode(new SceneNode(m, MVP));
-		}
+			m = new PointModel(g, storage, storage.size);
+		else if (mode == SGL_LINES)
+			m = new LineModel(g, storage);
+		else if (mode == SGL_LINE_STRIP)
+			m = new LineStripModel(g, storage);
+		else if (mode == SGL_LINE_LOOP)
+			m = new LineLoopModel(g, storage);
+		else if ((mode == SGL_TRIANGLES) && (drawType == SGL_LINE))
+			m = new LineLoopModel(g, storage);
+		else if ((mode == SGL_TRIANGLES) && (drawType != SGL_LINE))
+			m = new FillTrianglesFanModel(g, storage);
+		else if ((mode == SGL_POLYGON) && (drawType == SGL_LINE))
+			m = new LineLoopModel(g, storage);
+		else if ((mode == SGL_POLYGON) && (drawType != SGL_LINE))
+			m = new FillPolygonModel(g, storage);
 		else
-		{
-			Model *m = new LineModel(g, storage);
-			scene.beginNewNode(new SceneNode(m, MVP));
-		}
+			m = new Model(g, storage);
+
+		scene.beginNewNode(new SceneNode(m, MVP));
 	}
 
 	inline void end()
@@ -457,26 +472,9 @@ struct Context
 		
 		switch( type )
 		{
-			case SGL_POINTS		: scene.commitCurrentNode(); break;
-			case SGL_LINES      : scene.commitCurrentNode(); break;
-			/*case SGL_LINE_STRIP : g.drawLineStrip    ( storage ) ; break;
-			case SGL_LINE_LOOP  : g.drawLineLoop     ( storage ) ; break;
-			case SGL_TRIANGLES  : switch( drawType )  //TRIANGLE LINE/FILL
-			{
-				case SGL_LINE   : g.drawPolygon      ( storage ) ; break;	//FIXME TO DRAW TRIANGLE FAN in future
-				default         : g.fillTrianglesFan ( storage ) ; break;
-			}
-				break;
-			case SGL_POLYGON    : switch( drawType )  //POLYGON LINE/FILL
-			{
-				case SGL_LINE   : g.drawPolygon      ( storage ) ; break;
-				default         : g.fillPolygon      ( storage ) ; break;
-			}
-				break;
-				
-			case SGL_AREA_LIGHT        : 					     ; break;
-			case SGL_LAST_ELEMENT_TYPE : 					     ; break;
-			default                    :                         ; break;*/
+			case SGL_AREA_LIGHT        : 					      ; break;
+			case SGL_LAST_ELEMENT_TYPE : 					      ; break;
+			default                    : scene.commitCurrentNode(); break;
         }
 
 	}
@@ -571,12 +569,14 @@ struct Context
 	{
 		g.set(&DrawingLibraryDepth::instance());
 		Z_TEST = true;
+		storage.depthTest = true;
 	}
 
 	void disableDepthTest()
 	{
 		g.set(&DrawingLibraryFlat::instance());
 		Z_TEST = false;
+		storage.depthTest = false;
 	}
 
 };

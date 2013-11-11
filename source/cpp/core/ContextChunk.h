@@ -33,7 +33,7 @@ struct Chunk
 
 	uint_fast32_t lastSetPixelIndex	;	//CACHE OF setPixel(int,int) METHOD
 
-	//bool depth						;	//DEPTH TEST
+	bool depthTest						;	//DEPTH TEST
 };
 
 #endif /* CHUNK_H_ */

@@ -81,6 +81,11 @@ class VertexStack
 		free(tmp);
 	}
 	
+	void clear()
+	{
+		index = 0;
+	}
+	
 	inline int_fast16_t size()
 	{
 		return this->index - 1;
