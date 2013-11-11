@@ -52,9 +52,6 @@
 #endif
 
 
-#if !defined(USE_GUI) && defined(_MSC_VER)
-#define USE_GUI 1
-#endif
 #define USE_GUI 1
 #ifdef TEST_0A
 #define USE_VIEWPORT 0
