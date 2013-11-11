@@ -93,7 +93,13 @@ castAndShade(const Ray &ray)
 	}
 }
  
- 
+sphere.findIntersection(ray, t)
+{
+	//odvozeni
+	D * D * t^2 + 2 (O - C) * D * t + (O - C) - r^2 = 0;
+	U = (O - C)
+	t = (-b +- sqrt(b^2 - 4ac)) / 2 => (-2 * U * D +- sqrt(4(U * D)^2 - 4 * (U * U - r^2)))/2
+	t = U * D +- sqrt((U * D)^2 - (U * U - r^2))
  */
 
 
