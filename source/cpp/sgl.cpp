@@ -116,6 +116,7 @@ sphere.findIntersection(ray, t)
 #include "core/ContextManager.h"
 #include "core/SphereModel.h"
 #include "struct/Material.h"
+#include "struct/Light.h"
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
 //---------------------------------------------------------------------------
@@ -781,6 +782,16 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+	
+	Light light;
+	light.color.r = r;
+	light.color.g = g;
+	light.color.b = b;
+	light.position.x = x;
+	light.position.y = y;
+	light.position.z = z;
+	light.position.w = 1.0f;
+	current()->scene.addLight(light);
 }
 
 // ?
@@ -792,7 +803,7 @@ void sglRayTraceScene()
 // ? fragmentation -> rasterization ? direct rasterization ? evaluation ? bad name for a function !
 void sglRasterizeScene()
 {
-
+	current()->scene.rasterize();
 }
 
 // ? image or fragment(s) ? or fragment set ?
