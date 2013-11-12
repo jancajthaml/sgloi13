@@ -16,6 +16,12 @@ struct Ray
 	
 	///Direction of the ray
 	Vertex direction;
+	
+	
+	inline Vertex extrapolate(const float t)const
+	{
+		return origin + (direction * t);
+	}
 };
 
 

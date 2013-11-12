@@ -36,6 +36,15 @@ struct Color
 		this->g = g;
 		this->b = b;
 	}
+	
+	Color operator+(const Color &other)
+	{
+		Color res;
+		res.r = r + other.r;
+		res.g = g + other.g;
+		res.b = b + other.b;
+		return res;
+	}
 
 };
 

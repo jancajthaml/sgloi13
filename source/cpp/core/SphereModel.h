@@ -59,6 +59,14 @@ public:
 		}
 		return false;
 	}
+	
+	virtual Vertex getNormal(const Vertex &i)
+	{
+		Vertex dir = i - position;
+		dir = dir / dir.length();
+		return dir;
+	}
+	
 };
 
 

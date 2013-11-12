@@ -83,6 +83,15 @@ public:
 		return material;
 	}
 	
+	/**
+	 calculates normal at intersection point i
+	 @param i	intersection point of ray and model
+	 */
+	virtual Vertex getNormal(const Vertex &i)
+	{
+		return Vertex(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+	
 	
 	inline void addVertex(Vertex v)
 	{

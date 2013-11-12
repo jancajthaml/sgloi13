@@ -194,6 +194,16 @@ public:
 		
 		return true;                       // I is in T	}
 	}
+	
+	virtual Vertex getNormal(const Vertex &i)
+	{
+		Vertex a = i - vertices[0];
+		Vertex b = i - vertices[1];
+		Vertex n = a.crossProduct(b);
+		n = n / n.length();
+		return n;
+	}
+
 };
 
 #endif

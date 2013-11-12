@@ -158,8 +158,9 @@ struct Vertex
 			res.y = (y/w) + (rhs.y/w);
 			res.z = (z/w) + (rhs.z/w);
 			res.w = 1.0f;
-			return res;
+			
 		}
+		return res;
 	}
 	
 	Vertex crossProduct(const Vertex &rhs)const

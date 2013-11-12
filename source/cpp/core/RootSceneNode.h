@@ -13,8 +13,7 @@
 #include "../struct/Ray.h"
 #include <vector>
 #include <cfloat>
-
-
+#include <cmath>
 
 class RootSceneNode : public SceneNode
 {
@@ -124,12 +123,61 @@ public:
 				}
 			}
 		}
-		//normal = getNormal(ray->extrapolate(tmin));
 		if (tmin != FLT_MAX)
 		{
-			return model->getMaterial().color;
+			Vertex i = ray.extrapolate(tmin);
+			Vertex normal = model->getNormal(i);
+			return phongModel(ray, model, i, normal);
+			//return model->getMaterial().color;
 		}
 		return *(context.clear);
+	}
+	
+	/**
+	 Calculation of phong lighting model
+	 @param ray		ray that caused the intersection
+	 @param model	model with which the ray intersected
+	 @param i		intersection point of the ray and the model
+	 @param n		normal in the intersection point
+	 */
+	Color phongModel(const Ray &ray, Model *model, const Vertex &i, const Vertex &n)const
+	{
+		Color Ia;
+		Color Id;
+		Color Is;
+		Material material = model->getMaterial();
+		Vertex E = ray.origin + ray.direction;
+		E = E*(-1);
+		E = E / E.length();
+		for (std::vector< Light >::const_iterator light = lights.begin(); light != lights.end(); ++light)
+		{
+			//ambient
+			/*
+			there is no material.ka !!! - we do not obtain it on sglMaterial call
+			so I am skipping ambient.
+			Ia.r += light->color.r * material.color.r;
+			Ia.g += light->color.g * material.color.g;
+			Ia.b += light->color.b * material.color.b;
+			 */
+			
+			//diffuse
+			Vertex L = light->position - i;
+			L = L / L.length();
+			float LN = (L * n);
+			Id.r += light->color.r * material.kd * material.color.r * LN;
+			Id.g += light->color.g * material.kd * material.color.g * LN;
+			Id.b += light->color.b * material.kd * material.color.b * LN;
+			
+			//specular
+			Vertex R = n*2*LN - L;
+			//R = R / R.length();
+			float ER = pow(E*R, material.shine);
+			Is.r += light->color.r * material.ks * ER;
+			Is.g += light->color.g * material.ks * ER;
+			Is.b += light->color.b * material.ks * ER;
+		}
+		return Id + Is;
+		//return model->getMaterial().color;
 	}
 	
 	/**
