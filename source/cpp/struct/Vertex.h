@@ -48,7 +48,7 @@ struct Vertex
 		w = W;
 	}
 	
-	void print()
+	void print() const
 	{
 		printf("[%f, %f, %f, %f]\n", x, y, z, w);
 	}
@@ -82,27 +82,6 @@ struct Vertex
 		res.z = (z/w) - (other.z/w);
 		res.w = 1.0f;
 		return res;
-	}
-	
-	inline Vertex operator/(const Vertex &rhs) const
-	{
-		Vertex res;
-		if (w == 1.0)
-		{
-			res.x = x / rhs.x;
-			res.y = y / rhs.y;
-			res.z = z / rhs.z;
-			res.w = 1.0f;
-			return res;
-		}
-		else
-		{
-			res.x = (x/w) / (rhs.x/w);
-			res.y = (y/w) / (rhs.y/w);
-			res.z = (z/w) / (rhs.z/w);
-			res.w = 1.0f;
-			return res;
-		}
 	}
 	
 	inline Vertex operator/(const float &rhs) const
@@ -148,23 +127,17 @@ struct Vertex
 		}
 	}
 	
-	inline Vertex operator*(const Vertex &rhs) const
+	inline float operator*(const Vertex &rhs) const
 	{
-		Vertex res;
+		float res;
 		if (w == 1.0)
 		{
-			res.x = x * rhs.x;
-			res.y = y * rhs.y;
-			res.z = z * rhs.z;
-			res.w = 1.0f;
+			res = x * rhs.x + y * rhs.y + z * rhs.z;
 			return res;
 		}
 		else
 		{
-			res.x = (x/w) * (rhs.x/w);
-			res.y = (y/w) * (rhs.y/w);
-			res.z = (z/w) * (rhs.z/w);
-			res.w = 1.0f;
+			res = (x/w) * (rhs.x/w) + (y/w) * (rhs.y/w) + (z/w) * (rhs.z/w);
 			return res;
 		}
 	}

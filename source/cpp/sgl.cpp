@@ -726,7 +726,7 @@ void sglEndScene()
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	
+	current()->endScene();
 }
 
 //3D Sphere
@@ -744,7 +744,7 @@ void sglSphere(const float x, const float y, const float z, const float r)
 	}
 	
 	Context *c = current();
-	SphereModel *sphere = new SphereModel(c->g, c->storage, x, y, z, r);
+	SphereModel *sphere = new SphereModel(c->g, c->storage, current()->material, x, y, z, r);
 	c->check_MVP();
 	c->scene.beginNewNode(new SceneNode(sphere, c->MVP));
 	c->scene.commitCurrentNode();
@@ -797,6 +797,8 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 // ?
 void sglRayTraceScene()
 {
+	//current()->check_MVP();
+	current()->scene.setMVP(current()->viewport.V * current()->current_P * current()->current_M);
 	current()->scene.raytrace();
 }
 

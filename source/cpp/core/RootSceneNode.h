@@ -12,6 +12,7 @@
 #include "ContextChunk.h"
 #include "../struct/Ray.h"
 #include <vector>
+#include <cfloat>
 
 
 
@@ -74,6 +75,7 @@ public:
 		//todo raytrace
 		Vertex A, B, D, e;
 		Matrix I = MVP.inverse();
+		//MVP.print();
 		for (uint_fast16_t y = 0; y < context.w; y++)
 		{
 			for (uint_fast16_t x = 0; x < context.w; x++)
@@ -83,8 +85,17 @@ public:
 				e.z = -1;
 				e.w = 1;
 				A = I * e;//I * [x y -1 1];
+				
 				e.z = 1;
 				B = I * e;//[x y 1 1];
+				//printf("I: ");
+				/*I.print();
+				printf("\nA: ");
+				A.print();/*
+				printf("\nB: ");
+				B.print();
+				printf("\n");*/
+				
 				D = (B - A) / (B - A).length();
 				Ray ray;
 				ray.origin = A;
@@ -95,9 +106,31 @@ public:
 
 	}
 	
-	Color castAndShade(Ray ray)
+	Color castAndShade(const Ray &ray)
 	{
-		return Color(1.0, 0.6, 0.3);
+		float tmin = FLT_MAX;
+		Model *model;
+		float t;
+		for (std::vector<SceneNode *>::iterator it = children.begin(); it != children.end(); ++it)
+		{
+			//find nearest object
+			if ((*it)->getModel()->findIntersection(ray, t))
+			{
+				if (t < tmin)
+				{
+					tmin = t;
+					model = (*it)->getModel();
+				}
+			}
+		}
+		//normal = getNormal(ray->extrapolate(tmin));
+		if (tmin != FLT_MAX)
+		{
+			//printf("color: %f %f %f\n", model->getMaterial().color.r, model->getMaterial().color.g, model->getMaterial().color.b);
+			return model->getMaterial().color;
+		}
+		//printf("color: %f %f %f\n", (*(context.clear)).r, (*(context.clear)).g, (*(context.clear)).b);
+		return *(context.clear);
 	}
 	
 	/**
@@ -126,6 +159,11 @@ public:
 	inline SceneNode * getCurrentNode()
 	{
 		return currentNode;
+	}
+	
+	void setMVP(Matrix mvp)
+	{
+		MVP = mvp;
 	}
 	
 };

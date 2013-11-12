@@ -17,6 +17,7 @@
 #include "../helpers/DrawingLibraryBase.h"
 #include "ContextChunk.h"
 #include "../struct/Matrix.h"
+#include "../struct/Ray.h"
 #include <vector>
 #include <cstdio>
 /**
@@ -73,6 +74,14 @@ public:
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv){};
+	
+	
+	virtual bool findIntersection(const Ray &ray, float &t){ return false; };
+	
+	inline Material &getMaterial()
+	{
+		return material;
+	}
 	
 	
 	inline void addVertex(Vertex v)

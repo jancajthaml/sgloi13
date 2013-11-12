@@ -86,6 +86,12 @@ public:
 	}
 	
 	
+	inline Model * getModel()
+	{
+		return model;
+	}
+	
+	
 	
 	
 };
