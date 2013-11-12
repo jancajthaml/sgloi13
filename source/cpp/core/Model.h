@@ -76,7 +76,7 @@ public:
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv){};
 	
 	
-	virtual bool findIntersection(const Ray &ray, float &t){ return false; };
+	virtual bool findIntersection(const Ray &ray, float &t){ return false; }
 	
 	inline Material &getMaterial()
 	{

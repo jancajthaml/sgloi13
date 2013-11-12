@@ -8,7 +8,6 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
-
 //TODO COMMENT !!!!!!!
 struct Vertex
 {
@@ -162,6 +161,17 @@ struct Vertex
 			return res;
 		}
 	}
+	
+	Vertex crossProduct(const Vertex &rhs)const
+	{
+		Vertex cross;
+		cross.x = y * rhs.z - z * rhs.y;
+		cross.y = z * rhs.x - x * rhs.z;
+		cross.z = x * rhs.y - y * rhs.x;
+		cross.w = 1.0;
+		return cross;
+	}
+
 
 };
 

@@ -10,6 +10,9 @@
 #define libsgl_FillPolygonModel_h
 
 #include "../helpers/Helpers.h"
+#define EPSILON 0.000001
+
+
 class FillPolygonModel : public Model
 {
 public:
@@ -123,6 +126,73 @@ public:
 		delete[] draw              ;
 		vertices.clear()		   ;
 		delete[] edges             ;
+	}
+	
+	
+	virtual bool findIntersection(const Ray &ray, float &t)
+	{
+		return triangle_intersection(vertices[0], vertices[1], vertices[2], ray, t);
+	}
+	
+	/**
+	 Triangle intersection.
+	 Algorithm used from: http://geomalgorithms.com/a06-_intersect-2.html
+	 */
+	bool triangle_intersection(const Vertex &V0,  // Triangle vertices
+							   const Vertex &V1,
+							   const Vertex &V2,
+							   const Ray &ray,
+							   float &param)
+	{
+		Vertex    u, v, n;              // triangle vectors
+		Vertex    dir, w0, w;           // ray vectors
+		float     r, a, b;              // params to calc ray-plane intersect
+		
+		// get triangle edge vectors and plane normal
+		u = V1 - V0;
+		v = V2 - V0;
+		n = u.crossProduct(v);              // cross product
+		if (n.x == 0 && n.y == 0 && n.z == 0)             // triangle is degenerate
+			return false;                  // do not deal with this case
+		
+		dir = ray.direction;         // ray direction vector
+		w0 = ray.origin - V0;
+		a = (n * -1) * w0;
+		b = n * dir;
+		if (fabs(b) < EPSILON) {     // ray is  parallel to triangle plane
+			/*if (a == 0)                 // ray lies in triangle plane
+				return 2;
+			else return 0;*/		// ray disjoint from plane
+			return false;
+		}
+		
+		// get intersect point of ray with triangle plane
+		r = a / b;
+		if (r < 0.0)                    // ray goes away from triangle
+			return false;                   // => no intersect
+		// for a segment, also test if (r > 1.0) => no intersect
+		param = r;
+		Vertex I = ray.origin + (dir * r);            // intersect point of ray and plane
+		// is I inside T?
+		float    uu, uv, vv, wu, wv, D;
+		uu = u * u;
+		uv = u * v;
+		vv = v * v;
+		w = I - V0;
+		wu = w * u;
+		wv = w * v;
+		D = uv * uv - uu * vv;
+		
+		// get and test parametric coords
+		float s, t;
+		s = (uv * wv - vv * wu) / D;
+		if (s < 0.0 || s > 1.0)         // I is outside T
+			return false;
+		t = (uv * wu - uu * wv) / D;
+		if (t < 0.0 || (s + t) > 1.0)  // I is outside T
+			return false;
+		
+		return true;                       // I is in T	}
 	}
 };
 
