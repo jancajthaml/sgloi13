@@ -221,23 +221,23 @@ struct Matrix
 		float k = 1 / this->determinant();
 		Matrix inv;
 		inv.matrix[0] = k * Matrix::determinant33(matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
-		inv.matrix[1] = k * Matrix::determinant33(matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
-		inv.matrix[2] = k * Matrix::determinant33(matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
-		inv.matrix[3] = k * Matrix::determinant33(matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
+		inv.matrix[4] = -k * Matrix::determinant33(matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
+		inv.matrix[8] = k * Matrix::determinant33(matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
+		inv.matrix[12] = -k * Matrix::determinant33(matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
 		
-		inv.matrix[4] = k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
+		inv.matrix[1] = -k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
 		inv.matrix[5] = k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
-		inv.matrix[6] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
-		inv.matrix[7] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
+		inv.matrix[9] = -k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
+		inv.matrix[13] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
 		
-		inv.matrix[8] = k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[13], matrix[14], matrix[15]);
-		inv.matrix[9] = k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[12], matrix[14], matrix[15]);
+		inv.matrix[2] = k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[13], matrix[14], matrix[15]);
+		inv.matrix[6] = -k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[12], matrix[14], matrix[15]);
 		inv.matrix[10] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[12], matrix[13], matrix[15]);
-		inv.matrix[11] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[12], matrix[13], matrix[14]);
+		inv.matrix[14] = -k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[12], matrix[13], matrix[14]);
 		
-		inv.matrix[12] = k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11]);
-		inv.matrix[13] = k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11]);
-		inv.matrix[14] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11]);
+		inv.matrix[3] = -k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11]);
+		inv.matrix[7] = k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11]);
+		inv.matrix[11] = -k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11]);
 		inv.matrix[15] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10]);
 		return inv;
 	}
