@@ -52,6 +52,143 @@ struct Vertex
 	{
 		printf("[%f, %f, %f, %f]\n", x, y, z, w);
 	}
+	
+	
+	inline float length()
+	{
+		if (w == 1.0){
+			return sqrt(x * x + y * y + z * z);
+		}
+		float x1 = x/w;
+		float y1 = y/w;
+		float z1 = z/w;
+		return sqrt(x1 * x1 + y1 * y1 + z1 * z1);
+	}
+	
+	
+	inline Vertex operator-(const Vertex &other) const
+	{
+		Vertex res;
+		if (w == 1.0)
+		{
+			res.x = x - other.x;
+			res.y = y - other.y;
+			res.z = z - other.z;
+			res.w = 1.0f;
+			return res;
+		}
+		res.x = (x/w) - (other.x/w);
+		res.y = (y/w) - (other.y/w);
+		res.z = (z/w) - (other.z/w);
+		res.w = 1.0f;
+		return res;
+	}
+	
+	inline Vertex operator/(const Vertex &rhs) const
+	{
+		Vertex res;
+		if (w == 1.0)
+		{
+			res.x = x / rhs.x;
+			res.y = y / rhs.y;
+			res.z = z / rhs.z;
+			res.w = 1.0f;
+			return res;
+		}
+		else
+		{
+			res.x = (x/w) / (rhs.x/w);
+			res.y = (y/w) / (rhs.y/w);
+			res.z = (z/w) / (rhs.z/w);
+			res.w = 1.0f;
+			return res;
+		}
+	}
+	
+	inline Vertex operator/(const float &rhs) const
+	{
+		Vertex res;
+		if (w == 1.0)
+		{
+			res.x = x / rhs;
+			res.y = y / rhs;
+			res.z = z / rhs;
+			res.w = 1.0f;
+			return res;
+		}
+		else
+		{
+			res.x = (x/w) / rhs;
+			res.y = (y/w) / rhs;
+			res.z = (z/w) / rhs;
+			res.w = 1.0f;
+			return res;
+		}
+	}
+	
+	
+	inline Vertex operator*(const float &rhs) const
+	{
+		Vertex res;
+		if (w == 1.0)
+		{
+			res.x = x * rhs;
+			res.y = y * rhs;
+			res.z = z * rhs;
+			res.w = 1.0f;
+			return res;
+		}
+		else
+		{
+			res.x = (x/w) * rhs;
+			res.y = (y/w) * rhs;
+			res.z = (z/w) * rhs;
+			res.w = 1.0f;
+			return res;
+		}
+	}
+	
+	inline Vertex operator*(const Vertex &rhs) const
+	{
+		Vertex res;
+		if (w == 1.0)
+		{
+			res.x = x * rhs.x;
+			res.y = y * rhs.y;
+			res.z = z * rhs.z;
+			res.w = 1.0f;
+			return res;
+		}
+		else
+		{
+			res.x = (x/w) * (rhs.x/w);
+			res.y = (y/w) * (rhs.y/w);
+			res.z = (z/w) * (rhs.z/w);
+			res.w = 1.0f;
+			return res;
+		}
+	}
+	
+	inline Vertex operator+(const Vertex &rhs) const
+	{
+		Vertex res;
+		if (w == 1.0)
+		{
+			res.x = x + rhs.x;
+			res.y = y + rhs.y;
+			res.z = z + rhs.z;
+			res.w = 1.0f;
+			return res;
+		}
+		else
+		{
+			res.x = (x/w) + (rhs.x/w);
+			res.y = (y/w) + (rhs.y/w);
+			res.z = (z/w) + (rhs.z/w);
+			res.w = 1.0f;
+			return res;
+		}
+	}
 
 };
 

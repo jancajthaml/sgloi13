@@ -10,6 +10,7 @@
 #define libsgl_RootSceneNode_h
 #include "SceneNode.h"
 #include "ContextChunk.h"
+#include "../struct/Ray.h"
 #include <vector>
 
 
@@ -69,8 +70,34 @@ public:
 	
 	void raytrace()
 	{
+		printf("raytrace\n");
 		//todo raytrace
-		
+		Vertex A, B, D, e;
+		Matrix I = MVP.inverse();
+		for (uint_fast16_t y = 0; y < context.w; y++)
+		{
+			for (uint_fast16_t x = 0; x < context.w; x++)
+			{
+				e.x = x;
+				e.y = y;
+				e.z = -1;
+				e.w = 1;
+				A = I * e;//I * [x y -1 1];
+				e.z = 1;
+				B = I * e;//[x y 1 1];
+				D = (B - A) / (B - A).length();
+				Ray ray;
+				ray.origin = A;
+				ray.direction = D;
+				context.buffer[x + context.w * y] = castAndShade(ray);
+			}
+		}
+
+	}
+	
+	Color castAndShade(Ray ray)
+	{
+		return Color(1.0, 0.6, 0.3);
 	}
 	
 	/**
