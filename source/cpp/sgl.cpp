@@ -797,8 +797,9 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 // ?
 void sglRayTraceScene()
 {
-	//current()->check_MVP();
-	current()->scene.setMVP(current()->viewport.V * current()->current_P * current()->current_M);
+	current()->check_MVP();
+	current()->MVP.print();
+	current()->scene.setMVP(current()->MVP/*current()->viewport.V * current()->current_P * current()->current_M*/);
 	current()->scene.raytrace();
 }
 

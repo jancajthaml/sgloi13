@@ -27,8 +27,7 @@ public:
 		position.y = _y;
 		position.z = _z;
 		position.w = 1.0f;
-		position.print();
-		r = _r/2.0;
+		r = _r;
 	}
 	
 	

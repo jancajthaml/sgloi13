@@ -85,9 +85,17 @@ public:
 				e.z = -1;
 				e.w = 1;
 				A = I * e;//I * [x y -1 1];
+				A.x = A.x/A.w;
+				A.y = A.y/A.w;
+				A.z = A.z/A.w;
+				A.w = 1.0;
 				
 				e.z = 1;
 				B = I * e;//[x y 1 1];
+				B.x = B.x/B.w;
+				B.y = B.y/B.w;
+				B.z = B.z/B.w;
+				B.w = 1.0;
 				//printf("I: ");
 				/*I.print();
 				printf("\nA: ");
