@@ -35,7 +35,7 @@
 #ifdef TEST3
 #define TEST_3A
 //#define TEST_3B
-//#define TEST_3C
+#define TEST_3C
 #endif
 
 #ifdef TEST4
@@ -988,7 +988,7 @@ RayTraceScene(const char *scenename)
   // modelview transformation
   sglMatrixMode(SGL_MODELVIEW);
   sglLoadIdentity();
-  /*sgluLookAt(
+  sgluLookAt(
 			 nffstore.from.x,
 			 nffstore.from.y,
 			 nffstore.from.z,
@@ -998,20 +998,7 @@ RayTraceScene(const char *scenename)
 			 nffstore.up.x,
 			 nffstore.up.y,
 			 nffstore.up.z
-			 );*/
-	
-	sgluLookAt(
-	 0.0,
-	 0.0,
-	 4.0,
-	 0.0,
-	 0.0,
-	 0.0,
-	 0.0,
-	 1.0,
-	 0.0
-	 );
-
+			 );
 
 
   // compute a ray traced image and store it in the color buffer

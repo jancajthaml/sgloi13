@@ -96,13 +96,6 @@ public:
 				B.y = B.y/B.w;
 				B.z = B.z/B.w;
 				B.w = 1.0;
-				//printf("I: ");
-				/*I.print();
-				printf("\nA: ");
-				A.print();/*
-				printf("\nB: ");
-				B.print();
-				printf("\n");*/
 				
 				D = (B - A) / (B - A).length();
 				Ray ray;
@@ -134,10 +127,8 @@ public:
 		//normal = getNormal(ray->extrapolate(tmin));
 		if (tmin != FLT_MAX)
 		{
-			//printf("color: %f %f %f\n", model->getMaterial().color.r, model->getMaterial().color.g, model->getMaterial().color.b);
 			return model->getMaterial().color;
 		}
-		//printf("color: %f %f %f\n", (*(context.clear)).r, (*(context.clear)).g, (*(context.clear)).b);
 		return *(context.clear);
 	}
 	
