@@ -62,6 +62,7 @@ struct Vertex
 	//FIXME use fast square root
 	inline float length()
 	{
+		if( w==0.0f ) return 0.0f;
 		if( w==1.0f ) return sqrtf( x*x + y*y + z*z);
 
 		float v = 1.0f/w;

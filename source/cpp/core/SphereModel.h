@@ -64,11 +64,10 @@ public:
 	virtual Vertex getNormal(const Vertex &i)
 	{
 		Vertex dir	= i - position;
-		dir			= dir / dir.length();
+		dir.normalise();
 		return dir;
 	}
 	
 };
-
 
 #endif

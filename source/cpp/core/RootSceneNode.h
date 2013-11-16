@@ -20,6 +20,9 @@
 #include <stdio.h>
 #include <iostream>
 
+#define ADAPTIVE_AA
+
+
 class RootSceneNode : public SceneNode
 {
 private:
@@ -84,49 +87,117 @@ public:
 		printf("raytrace\n");
 
 		//todo raytrace
-		Vertex A, B, D, e;
+
 		Matrix I = MVP.inverse();
-		float w=0.0f;
 
 		int_fast16_t y = -1;
 		int_fast16_t x = -1;
 
-		while( ++y<context.h )
+		while( ++x<context.w )
 		{
-			x=-1;
-			while( ++x<context.w )
+			y=-1;
+			while( ++y<context.h )
 			{
-				e.x = x;
-				e.y = y;
-				e.z = -1;
-				e.w = 1;
-				A	= I * e;//I * [x y -1 1];
-				w	= 1.0f/A.w;
-				A.x = A.x*w;
-				A.y = A.y*w;
-				A.z = A.z*w;
-				A.w = 1.0;
-				
-				e.z	= 1;
-				B	= I * e;//[x y 1 1];
-				w	= 1.0f/B.w;
-				B.x = B.x*w;
-				B.y = B.y*w;
-				B.z = B.z*w;
-				B.w = 1.0;
-				
-				D = (B - A) / (B - A).length();
-				Ray ray;
-				ray.origin = A;
-				ray.direction = D;
-
 				context.lastSetPixelIndex					= ( x+context.w*y );
-				context.buffer[context.lastSetPixelIndex]	= castAndShade(ray);
+
+				#ifdef ADAPTIVE_AA
+					context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex((float)x, (float)y), Vertex((float) (x + 1), (float) (y + 1)), I, 0);
+				#else
+					context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex((float)x, (float)y), I));
+				#endif
 			}
 		}
-
 	}
-	
+
+	//This method is horribly slow.... !!!!
+	//FIXME
+	Ray createRay(Vertex v, Matrix I)
+	{
+		float w=0.0f;
+
+		v.z	= -1.0f;
+		v.w	= 1.0f;
+
+		Vertex A	= I * v;//I * [x y -1 1];
+
+		//SLOW HERE
+		w	= 1.0f/A.w;
+		A.x = A.x*w;
+		A.y = A.y*w;
+		A.z = A.z*w;
+		A.w = 1.0;
+
+		v.z	= 1.0f;
+		Vertex B = I * v;//[x y 1 1];
+
+		//SLOW HERE
+		w	= 1.0f/B.w;
+		B.x = B.x*w;
+		B.y = B.y*w;
+		B.z = B.z*w;
+		B.w = 1.0;
+
+		Vertex D = (B - A);
+		D.normalise();
+
+		Ray ray;
+		ray.origin		= A;
+		ray.direction	= D;
+
+		return ray;
+	}
+
+	// Recursive 4-point AA
+	Color antialiasing(Vertex s, Vertex e, Matrix I, int depth)
+	{
+		float dx = e.x - s.x;
+		float dy = e.y - s.y;
+
+		Vertex p1( s.x + 0.25f * dx, s.y + 0.25f * dy );
+		Vertex p2( s.x + 0.75f * dx, s.y + 0.25f * dy );
+		Vertex p3( s.x + 0.25f * dx, s.y + 0.75f * dy );
+		Vertex p4( s.x + 0.75f * dx, s.y + 0.75f * dy );
+
+		Color c1 = castAndShade( createRay(p1,I) );
+		Color c2 = castAndShade( createRay(p2,I) );
+		Color c3 = castAndShade( createRay(p3,I) );
+		Color c4 = castAndShade( createRay(p4,I) );
+
+		if( c1==c2 && c2==c3 && c3==c4 )
+		{
+			return c1;
+		}
+		else if( depth==0 )
+		{
+			return Color
+			(
+				( c1.r + c2.r + c3.r + c4.r ) * 0.25f,
+				( c1.g + c2.g + c3.g + c4.g ) * 0.25f,
+				( c1.b + c2.b + c3.b + c4.b ) * 0.25f
+			);
+		}
+		else
+		{
+			Vertex f(s.x + 0.5f * dx, s.y + 0.5f * dy);
+			p1 = Vertex(s.x + 0.5f * dx, s.y);
+			p2 = Vertex(s.x, s.y + 0.5f * dy);
+			p3 = Vertex(s.x + 0.5f * dx, e.y);
+			p3 = Vertex(e.x, s.y + 0.5f * dy);
+
+			depth--;
+			c1 = antialiasing( s,  f,  I, depth );
+			c2 = antialiasing( p1, p4, I, depth );
+			c3 = antialiasing( f,  e,  I, depth );
+			c4 = antialiasing( p2, p3, I, depth );
+
+			return Color
+			(
+				( c1.r + c2.r + c3.r + c4.r ) * 0.25f,
+				( c1.g + c2.g + c3.g + c4.g ) * 0.25f,
+				( c1.b + c2.b + c3.b + c4.b ) * 0.25f
+			);
+		}
+	}
 	Color castAndShade(const Ray &ray)
 	{
 
@@ -151,8 +222,6 @@ public:
 		if( tmin<std::numeric_limits<float>::max() )
 		{
 			Vertex i		= ray.extrapolate(tmin);
-
-			//this function returns "nan" -- cause of a bug
 			Vertex normal	= model->getNormal(i);
 
 			return phongModel(ray, model, i, normal);
@@ -184,13 +253,10 @@ public:
 			Vertex L = light->position - i;
 			L.normalise();
 
-			//---------------------------------------------------------------------------------------ambient part
+			//-----AMBIENT
 
-			//const float Ia_R = material.color.r ;
-			//const float Ia_G = material.color.g ;
-			//const float Ia_B = material.color.b ;
 
-			//---------------------------------------------------------------------------------------difusion part
+			//-----DIFFUSION
 
 			float _LN	= L*normal;
 			float LN	= _LN;
@@ -199,7 +265,7 @@ public:
 			const float Id_G = light->color.g * material.color.g * material.kd * LN;
 			const float Id_B = light->color.b * material.color.b * material.kd * LN;
 
-			//----------------------------------------------------------------------------------------mirror part
+			//-----SPECULAR
 
 			//light is always white ... for now at least
 
@@ -215,15 +281,20 @@ public:
 
 			float COS_BETA = L*R;
 
+			float Is_R = 0;
+			float Is_G = 0;
+			float Is_B = 0;
 			if( COS_BETA<0 ) COS_BETA = 0;
+			else
+			{
+				float ER	= powf(COS_BETA, material.shine);
+				Is_R		= material.ks * ER;
+				Is_G		= material.ks * ER;
+				Is_B		= material.ks * ER;
+			}
 
-			float ER = powf(COS_BETA, material.shine);
+			//-----Resulting color
 
-			//----------------------------------------------------------------------------------------complete all
-
-			const float Is_R = material.ks * ER;
-			const float Is_G = material.ks * ER;
-			const float Is_B = material.ks * ER;
 
 			color.r += Id_R + Is_R;
 			color.g += Id_G + Is_G;

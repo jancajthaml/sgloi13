@@ -267,7 +267,7 @@ void sglClearColor (float r, float g, float b, float a)
 //LongName Function
 void sglClear(unsigned what)
 {
-	if (current()->BeginBeforeEnd())
+	if (current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -310,7 +310,7 @@ void sglBegin(sglEElementType mode)
     	default				: setErrCode(SGL_INVALID_ENUM); break;
     }
 
-    if(current()->BeginBeforeEnd())
+    if(current()->beginBeforeEnd())
     {
     	setErrCode(SGL_INVALID_OPERATION);
     	return;
@@ -322,7 +322,7 @@ void sglBegin(sglEElementType mode)
 //LongName Function
 void sglEnd(void)
 {
-	 if(!current()->BeginBeforeEnd())
+	 if(!current()->beginBeforeEnd())
 	 {
 		 setErrCode(SGL_INVALID_OPERATION);
 		 return;
@@ -465,7 +465,7 @@ void sglMatrixMode( sglEMatrixMode mode )
 //Push Matrix into transformation Stack
 void sglPushMatrix(void)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -477,7 +477,7 @@ void sglPushMatrix(void)
 //Pop Matrix from transformation Stack
 void sglPopMatrix(void)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -493,7 +493,7 @@ void sglPopMatrix(void)
 
 void sglLoadIdentity(void)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -504,7 +504,7 @@ void sglLoadIdentity(void)
 
 void sglLoadMatrix(const float* matrix)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -516,7 +516,7 @@ void sglLoadMatrix(const float* matrix)
 //Multiply two matrices
 void sglMultMatrix(const float* matrix)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -529,7 +529,7 @@ void sglMultMatrix(const float* matrix)
 //Translate coordinates
 void sglTranslate(float x, float y, float z)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -542,7 +542,7 @@ void sglTranslate(float x, float y, float z)
 //Scale
 void sglScale(float scalex, float scaley, float scalez)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -556,7 +556,7 @@ void sglScale(float scalex, float scaley, float scalez)
 //Rotate **** around the centerx,centery axis with given angle
 void sglRotate2D(float angle, float centerx, float centery)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -572,7 +572,7 @@ void sglRotate2D(float angle, float centerx, float centery)
 // ? around what Y axis? Base or context?
 void sglRotateY(float angle)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -585,7 +585,7 @@ void sglRotateY(float angle)
 // ?
 void sglOrtho(float left, float right, float bottom, float top, float near, float far)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -600,7 +600,7 @@ void sglFrustum(float left, float right, float bottom, float top, float near, fl
 {
 	if( far < 0 || near < 0 ) return;
 
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -619,7 +619,7 @@ void sglViewport(int x, int y, int width, int height)
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 	    setErrCode(SGL_INVALID_OPERATION);
 	    return;
@@ -641,7 +641,7 @@ void sglColor3f(float r, float g, float b)
 // ?
 void sglAreaMode(sglEAreaMode mode)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -663,7 +663,7 @@ void sglAreaMode(sglEAreaMode mode)
 //Point "radius/diameter ?"
 void sglPointSize(float size)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -680,7 +680,7 @@ void sglPointSize(float size)
 //Enable given flag
 void sglEnable(sglEEnableFlags flag)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -695,7 +695,7 @@ void sglEnable(sglEEnableFlags flag)
 //Disable given flag
 void sglDisable(sglEEnableFlags flag)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -727,7 +727,7 @@ void sglBeginScene()
 // ? End of what scene ? whole scene or sub scene ?
 void sglEndScene()
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -743,7 +743,7 @@ void sglEndScene()
 // r	- radius
 void sglSphere(const float x, const float y, const float z, const float r)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -759,7 +759,7 @@ void sglSphere(const float x, const float y, const float z, const float r)
 //Material ******
 void sglMaterial(const float r, const float g, const float b, const float kd, const float ks, const float shine, const float T, const float ior)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -783,7 +783,7 @@ void sglMaterial(const float r, const float g, const float b, const float kd, co
 // there is no direction, it is treated as all directions light (OMNI light)
 void sglPointLight(const float x, const float y, const float z, const float r, const float g, const float b)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
@@ -803,7 +803,9 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 // ?
 void sglRayTraceScene()
 {
-	current()->check_MVP();
+	current()->check_MVP();	//Commenting this line doesnt change anything
+	//Why?
+	//THIS CAUSES TRANSFORMATION ERROR
 	current()->scene.setMVP(/*current()->MVP*/current()->viewport.V * current()->current_P * current()->current_M);
 	current()->scene.raytrace();
 }
@@ -817,7 +819,7 @@ void sglRasterizeScene()
 // ? image or fragment(s) ? or fragment set ?
 void sglEnvironmentMap(const int width, const int height, float *texels)
 {
-	if(current()->BeginBeforeEnd())
+	if(current()->beginBeforeEnd())
 	{
 		setErrCode(SGL_INVALID_OPERATION);
 		return;

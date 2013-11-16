@@ -8,6 +8,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 
+#include <vector>
 #include "./RootSceneNode.h"
 #include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
@@ -123,7 +124,6 @@ struct Context
 		//----------------------//
 
 		//Initialise Flags
-		//storage.depth  = false;
 		BEGIN			= false;
 		BEGIN_SCENE		= false;
 
@@ -364,28 +364,20 @@ struct Context
 	inline void setMatrixMode(sglEMatrixMode mode)
 	{ matrixMode = mode; }
 
-	//WHY for god begins name of function with CAPITAL letter?
-	inline bool BeginBeforeEnd()
+	inline bool beginBeforeEnd()
 	{ return BEGIN; }
 	
 	inline bool beginSceneBeforeEnd()
-	{
-		return BEGIN_SCENE;
-	}
+	{ return BEGIN_SCENE; }
 	
 	inline void beginScene()
-	{
-		BEGIN_SCENE = true;
-	}
+	{ BEGIN_SCENE = true; }
 	
 	inline void endScene()
-	{
-		BEGIN_SCENE = false;
-	}
+	{ BEGIN_SCENE = false; }
 
 	inline void begin(sglEElementType mode)
 	{
-		//storage.vertices.index = 0;
 		BEGIN                  = true;
 		pushTypeState(mode);
 		check_MVP();

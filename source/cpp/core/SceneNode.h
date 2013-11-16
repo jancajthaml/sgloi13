@@ -26,20 +26,16 @@ protected:
 	std::vector< SceneNode* > children;
 	
 	///model view projection matrix for this scene node
-	Matrix MVP;
 	
+
 public:
-	
+	Matrix MVP;
 	SceneNode()
-	{
-		model = NULL;
-	}
+	{ model = NULL; }
 	
 	virtual ~SceneNode()
 	{
 		if( model!=NULL ) delete model;
-
-
 
 		//for (std::vector<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it)
 		//Using index lookup is much faster than iteration
@@ -78,13 +74,8 @@ public:
 		size_t i = -1;
 
 		while( ++i<s )
-		//for( ; i < s; ++i )
 			children[i]->rasterize(lights);
-
-		//for( std::vector< SceneNode* >::iterator it = children.begin(); it != children.end(); ++it )
-			//(*it)->rasterize(lights);
 	}
-	
 	
 	/**
 	 Adds child to children

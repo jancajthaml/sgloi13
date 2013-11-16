@@ -47,6 +47,11 @@ struct Color
 		res.clamp();
 		return res;
 	}
+	bool operator==(const Color &other)
+	{
+		if(r==other.r && g==other.g && b==other.b) return true;
+		return false;
+	}
 
 	void clamp()
 	{
