@@ -9,6 +9,7 @@
 #ifndef libsgl_Ray_h
 #define libsgl_Ray_h
 #include "Vertex.h"
+
 struct Ray
 {
 	///Origin of the ray
@@ -18,10 +19,9 @@ struct Ray
 	Vertex direction;
 	
 	
-	inline Vertex extrapolate(const float t)const
-	{
-		return origin + (direction * t);
-	}
+	inline Vertex extrapolate( const float t ) const
+	{ return origin + (direction * t); }
+
 };
 
 

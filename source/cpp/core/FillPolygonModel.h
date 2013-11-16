@@ -21,7 +21,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	FillPolygonModel(DrawingLibraryBase _g, Chunk _context, Material _material) : Model(_g, _context, _material){}
+	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material){}
 	
 	
 	/**
@@ -47,7 +47,8 @@ public:
 		int    min_y  =  y[0];
 		int    max_y  =  y[0];
 		
-		for( int i=1; i<size; i++ )
+		size_t i = -1;
+		while( ++i<size )
 		{
 			x[i] = int(vertices[i].x);
 			y[i] = int(vertices[i].y);
@@ -197,11 +198,20 @@ public:
 	
 	virtual Vertex getNormal(const Vertex &i)
 	{
-		Vertex a = i - vertices[0];
-		Vertex b = i - vertices[1];
-		Vertex n = a.crossProduct(b);
-		n = n / n.length();
-		return n;
+
+		Vertex ab(vertices[0],vertices[1]);
+		Vertex ac(vertices[0],vertices[2]);
+
+		float x = ab.y* ac.z - (ab.z*ac.y);
+		float y = ab.z* ac.x - (ab.x*ac.z);
+		float z = ab.x* ac.y - (ab.y*ac.x);
+
+		Vertex vec(x,y,z);
+
+		vec = vec / vec.length();
+
+				return vec;
+		//return n;
 	}
 
 };

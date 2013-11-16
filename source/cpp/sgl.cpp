@@ -117,6 +117,12 @@ sphere.findIntersection(ray, t)
 #include "core/SphereModel.h"
 #include "struct/Material.h"
 #include "struct/Light.h"
+
+//------------------------------------------------------------
+// std::vector boost
+#define _SECURE_SCL 0
+#define _HAS_ITERATOR_DEBUGGING 0
+
 //---------------------------------------------------------------------------
 // Helper functions forward declaration
 //---------------------------------------------------------------------------
@@ -744,7 +750,7 @@ void sglSphere(const float x, const float y, const float z, const float r)
 	}
 	
 	Context *c = current();
-	SphereModel *sphere = new SphereModel(c->g, c->storage, current()->material, x, y, z, r);
+	SphereModel *sphere = new SphereModel(c->storage, current()->material, x, y, z, r);
 	c->check_MVP();
 	c->scene.beginNewNode(new SceneNode(sphere, c->MVP));
 	c->scene.commitCurrentNode();

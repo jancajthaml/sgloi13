@@ -43,7 +43,22 @@ struct Color
 		res.r = r + other.r;
 		res.g = g + other.g;
 		res.b = b + other.b;
+
+		res.clamp();
 		return res;
+	}
+
+	void clamp()
+	{
+
+		//This solves the white points bug - cajthjan
+		if( r<0 ) r=0.0f;
+		if( g<0 ) g=0.0f;
+		if( b<0 ) b=0.0f;
+
+		if( r>1 ) r=1.0f;
+		if( g>1 ) g=1.0f;
+		if( b>1 ) b=1.0f;
 	}
 
 };

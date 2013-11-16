@@ -17,9 +17,7 @@
 #include "./../struct/VertexStack.h"
 #include "./../struct/MatrixCache.h"
 #include "./Viewport.h"
-#include "./../helpers/DrawingLibraryBase.h"
-#include "./../helpers/DrawingLibrary_FLAT.h"
-#include "./../helpers/DrawingLibrary_DEPTH.h"
+#include "./../helpers/Helpers.h"
 #include "./ContextChunk.h"
 #include "./LineModel.h"
 #include "./LineStripModel.h"
@@ -27,8 +25,12 @@
 #include "./FillTrianglesFanModel.h"
 #include "./FillPolygonModel.h"
 #include "./PointModel.h"
+#include "./CircleDrawModel.h"
+#include "./CircleFillModel.h"
 #include "../struct/Material.h"
 #include <cfloat>
+#include <vector>
+
 /*
  * Side-notes:
  * Jan Cajthaml -using struct instead of class because of no need of encapsulation
@@ -73,14 +75,9 @@ struct Context
 	sglEAreaMode drawType     ;  // Drawing mode
 	sglEMatrixMode matrixMode ;
 
-	static DrawingLibraryBase  g;
-	static DrawingLibraryFlat  flat;
-	static DrawingLibraryDepth depth;
-
 	//State
 	bool BEGIN			;
 	bool BEGIN_SCENE	;
-	bool Z_TEST			;
 
 	//Transformation matrices
 	Matrix current_M  ;
@@ -94,10 +91,12 @@ struct Context
 
 	//FIXME don't use a std::vector stack for this, implement custom
 	//WHY??? - brejcja1
+	//Just for the shit and giggles - cajthjan
 	std::vector<sglEElementType> types ;
 
 	//FIXME don't use a std::vector stack for this, implement custom
 	//WHY??? - brejcja1
+	//Just for the shit and giggles - cajthjan
 	std::vector<Matrix> P_stack        ;
 	
 	///ScenGraph root node
@@ -127,7 +126,7 @@ struct Context
 		//storage.depth  = false;
 		BEGIN			= false;
 		BEGIN_SCENE		= false;
-		Z_TEST			= false;
+
 		//----------------------//
 
 		storage.size   = 1                                            ;
@@ -150,46 +149,36 @@ struct Context
 
 	inline void setVertex2f(float x, float y)
 	{
-		//@deprecated, still used because of not fully implemented SceneGraph
-		storage.vertices.push_back(create(x, y, 0.0f, 1.0f));
-		
-		Vertex v(x, y, 0.0f, 1.0f);
-		scene.getCurrentNode()->addVertex(v);
+		scene.getCurrentNode()->addVertex(create(x, y, 0.0f, 1.0f));
 	}
 
 	inline void setVertex3f(float x, float y, float z)
 	{
-		//@deprecated, still used because of not fully implemented SceneGraph
-		storage.vertices.push_back(create(x, y, z, 1.0f));
-
-		Vertex v(x, y, z, 1.0f);
-		scene.getCurrentNode()->addVertex(v);
+		scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f));
 	}
 
 	inline void setVertex4f(float x, float y, float z, float w)
 	{
-		//@deprecated, still used because of not fully implemented SceneGraph
-		storage.vertices.push_back(create(x, y, z, w));
-		
-		Vertex v(x, y, z, w);
-		scene.getCurrentNode()->addVertex(v);
+		scene.getCurrentNode()->addVertex(create(x, y, z, w));
 	}
 
 	inline void rasterize()
-	{
-		scene.rasterize();
-	}
+	{ scene.rasterize(); }
 
 	inline Vertex create(float x, float y, float z, float w)
 	{
 		check_MVP();
 		Vertex v(x, y, z, w);
-		v = MVP * v;
 
-		v.x/=v.w;
-		v.y/=v.w;
-		v.z/=v.w;
-
+		//If there is no scene to create apply transformation immediately
+		if( !BEGIN_SCENE )
+		{
+			v = MVP * v;
+			float w = 1.0f/v.w;
+			v.x*=w;
+			v.y*=w;
+			v.z*=w;
+		}
 		return v;
 	}
 
@@ -203,9 +192,9 @@ struct Context
 	{
 		switch( drawType )
 		{
-			case SGL_POINT  : g.drawPoints ( storage                                                            ) ; break;
-			case SGL_LINE   : g.drawCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
-			default         : g.fillCircle ( create(x , y ,0.0f, 1.0f), r*calculateRadiusScaleFactor(), storage ) ; break;
+			//case SGL_POINT  : g.drawPoints ( storage                                                            ) ; break;
+			case SGL_LINE   : CircleDrawModel(storage, material, r*calculateRadiusScaleFactor(), create(x , y ,0.0f, 1.0f)).flush(); break;
+			default         : CircleFillModel(storage, material, r*calculateRadiusScaleFactor(), create(x , y ,0.0f, 1.0f)).flush(); break;
 		}
 	}
 
@@ -293,7 +282,7 @@ struct Context
 				//Fill Arct bi triangle fan (can we do it better ? )
 				//Artefacts appear in polygon fill too
 				//SGL_POLYGON is SLOWER!
-				sglBegin(SGL_TRIANGLES);
+				sglBegin(SGL_POLYGON);
 
 				//Center
 				setVertex2f(x, y);
@@ -396,31 +385,36 @@ struct Context
 
 	inline void begin(sglEElementType mode)
 	{
-		storage.vertices.index = 0;
+		//storage.vertices.index = 0;
 		BEGIN                  = true;
 		pushTypeState(mode);
-		
 		check_MVP();
 		Model *m;
-		if (mode == SGL_POINTS)
-			m = new PointModel(g, storage, storage.size, material);
-		else if (mode == SGL_LINES)
-			m = new LineModel(g, storage, material);
-		else if (mode == SGL_LINE_STRIP)
-			m = new LineStripModel(g, storage, material);
-		else if (mode == SGL_LINE_LOOP)
-			m = new LineLoopModel(g, storage, material);
-		else if ((mode == SGL_TRIANGLES) && (drawType == SGL_LINE))
-			m = new LineLoopModel(g, storage, material);
-		else if ((mode == SGL_TRIANGLES) && (drawType != SGL_LINE))
-			m = new FillTrianglesFanModel(g, storage, material);
-		else if ((mode == SGL_POLYGON) && (drawType == SGL_LINE))
-			m = new LineLoopModel(g, storage, material);
-		else if ((mode == SGL_POLYGON) && (drawType != SGL_LINE))
-			m = new FillPolygonModel(g, storage, material);
-		else
-			m = new Model(g, storage, material);
 
+		switch(mode)
+		{
+			case SGL_POINTS     : m = new PointModel( storage, storage.size, material);	break;
+			case SGL_LINES      : m = new LineModel( storage, material);					break;
+			case SGL_LINE_LOOP  : m = new LineLoopModel( storage, material);				break;
+			case SGL_LINE_STRIP : m = new LineStripModel( storage, material);				break;
+			case SGL_TRIANGLES  :
+			{
+				switch(drawType)
+				{
+					case SGL_LINE : m = new LineLoopModel( storage, material);			break;
+					default       : m = new FillTrianglesFanModel( storage, material);	break;
+				}
+			}break;
+			case SGL_POLYGON :
+			{
+				switch(drawType)
+				{
+					case SGL_LINE : m = new LineLoopModel( storage, material);			break;
+					default       : m = new FillPolygonModel( storage, material);			break;
+				}
+			}break;
+			default : m = new Model( storage, material);									break;
+		}
 		scene.beginNewNode(new SceneNode(m, MVP));
 	}
 
@@ -428,6 +422,7 @@ struct Context
 	{
 		BEGIN=false;
 		
+		//scene.
 		//handle creation of models and add them to scene (RootSceneNode)
 		sglEElementType type = types.back();
 		
@@ -478,7 +473,7 @@ struct Context
 	inline void clearDepthBuffer()
 	{
 	    for(uint_fast32_t i = 0; i < storage.w_h; ++i)
-	        storage.depth[i] = FLT_MAX;
+	        storage.depth[i] = std::numeric_limits<float>::max();;
 	}
 
 	inline bool check_MP()
@@ -527,21 +522,11 @@ struct Context
 	}
 
 	void enableDepthTest()
-	{
-		g.set(&DrawingLibraryDepth::instance());
-		Z_TEST = true;
-		storage.depthTest = true;
-	}
+	{ storage.depthTest = true; }
 
 	void disableDepthTest()
-	{
-		g.set(&DrawingLibraryFlat::instance());
-		Z_TEST = false;
-		storage.depthTest = false;
-	}
+	{ storage.depthTest = false; }
 
 };
-
-DrawingLibraryBase Context::g = DrawingLibraryBase();
 
 #endif /* DATA_H_ */

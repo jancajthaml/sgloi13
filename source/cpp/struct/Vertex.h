@@ -9,6 +9,7 @@
 #define VERTEX_H_
 
 //TODO COMMENT !!!!!!!
+//FIXME COMMEEEEEEENT!!
 struct Vertex
 {
 
@@ -20,6 +21,14 @@ struct Vertex
 	Vertex()
 	{
 		x = y = z = 0.0f;
+		w = 1.0f;
+	}
+
+	Vertex(Vertex p1, Vertex p2)
+	{
+		x = p2.x - p1.x;
+		y = p2.y - p1.y;
+		z = p2.z - p1.z;
 		w = 1.0f;
 	}
 
@@ -48,22 +57,19 @@ struct Vertex
 	}
 	
 	void print() const
-	{
-		printf("[%f, %f, %f, %f]\n", x, y, z, w);
-	}
+	{ printf("[%f, %f, %f, %f]\n", x, y, z, w); }
 	
-	
+	//FIXME use fast square root
 	inline float length()
 	{
-		if (w == 1.0){
-			return sqrt(x * x + y * y + z * z);
-		}
-		float x1 = x/w;
-		float y1 = y/w;
-		float z1 = z/w;
-		return sqrt(x1 * x1 + y1 * y1 + z1 * z1);
+		if( w==1.0f ) return sqrtf( x*x + y*y + z*z);
+
+		float v = 1.0f/w;
+		float x1 = x*v;
+		float y1 = y*v;
+		float z1 = z*v;
+		return sqrtf( x1*x1 + y1*y1 + z1*z1 );
 	}
-	
 	
 	inline Vertex operator-(const Vertex &other) const
 	{
@@ -76,9 +82,11 @@ struct Vertex
 			res.w = 1.0f;
 			return res;
 		}
-		res.x = (x/w) - (other.x/w);
-		res.y = (y/w) - (other.y/w);
-		res.z = (z/w) - (other.z/w);
+		float v = 1.0f/w;
+
+		res.x = (x*v) - (other.x*v);
+		res.y = (y*v) - (other.y*v);
+		res.z = (z*v) - (other.z*v);
 		res.w = 1.0f;
 		return res;
 	}
@@ -86,19 +94,24 @@ struct Vertex
 	inline Vertex operator/(const float &rhs) const
 	{
 		Vertex res;
-		if (w == 1.0)
+		if( w==1.0f )
 		{
-			res.x = x / rhs;
-			res.y = y / rhs;
-			res.z = z / rhs;
+			float r = 1.0f/rhs;
+
+			res.x = x * r;
+			res.y = y * r;
+			res.z = z * r;
 			res.w = 1.0f;
 			return res;
 		}
 		else
 		{
-			res.x = (x/w) / rhs;
-			res.y = (y/w) / rhs;
-			res.z = (z/w) / rhs;
+			float r = 1.0f/rhs;
+			float v = 1.0f/w;
+
+			res.x = (x*v) * r;
+			res.y = (y*v) * r;
+			res.z = (z*v) * r;
 			res.w = 1.0f;
 			return res;
 		}
@@ -107,6 +120,7 @@ struct Vertex
 	
 	inline Vertex operator*(const float &rhs) const
 	{
+
 		Vertex res;
 		if (w == 1.0)
 		{
@@ -118,9 +132,11 @@ struct Vertex
 		}
 		else
 		{
-			res.x = (x/w) * rhs;
-			res.y = (y/w) * rhs;
-			res.z = (z/w) * rhs;
+			float v = 1.0f/w;
+
+			res.x = x*v * rhs;
+			res.y = y*v * rhs;
+			res.z = z*v * rhs;
 			res.w = 1.0f;
 			return res;
 		}
@@ -128,16 +144,15 @@ struct Vertex
 	
 	inline float operator*(const Vertex &rhs) const
 	{
-		float res;
-		if (w == 1.0)
+		if( w==1.0f )
 		{
-			res = x * rhs.x + y * rhs.y + z * rhs.z;
-			return res;
+			return x * rhs.x + y * rhs.y + z * rhs.z;
 		}
 		else
 		{
-			res = (x/w) * (rhs.x/w) + (y/w) * (rhs.y/w) + (z/w) * (rhs.z/w);
-			return res;
+			//FIXME
+			float v = 1.0f/w;
+			return (x*v) * (rhs.x*v) + (y*v) * (rhs.y*v) + (z*v) * (rhs.z*v);
 		}
 	}
 	
@@ -152,28 +167,46 @@ struct Vertex
 			res.w = 1.0f;
 			return res;
 		}
+		else if(w==0)
+		{
+			res.x = 0.0f;
+			res.y = 0.0f;
+			res.z = 0.0f;
+			res.w = 0.0f;
+			return res;
+		}
 		else
 		{
-			res.x = (x/w) + (rhs.x/w);
-			res.y = (y/w) + (rhs.y/w);
-			res.z = (z/w) + (rhs.z/w);
+			float v = 1.0f/w;
+
+			res.x = (x*v) + (rhs.x*v);
+			res.y = (y*v) + (rhs.y*v);
+			res.z = (z*v) + (rhs.z*v);
 			res.w = 1.0f;
-			
+			return res;
 		}
-		return res;
 	}
-	
-	Vertex crossProduct(const Vertex &rhs)const
+
+	Vertex crossProduct(const Vertex &rhs) const
 	{
 		Vertex cross;
 		cross.x = y * rhs.z - z * rhs.y;
 		cross.y = z * rhs.x - x * rhs.z;
 		cross.z = x * rhs.y - y * rhs.x;
-		cross.w = 1.0;
+		cross.w = 1.0f;
 		return cross;
 	}
 
+	float scalar(const Vertex& v) const
+	{ return x*v.x + y*v.y + z*v.z ; }
 
+	void normalise()
+	{
+		float l = 1.0f/length();
+		x *= l;
+		y *= l;
+		z *= l;
+	}
 };
 
 #endif /* VERTEX_H_ */

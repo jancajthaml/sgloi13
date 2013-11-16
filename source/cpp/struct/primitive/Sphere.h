@@ -14,20 +14,13 @@ class Sphere : public Primitive
 {
 	public:
 		Sphere(Vertex center, float radius, Material *mat)
-		{
-			material = *mat;
-		}
+		{ material = *mat; }
 
 		Sphere(float x, float y, float z, float radius, Material* mat)
-		{
-			material = *mat;
-		}
+		{ material = *mat; }
 
 		virtual Vertex getNormal(const Vertex &v) const
-		{
-			Vertex e = Vertex( 0.0f, 0.0f );
-			return e;
-		}
+		{ return Vertex( 0.0f, 0.0f ); }
 
 	private:
 		~Sphere(){}

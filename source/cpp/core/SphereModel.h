@@ -10,6 +10,7 @@
 #define libsgl_SphereModel_h
 #include <cstdio>
 #include "../struct/Material.h"
+#include <vector>
 
 class SphereModel : public Model
 {
@@ -21,7 +22,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	SphereModel(DrawingLibraryBase _g, Chunk _context, Material _material, const float _x, const float _y, const float _z, const float _r) : Model(_g, _context, _material)
+	SphereModel( Chunk _context, Material _material, const float _x, const float _y, const float _z, const float _r) : Model( _context, _material)
 	{
 		position.x = _x;
 		position.y = _y;
@@ -38,7 +39,7 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		throw std::runtime_error( "rasterization of parametric sphere is unsupported." );
+		//throw std::exexception( "rasterization of parametric sphere is unsupported." );
 	}
 	
 	virtual bool findIntersection(const Ray &ray, float &t)
@@ -51,19 +52,19 @@ public:
 		const float c = (dst * dst) - r*r;
 		const float d = b*b - c;
 		
-		if(d > 0) {
-			t = -b - sqrtf(d);
-			if (t < 0.0f)
-				t = -b + sqrtf(d);
-				return true;
+		if( d>0 )
+		{
+							t = -b - sqrtf(d);
+			if( t<0.0f )	t = -b + sqrtf(d);
+			return true;
 		}
 		return false;
 	}
 	
 	virtual Vertex getNormal(const Vertex &i)
 	{
-		Vertex dir = i - position;
-		dir = dir / dir.length();
+		Vertex dir	= i - position;
+		dir			= dir / dir.length();
 		return dir;
 	}
 	

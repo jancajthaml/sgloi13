@@ -9,7 +9,7 @@
 #ifndef libsgl_LineStripModel_h
 #define libsgl_LineStripModel_h
 
-class LineStripModel : public Model
+class LineStripModel : public LineModel
 {
 public:
 	/**
@@ -17,7 +17,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineStripModel(DrawingLibraryBase _g, Chunk _context, Material _material) : Model(_g, _context, _material){}
+	LineStripModel( Chunk _context, Material _material) : LineModel( _context, _material){}
 	
 	
 	/**
@@ -28,8 +28,12 @@ public:
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
 		Model::multiplyVerticesWithMVP(mpv);
-		for (uint_fast16_t i = 0; i < vertices.size() - 1; ++i)
-			g.drawLine2D(vertices[i], vertices[i+1], context);
+
+		size_t i = -1;
+		size_t s = vertices.size()-1;
+		//uint_fast16_t size = uint_fast16_t(context.vertices.index-1);
+		while( ++i<s )
+			drawLine2D(vertices[i], vertices[i+1], context);
 	}
 };
 

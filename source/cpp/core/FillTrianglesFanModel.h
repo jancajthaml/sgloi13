@@ -17,7 +17,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	FillTrianglesFanModel(DrawingLibraryBase _g, Chunk _context, Material _material) : Model(_g, _context, _material){}
+	FillTrianglesFanModel( Chunk _context, Material _material) : Model( _context, _material){}
 	
 	/**
 	 Rasterizes this model with lights affecting it
@@ -34,14 +34,24 @@ public:
 		Vertex A		= vertices[1];
 		Vertex B		= vertices[2];
 		
-		for (uint_fast16_t i = 2; i < size; i++)
+		size_t i = 1;
+
+		while( ++i<size )
 		{
-			g.drawTriangle(center, A, B, context);
+			triangle(center, A, B, context);
 			A	= B;
 			B	= vertices[i];
 		}
-		g.drawTriangle(center, A, B, context);
+
+		triangle(center, A, B, context);
 	}
+
+
+	inline void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
+	{
+		//TODO IMPLEMENT WITH Z!
+	}
+
 };
 
 #endif

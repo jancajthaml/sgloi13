@@ -10,6 +10,8 @@
 #define libsgl_PointModel_h
 
 #include "Model.h"
+#include "./../helpers/Helpers.h"
+
 class PointModel : public Model
 {
 	
@@ -23,12 +25,9 @@ public:
 	 @param _context	graphics context
 	 @param _size		size of the point
 	*/
-	PointModel(DrawingLibraryBase _g, Chunk _context, int _size, Material _material) : Model(_g, _context, _material)
-	{
-		this->size = _size;
-	}
-	
-	
+	PointModel( Chunk _context, int _size, Material _material) : Model( _context, _material)
+	{ this->size = _size; }
+
 	/**
 	 Rasterizes this model with lights affecting it
 	 @param lights	lights affecting appearance of this model
@@ -38,12 +37,13 @@ public:
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 		
-		int_fast32_t s = int_fast32_t(vertices.size());
+		size_t s = vertices.size();
 		
 		if(size==1)
 		{
-			for (int_fast32_t i = 0; i < s; i++)
-				g.setPixel( (vertices)[i].x, (vertices)[i].y, context );
+			size_t i = -1;
+			while( ++i<s )
+				setPixel3D( (vertices)[i].x, (vertices)[i].y,(vertices)[i].z, context );
 		}
 		else
 		{
@@ -53,12 +53,13 @@ public:
 			
 			thickness >>= 1;
 			
-			for (int_fast32_t i = 0; i < s; i++)
+			size_t i = -1;
+			while( ++i<s )
 			{
 				Vertex v = (vertices)[i];
-				for(int_fast8_t i = -thickness; i < size-1; i++)
-					for(int_fast8_t j = -thickness; j < size-1; j++)
-						g.setPixel(v.x+j, v.y+i, context);
+				for( int_fast8_t i = -thickness; i < size-1; i++ )
+				for( int_fast8_t j = -thickness; j < size-1; j++ )
+					setPixel3D(v.x+j, v.y+i,v.z, context);
 			}
 		}
 

@@ -46,15 +46,23 @@ struct Material
 	 */
 	Material(Color _color, const float _kd, const float _ks, const float _shine, const float _trn, const float _ior)
 	{
-		this->color = _color;
-		this->kd = _kd;
-		this->ks = _ks;
-		this->shine = _shine;
-		this->trn = _trn;
-		this->ior = _ior;
+		this->color	= _color;
+		this->kd	= _kd;
+		this->ks	= _ks;
+		this->shine	= _shine;
+		this->trn	= _trn;
+		this->ior	= _ior;
 	}
 	
-	Material(){}
+	Material()
+	{
+		this->color	= Color();
+		this->kd	= 0.0f;
+		this->ks	= 0.0f;
+		this->shine	= 0.0f;
+		this->trn	= 0.0f;
+		this->ior	= 0.0f;
+	}
 	
 };
 

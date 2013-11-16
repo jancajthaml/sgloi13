@@ -19,7 +19,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineLoopModel(DrawingLibraryBase _g, Chunk _context, Material _material) : 	LineStripModel(_g, _context, _material){}
+	LineLoopModel( Chunk _context, Material _material) : 	LineStripModel( _context, _material){}
 	
 	
 	/**
@@ -30,7 +30,7 @@ public:
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
 		LineStripModel::rasterize(lights, mpv);
-		g.drawLine2D(vertices[vertices.size() - 1], vertices[0], context);
+		drawLine2D(vertices[vertices.size()-1], vertices[0], context);
 	}
 };
 
