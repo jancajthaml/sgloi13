@@ -74,6 +74,11 @@ struct Helper
 	static inline float max(float a, float b)
 	{ return a>b?a:b; }
 
+	static inline float min(float a, float b)
+	{ return a<b?a:b; }
+
+	static inline float abs(float a)
+	{ return a<0?-a:a; }
 
 	//Magical square root from Quake III engine
 	static inline float q3sqrt(float x)
