@@ -803,11 +803,18 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 // ?
 void sglRayTraceScene()
 {
+	switch( USE_SHADER )
+	{
+		case 0 : sglEnd(); return;
+	}
+
 	current()->check_MVP();	//Commenting this line doesnt change anything
 	//Why?
 	//THIS CAUSES TRANSFORMATION ERROR
-	current()->scene.setMVP(/*current()->MVP*/current()->viewport.V * current()->current_P * current()->current_M);
+	//current()->viewport.V * current()->current_P * current()->current_M
+	current()->scene.setMVP(current()->MVP);
 	current()->scene.raytrace();
+
 }
 
 // ? fragmentation -> rasterization ? direct rasterization ? evaluation ? bad name for a function !

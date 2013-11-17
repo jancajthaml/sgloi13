@@ -147,19 +147,13 @@ struct Context
 	}
 
 	inline void setVertex2f(float x, float y)
-	{
-		scene.getCurrentNode()->addVertex(create(x, y, 0.0f, 1.0f));
-	}
+	{ scene.getCurrentNode()->addVertex(create(x, y, 0.0f, 1.0f)); }
 
 	inline void setVertex3f(float x, float y, float z)
-	{
-		scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f));
-	}
+	{ scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f)); }
 
 	inline void setVertex4f(float x, float y, float z, float w)
-	{
-		scene.getCurrentNode()->addVertex(create(x, y, z, w));
-	}
+	{ scene.getCurrentNode()->addVertex(create(x, y, z, w)); }
 
 	inline void rasterize()
 	{ scene.rasterize(); }
@@ -384,7 +378,7 @@ struct Context
 
 		switch(mode)
 		{
-			case SGL_POINTS     : m = new PointModel( storage, storage.size, material);	break;
+			case SGL_POINTS     : m = new PointModel( storage, material);		break;
 			case SGL_LINES      : m = new LineModel( storage, material);					break;
 			case SGL_LINE_LOOP  : m = new LineLoopModel( storage, material);				break;
 			case SGL_LINE_STRIP : m = new LineStripModel( storage, material);				break;

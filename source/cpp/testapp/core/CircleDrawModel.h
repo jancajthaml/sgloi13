@@ -36,9 +36,9 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		int x = 0;
-		int y = r;
-		int p = 3 - (int(r) << 1);
+		int_fast32_t x = 0;
+		int_fast32_t y = r;
+		int_fast32_t p = 3 - (int_fast32_t(r) << 1);
 
 		while( x<y )
 		{

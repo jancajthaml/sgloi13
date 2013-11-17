@@ -24,8 +24,7 @@ struct Ward
 	{
 		Color color;
 		const Material material = model->getMaterial();
-		const int size = lights.size();
-		int pointer = -1;
+
 		//Parametry antromorfisovaneho odlesku
 		float alfa_y	= 0.35f;
 		float alfa_x	= 0.05f;
@@ -44,10 +43,13 @@ struct Ward
 		Vertex V =  -1.0f * ray.direction;
 		V.normalise();
 
-		while( ++pointer<size )
+		const int size			= lights.size();
+		int off					= -1;
+
+		while( ++off<size)
 		{
 			// L - smer k svetlu
-			Vertex L = lights[pointer].position - i;
+			Vertex L = lights[off].position - i;
 			L.normalise();
 
 			// H - "halfangle direction" - na polovine cesty mezi vektorem a pozorovatelem (V) a vektorem ke svetlu (L)
@@ -80,7 +82,7 @@ struct Ward
 			// výsledná barva
 
 			Ld = Ld + Ls;
-			Ld = Ld * lights[pointer].color;
+			Ld = Ld * lights[off].color;
 
 			color = color+Ld;
 		}

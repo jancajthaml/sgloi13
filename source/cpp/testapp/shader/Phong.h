@@ -22,13 +22,14 @@ struct Phong
 		Color color;
 
 		const Material material = model->getMaterial();
-		const int size = lights.size();
-		int pointer = -1;
+		const int size			= lights.size();
+		int off					= -1;
 
-		while( ++pointer<size )
-	    {
+		while( ++off<size)
+		{
+
 			//Light direction
-			Vertex L = lights[pointer].position - i;
+			Vertex L = lights[off].position - i;
 			L.normalise();
 
 			float NL = N*L;
@@ -47,7 +48,7 @@ struct Phong
 			//---------------[ RESULT
 
 			Ld = Ld + Ls;
-			Ld = Ld * lights[pointer].color;
+			Ld = Ld * lights[off].color;
 
 			color = color + Ld;
 		}

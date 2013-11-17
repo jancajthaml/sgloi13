@@ -1,15 +1,17 @@
 //
-//  LineStripModel.h
+//  LineLoopModel.h
 //  libsgl
 //
 //  Created by Jan Brejcha on 11.11.13.
 //  Copyright (c) 2013 brejchajan. All rights reserved.
 //
 
-#ifndef libsgl_LineStripModel_h
-#define libsgl_LineStripModel_h
+#ifndef libsgl_LineLoopModel_h
+#define libsgl_LineLoopModel_h
 
-class LineStripModel : public LineModel
+#include "LineStripModel.h"
+
+class LineLoopModel : public LineStripModel
 {
 public:
 	/**
@@ -17,7 +19,7 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	LineStripModel( Chunk _context, Material _material) : LineModel( _context, _material){}
+	LineLoopModel( Chunk _context, Material _material) : 	LineStripModel( _context, _material){}
 	
 	
 	/**
@@ -27,13 +29,8 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		Model::multiplyVerticesWithMVP(mpv);
-
-		int i			= -1;
-		const int size	= vertices.size()-1;
-
-		while( ++i<size )
-			drawLine2D(vertices[i], vertices[i+1], context);
+		LineStripModel::rasterize(lights, mpv);
+		drawLine2D(vertices[vertices.size()-1], vertices[0], context);
 	}
 };
 

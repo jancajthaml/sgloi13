@@ -32,6 +32,7 @@ class RootSceneNode : public SceneNode
 {
 	private:
 		///lights on scene
+		//FIXME std::vector really slow
 		std::vector< Light > lights;
 	
 		///Pointer to node currently being changed
@@ -77,9 +78,12 @@ class RootSceneNode : public SceneNode
 	
 		void rasterize()
 		{
-			for( std::vector< SceneNode* >::iterator iter = children.begin(); iter != children.end(); ++iter )
-				(*iter)->rasterize(lights);
+			const int size			= children.size();
+			int off					= -1;
 
+			while( ++off<size )
+				children[off]->rasterize(this->lights);
+		
 			//after rasterization delete all children to avoid redrawing.
 			children.clear();
 		}
@@ -209,17 +213,18 @@ class RootSceneNode : public SceneNode
 		Model *model;
 		float t	 = FLOAT_MAX;
 
+		const int size = children.size();
+		int off = -1;
 
-		for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
+		while( ++off<size )
 		{
-			Model* m = (*child)->getModel();
 			//find nearest object
-			if( m->findIntersection(ray, t) )
+			if( children[off]->getModel()->findIntersection(ray, t) )
 			{
 				if( t<tmin )
 				{
 					tmin  = t;
-					model = m;
+					model = children[off]->getModel();
 				}
 			}
 		}
