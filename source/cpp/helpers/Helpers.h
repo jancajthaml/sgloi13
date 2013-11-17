@@ -72,7 +72,8 @@ struct Helper
 	static inline int max(float A, float B, float C)
 	{ return (A>B)?((A>C)?int(A):int(C)):int(B); }
 
-
+	static inline float max(float a, float b)
+	{ return a>b?a:b; }
 };
 
 #endif /* HELPERS_H_ */

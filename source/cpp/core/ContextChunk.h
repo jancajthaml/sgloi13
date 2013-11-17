@@ -27,13 +27,14 @@ struct Chunk
 
 	Color color						;	// CURRENT ACTIVE COLOR
 
-	VertexStack vertices			;	//STACK OF VERTICIES
+	//VertexStack vertices			;	//STACK OF VERTICIES
 
 	int_fast8_t size				;	//SIZE OF A PIXEL FOR DRAWING POINTS (maximum 256)
 
 	uint_fast32_t lastSetPixelIndex	;	//CACHE OF setPixel(int,int) METHOD
 
-	//bool depth						;	//DEPTH TEST
+	bool depthTest						;	//DEPTH TEST
+
 };
 
 #endif /* CHUNK_H_ */

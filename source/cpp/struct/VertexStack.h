@@ -58,7 +58,8 @@ class VertexStack
 
 	void push_back(Vertex v)
 	{
-		if (index == currentSize)	realloc();
+		if (index == currentSize)
+			realloc();
 		stack[index++] = v;
 	}
 
@@ -78,6 +79,16 @@ class VertexStack
 		this->stack = (Vertex *)malloc(sizeof(Vertex) * currentSize);
 		memcpy(this->stack, tmp, sizeof(Vertex) * index);
 		free(tmp);
+	}
+	
+	void clear()
+	{
+		index = 0;
+	}
+	
+	inline int_fast16_t size()
+	{
+		return this->index - 1;
 	}
 };
 
