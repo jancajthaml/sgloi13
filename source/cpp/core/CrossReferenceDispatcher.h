@@ -8,7 +8,6 @@
 #ifndef CROSSREFERENCEDISPATCHER_H_
 #define CROSSREFERENCEDISPATCHER_H_
 
-#define BASIC_STACK_SIZE 1000
 
 //God Fucking Damn you C++
 

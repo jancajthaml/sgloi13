@@ -8,7 +8,9 @@
 #ifndef WARD_H_
 #define WARD_H_
 
-const float PI = 3.141592;
+const float PI4 = 12.5663706144;
+
+#include "./../helpers/Helpers.h"
 
 struct Ward
 {
@@ -18,31 +20,31 @@ struct Ward
 	~Ward()
 	{}
 
-	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &normal,const std::vector< Light > &lights) const
+	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
 	{
 		Color color;
 		Material material = model->getMaterial();
 
-		// parametre anizotropickÈho odlesku
-		float alfa_x, alfa_y;
+		//Parametry antromorfisovaneho odlesku
+		float alfa_y	= 0.35f;
+		float alfa_x	= 0.05f;
+		float ps		= 0.75f;
+		float alfa_xy	= alfa_x * alfa_y * PI4;
 
-		alfa_y = 0.35f;
-		alfa_x = 0.05f;
-		float ps = 0.75f;
-
+		alfa_x = 1.0f/alfa_x;
+		alfa_y = 1.0f/alfa_y;
 
 		// X, Y - "two orthogonal vectors in the normal plane which specify the anisotropic directions"
 		Vertex up(1,0,0);
-		Vertex X = Vertex::crossNormalised(normal, up);
-		Vertex Y = Vertex::crossNormalised(normal, X);
+		Vertex X = Vertex::crossNormalised(N, up);
+		Vertex Y = Vertex::crossNormalised(N, X);
 
 		// V - vektor k pozorovateli
-		Vertex V =  ray.direction * (-1);
+		Vertex V =  -1.0f * ray.direction;
 		V.normalise();
 
 		for( std::vector< Light >::const_iterator light = lights.begin(); light != lights.end(); ++light )
 		{
-
 			// L - smer k svetlu
 			Vertex L = light->position - i;
 			L.normalise();
@@ -51,39 +53,37 @@ struct Ward
 			Vertex H = (V+L);
 			H.normalise();
 
-			// spekulární cložka
+			// spekulární složka
 			float kspec = 0.0f;
 
-			float NL = normal * L;
-			float NV = normal * V;
+			float NL = N * L;
+			float NV = N * V;
 
-			if(NL > 0.0f && NV>0.0f && X.length() >=0.0f && Y.length() >=0.0f)
+			if( NL>0.0f && NV>0.0f && X.length()>=0.0f && Y.length()>=0.0f )
 			{
-				kspec = (ps / (4.0f * PI * alfa_x * alfa_y * sqrtf(NV*NL))) * expf(-2.0f * ((powf((H*X) / alfa_x,2) + (powf((H*Y) / alfa_y,2)) / (1.0f + (H*normal)))));
+				//FIXME here
+				kspec = (ps / (alfa_xy * Helper::q3sqrt(NV*NL))) * expf(-2.0f * ((powf((H*X) * alfa_x,2) + (powf((H*Y) * alfa_y,2)) / (1.0f + (H*N)))));
 			}
 
-			// diffuzní složka
+			//---------------[ AMBIENT
+			// none
 
-			Color Ld = (material.kd * material.color) * NL;
-			Color Ls = Color(material.ks, material.ks, material.ks) * kspec;
+			//---------------[ DIFFUSE
 
-			Ls.clamp();
-			Ld.clamp();
+			Color Ld = (material.kd * material.color) * Helper::max(0.0f, NL);
+
+			//---------------[ SPECULAR
+
+			Color Ls = Color(material.ks, material.ks, material.ks) * Helper::max(0.0f, kspec);
 
 			// výsledná barva
 			Ld = Ld + Ls;
-			Ld = Ld * light->color;
+			//Ld = Ld * light->color;
 
 			color = color+Ld;
 		}
 
 		return color;
-	}
-
-	float max( float a, float b) const
-	{
-		if(a>b) return a;
-		return b;
 	}
 };
 

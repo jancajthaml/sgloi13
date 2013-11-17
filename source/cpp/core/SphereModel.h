@@ -54,8 +54,8 @@ public:
 		
 		if( d>0 )
 		{
-							t = -b - sqrtf(d);
-			if( t<0.0f )	t = -b + sqrtf(d);
+							t = -b - Helper::q3sqrt(d);
+			if( t<0.0f )	t = -b + Helper::q3sqrt(d);
 			return true;
 		}
 		return false;

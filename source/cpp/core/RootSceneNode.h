@@ -23,7 +23,7 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-#define ADAPTIVE_AA
+//#define ADAPTIVE_AA
 #define SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
 class RootSceneNode : public SceneNode
@@ -230,13 +230,11 @@ public:
 			Vertex i		= ray.extrapolate(tmin);
 			Vertex normal	= model->getNormal(i);
 
-
-
 			switch( SHADER )
 			{
-				case 0 : return Flat().calculateColor(ray, model, i, normal, lights);
-				case 1 : return Phong().calculateColor(ray, model, i, normal, lights);
-				case 2 : return Ward().calculateColor(ray, model, i, normal, lights);
+				case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
+				case 1 : return Phong() . calculateColor(ray, model, i, normal, lights);
+				case 2 : return Ward()  . calculateColor(ray, model, i, normal, lights);
 			}
 			//return phongModel(ray, model, i, normal);
 		}

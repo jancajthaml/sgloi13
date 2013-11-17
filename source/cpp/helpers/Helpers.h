@@ -10,7 +10,6 @@
 
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
-#include "./../struct/VertexStack.h"
 
 //TODO COMMENT !!!!!!!
 struct Helper
@@ -74,6 +73,26 @@ struct Helper
 
 	static inline float max(float a, float b)
 	{ return a>b?a:b; }
+
+
+	//Magical square root from Quake III engine
+	static inline float q3sqrt(float x)
+	{
+		union
+		{
+			int i;
+			float x;
+		} u;
+
+		u.x = x;
+		u.i = (1<<29) + (u.i >> 1) - (1<<22);
+
+		u.x =       u.x + x/u.x;
+		u.x = 0.25f*u.x + x/u.x;
+
+		return u.x;
+	}
+
 };
 
 #endif /* HELPERS_H_ */

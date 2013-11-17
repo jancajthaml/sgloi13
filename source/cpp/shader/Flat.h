@@ -17,12 +17,8 @@ struct Flat
 	~Flat()
 	{}
 
-	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &normal,const std::vector< Light > &lights) const
-	{
-		Material material = model->getMaterial();
-
-		return material.color;
-	}
+	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
+	{ return model->getMaterial().color; }
 
 };
 

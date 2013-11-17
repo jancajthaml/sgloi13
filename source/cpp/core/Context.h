@@ -15,7 +15,6 @@
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
 #include "./../struct/Matrix.h"
-#include "./../struct/VertexStack.h"
 #include "./../struct/MatrixCache.h"
 #include "./Viewport.h"
 #include "./../helpers/Helpers.h"
@@ -185,7 +184,7 @@ struct Context
 	inline float calculateRadiusScaleFactor()
 	{
 		check_MVP();
-		return sqrt((MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]));
+		return Helper::q3sqrt((MVP.matrix[0] * MVP.matrix[5]) - (MVP.matrix[1] * MVP.matrix[4]));
 	}
 
 	inline void drawCricle( float x, float y, float z, float r )

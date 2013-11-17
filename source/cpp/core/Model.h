@@ -13,7 +13,6 @@
 #include "./../helpers/Helpers.h"
 #include "../struct/Light.h"
 #include "../struct/Material.h"
-#include "../struct/VertexStack.h"
 #include "../struct/Vertex.h"
 #include "ContextChunk.h"
 #include "../struct/Matrix.h"

@@ -10,7 +10,6 @@
 
 #include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
-#include "./../struct/VertexStack.h"
 
 //A brige between DrawingLibrary.h and Context.h
 //C++ does not allow cross referencing and forwarding more than 3 parameters in a method call is evil
