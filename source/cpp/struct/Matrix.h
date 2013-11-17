@@ -219,27 +219,27 @@ struct Matrix
 
     Matrix inverse()
     {
-            const float k = 1.0f / this->determinant();
-            Matrix inv;
-            inv.matrix[0] = k * Matrix::determinant33(matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
-            inv.matrix[4] = -k * Matrix::determinant33(matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
-            inv.matrix[8] = k * Matrix::determinant33(matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
-            inv.matrix[12] = -k * Matrix::determinant33(matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
+    	const float k = 1.0f / this->determinant();
+    	Matrix inv;
+            inv.matrix[0] = k * determinant33(matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
+            inv.matrix[4] = -k * determinant33(matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
+            inv.matrix[8] = k * determinant33(matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
+            inv.matrix[12] = -k * determinant33(matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
 
-            inv.matrix[1] = -k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
-            inv.matrix[5] = k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
-            inv.matrix[9] = -k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
-            inv.matrix[13] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
+            inv.matrix[1] = -k * determinant33(matrix[1], matrix[2], matrix[3], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15]);
+            inv.matrix[5] = k * determinant33(matrix[0], matrix[2], matrix[3], matrix[8], matrix[10], matrix[11], matrix[12], matrix[14], matrix[15]);
+            inv.matrix[9] = -k * determinant33(matrix[0], matrix[1], matrix[3], matrix[8], matrix[9], matrix[11], matrix[12], matrix[13], matrix[15]);
+            inv.matrix[13] = k * determinant33(matrix[0], matrix[1], matrix[2], matrix[8], matrix[9], matrix[10], matrix[12], matrix[13], matrix[14]);
 
-            inv.matrix[2] = k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[13], matrix[14], matrix[15]);
-            inv.matrix[6] = -k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[12], matrix[14], matrix[15]);
-            inv.matrix[10] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[12], matrix[13], matrix[15]);
-            inv.matrix[14] = -k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[12], matrix[13], matrix[14]);
+            inv.matrix[2] = k * determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[13], matrix[14], matrix[15]);
+            inv.matrix[6] = -k * determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[12], matrix[14], matrix[15]);
+            inv.matrix[10] = k * determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[12], matrix[13], matrix[15]);
+            inv.matrix[14] = -k * determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[12], matrix[13], matrix[14]);
 
-            inv.matrix[3] = -k * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11]);
-            inv.matrix[7] = k * Matrix::determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11]);
-            inv.matrix[11] = -k * Matrix::determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11]);
-            inv.matrix[15] = k * Matrix::determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10]);
+            inv.matrix[3] = -k * determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11]);
+            inv.matrix[7] = k * determinant33(matrix[0], matrix[2], matrix[3], matrix[4], matrix[6], matrix[7], matrix[8], matrix[10], matrix[11]);
+            inv.matrix[11] = -k * determinant33(matrix[0], matrix[1], matrix[3], matrix[4], matrix[5], matrix[7], matrix[8], matrix[9], matrix[11]);
+            inv.matrix[15] = k * determinant33(matrix[0], matrix[1], matrix[2], matrix[4], matrix[5], matrix[6], matrix[8], matrix[9], matrix[10]);
             return inv;
     }
 
@@ -253,20 +253,27 @@ struct Matrix
      */
     static float determinant33(float m11, float m21, float m31, float m12, float m22, float m32, float m13, float m23, float m33)
     {
-            return m11 * m22 * m33 + m21 * m32 * m13 + m31 * m12 * m23 - m13 * m22 * m31 - m23 * m32 * m11 - m33 * m12 * m21;
+       return m11 * m22 * m33 + m21 * m32 * m13 + m31 * m12 * m23 - m13 * m22 * m31 - m23 * m32 * m11 - m33 * m12 * m21;
     }
 
     float determinant()
     {
-            float res = ((+matrix[0] * Matrix::determinant33(matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15])) +
-                                     (-matrix[4] * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15])) +
-                                     (+matrix[8] * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[13], matrix[14], matrix[15])) +
-                                     (-matrix[12] * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11]))
-                                     );
-            return res;
+    	float res =
+    	(
+    		+matrix[0] * Matrix::determinant33(matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15])
+    	) +
+    	(
+    		-matrix[4] * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[9], matrix[10], matrix[11], matrix[13], matrix[14], matrix[15])
+    	) +
+    	(
+    		+matrix[8] * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[13], matrix[14], matrix[15])
+    	) +
+    	(
+    		-matrix[12] * Matrix::determinant33(matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7], matrix[9], matrix[10], matrix[11])
+    	);
 
+    	return res;
     }
-	
 
 };
 
