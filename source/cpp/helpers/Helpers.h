@@ -98,6 +98,7 @@ struct Helper
 		return u.x;
 	}
 
+
 };
 
 #endif /* HELPERS_H_ */

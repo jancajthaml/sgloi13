@@ -20,7 +20,36 @@ struct Ward
 	~Ward()
 	{}
 
-	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
+	Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Color &clear) const
+	{
+			float tmin = FLOAT_MAX;
+			Model *model;
+			float t	 = FLOAT_MAX;
+
+			for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
+			{
+				Model* m = (*child)->getModel();
+				//find nearest object
+				if( m->findIntersection(ray, t) )
+				{
+					if( t<tmin )
+					{
+						tmin  = t;
+						model = m;
+					}
+				}
+			}
+			if( tmin<FLOAT_MAX )
+			{
+				Vertex i		= ray.extrapolate(tmin);
+				Vertex normal	= model->getNormal(i);
+
+				return calculateColor(ray, model, i, normal, lights, children, clear);
+			}
+			return clear;
+		}
+
+	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Color& clear) const
 	{
 		Color color;
 		const Material material = model->getMaterial();

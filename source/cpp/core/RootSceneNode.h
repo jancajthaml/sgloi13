@@ -14,7 +14,6 @@
 #include "SceneNode.h"
 #include "ContextChunk.h"
 #include "../struct/Ray.h"
-#include <limits>
 #include "./../shader/Flat.h"
 #include "./../shader/Phong.h"
 #include "./../shader/Ward.h"
@@ -25,8 +24,6 @@
 //Adaptive antialiasing and shader types defined there
 //#define ADAPTIVE_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
-
-#define FLOAT_MAX std::numeric_limits<float>::max()
 
 class RootSceneNode : public SceneNode
 {
@@ -142,6 +139,7 @@ class RootSceneNode : public SceneNode
 		Ray ray;
 		ray.origin		= A;
 		ray.direction	= D;
+		ray.depth		= 1;
 
 		return ray;
 	}
@@ -202,47 +200,18 @@ class RootSceneNode : public SceneNode
 			);
 		}
 	}
+
 	Color castAndShade(const Ray &ray)
 	{
-
-		float tmin = FLOAT_MAX;
-		Model *model;
-		float t	 = FLOAT_MAX;
-
-
-		for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
+		//FIXME punk switch... needs some abstraction and setters
+		switch( USE_SHADER )
 		{
-			Model* m = (*child)->getModel();
-			//find nearest object
-			if( m->findIntersection(ray, t) )
-			{
-				if( t<tmin )
-				{
-					tmin  = t;
-					model = m;
-				}
-			}
-		}
-		if( tmin<FLOAT_MAX )
-		{
-			Vertex i		= ray.extrapolate(tmin);
-			Vertex normal	= model->getNormal(i);
-
-			//FIXME punk switch... needs some abstraction and setters
-			switch( USE_SHADER )
-			{
 				//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
-				case 1 : return Phong() . calculateColor(ray, model, i, normal, lights);
-				case 2 : return Ward()  . calculateColor(ray, model, i, normal, lights);
-				default: return *context.clear;
-			}
+			case 1 : return Phong() . castAndShade( ray, children, lights, *context.clear );
+			case 2 : return Ward()  . castAndShade( ray, children, lights, *context.clear );
+			default: return *context.clear;
 		}
-
-		return *context.clear;
 	}
-
-
-
 
 	/**
 	 Sets currentNode to node

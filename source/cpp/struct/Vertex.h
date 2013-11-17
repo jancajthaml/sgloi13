@@ -138,6 +138,11 @@ struct Vertex
 		result.normalise();
 		return result;
 	}
+
+
+	//FIXME DOT PRODUCT!!!
+
+	//FIXME SCALAR HERE!!!
 };
 
 #endif /* VERTEX_H_ */
