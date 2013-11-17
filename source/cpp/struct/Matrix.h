@@ -216,12 +216,10 @@ struct Matrix
 		
 	}
 	
-	//FIXME this is horribly slow could it be faster?
-	//FIXME there may be repetitious multiplications
-	//FIXME will uncoll det3x3 ... ughhhh
     Matrix inverse()
     {
-    	 float k = 1.0f / this->determinant();
+    	//Using LU determinant for 4x4 matricies
+    	float k = 1.0f / this->determinant();
 
     	 //Save us some repetitious multiplications
     	 //FOUR TIMES
@@ -276,26 +274,8 @@ struct Matrix
     	 return inv;
     }
 
-    /**
-     sarus rule:
-     m11 m12 m13
-     m21 m22 m23
-     m31 m32 m33
-     m11 m12 m13
-     m21 m22 m23
-     */
-    static float determinant33(float A, float B, float C, float D, float E, float F, float G, float H, float I)
-    {
-    	//_A * E * _I + B * F * G + C * D * H - G * E * C - H * F * _A - _I * D * B
-        return A * E * I + B * F * G + C * D * H - G * E * C - H * F * A - I * D * B;
-    }
-
+    //Using LU Decomposition for determinant 4x4 (save method calls)
     float determinant()
-    {
-    	return determinantLU();
-    }
-
-    float determinantLU()
     {
     	float LU[4][4];
 
@@ -322,8 +302,10 @@ struct Matrix
     	piv[2] = 2;
     	piv[3] = 3;
 
-    	int sign		= 1;
+    	int sign= 1;
 	    float t;
+	    int p = 0;
+	    int k = 0;
 
     	float C1;
     	float C2;
@@ -335,9 +317,7 @@ struct Matrix
     	C3 = LU[2][0];
     	C4 = LU[3][0];
 
-	    int p = 0;
-	    int k = 0;
-
+    	//Yup ... I know...
 	    if (Helper::abs(C2) > Helper::abs(C1))	p = 1;
 	    if (Helper::abs(C3) > Helper::abs(p==1?C2:C1))	p = 2;
 	    if (Helper::abs(C4) > Helper::abs(p==1?C2:(p==2?C3:C1)))	p = 3;

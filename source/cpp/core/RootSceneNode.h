@@ -23,7 +23,7 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-//#define ADAPTIVE_AA
+#define ADAPTIVE_AA
 #define SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
 #define FLOAT_MAX std::numeric_limits<float>::max()
@@ -89,7 +89,7 @@ class RootSceneNode : public SceneNode
 	
 		void raytrace()
 		{
-			printf("raytrace\n");
+		//	printf("raytrace\n");
 
 			//todo raytrace
 
@@ -105,9 +105,9 @@ class RootSceneNode : public SceneNode
 					context.lastSetPixelIndex					= ( x+context.w*y );
 
 					#ifdef ADAPTIVE_AA
-						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex((float)x, (float)y), Vertex((float) (x + 1), (float) (y + 1)), I, 0);
+						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y), Vertex( x+1,y+1 ), I, 1);
 					#else
-						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex((float)x, (float)y), I));
+						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
 					#endif
 				}
 			}
@@ -157,20 +157,22 @@ class RootSceneNode : public SceneNode
 		float dx = e.x - s.x;
 		float dy = e.y - s.y;
 
-		Vertex p1( s.x + 0.25f * dx, s.y + 0.25f * dy );
-		Vertex p2( s.x + 0.75f * dx, s.y + 0.25f * dy );
-		Vertex p3( s.x + 0.25f * dx, s.y + 0.75f * dy );
-		Vertex p4( s.x + 0.75f * dx, s.y + 0.75f * dy );
+		float dx_1 = dx*0.25f;
+		float dy_1 = dy*0.25f;
+		float dx_2 = dx*0.75f;
+		float dy_2 = dy*0.75f;
+
+		Vertex p1( s.x + dx_1, s.y + dy_1 );
+		Vertex p2( s.x + dx_2, s.y + dy_1 );
+		Vertex p3( s.x + dx_1, s.y + dy_2 );
+		Vertex p4( s.x + dx_2, s.y + dy_2 );
 
 		Color c1 = castAndShade( createRay(p1,I) );
 		Color c2 = castAndShade( createRay(p2,I) );
 		Color c3 = castAndShade( createRay(p3,I) );
 		Color c4 = castAndShade( createRay(p4,I) );
 
-		if( c1==c2 && c2==c3 && c3==c4 )
-		{
-			return c1;
-		}
+		if( c1==c2 && c2==c3 && c3==c4 ) return c1;
 		else if( depth==0 )
 		{
 			return Color
@@ -182,13 +184,16 @@ class RootSceneNode : public SceneNode
 		}
 		else
 		{
-			Vertex f(s.x + 0.5f * dx, s.y + 0.5f * dy);
-			p1 = Vertex(s.x + 0.5f * dx, s.y);
-			p2 = Vertex(s.x, s.y + 0.5f * dy);
-			p3 = Vertex(s.x + 0.5f * dx, e.y);
-			p3 = Vertex(e.x, s.y + 0.5f * dy);
+			dx_1 = dx*0.5f;
+			dy_1 = dy*0.5f;
+			Vertex f(s.x + dx_1, s.y + dy_1);
+			p1 = Vertex(s.x + dx_1, s.y);
+			p2 = Vertex(s.x, s.y + dy_1);
+			p3 = Vertex(s.x + dx_1, e.y);
+			p3 = Vertex(e.x, s.y + dy_1);
 
 			depth--;
+
 			c1 = antialiasing( s,  f,  I, depth );
 			c2 = antialiasing( p1, p4, I, depth );
 			c3 = antialiasing( f,  e,  I, depth );
@@ -209,17 +214,18 @@ class RootSceneNode : public SceneNode
 		Model *model;
 		float t	 = FLOAT_MAX;
 
-		//FIXME
-		for (std::vector<SceneNode *>::iterator it = children.begin(); it != children.end(); ++it)
+		const int size = children.size();
+		int off = -1;
+
+		while( ++off<size )
 		{
 			//find nearest object
-			if ((*it)->getModel()->findIntersection(ray, t))
+			if( children[off]->getModel()->findIntersection(ray, t) )
 			{
-				//there is a bug also
 				if( t<tmin )
 				{
 					tmin  = t;
-					model = (*it)->getModel();
+					model = children[off]->getModel();
 				}
 			}
 		}
@@ -228,20 +234,20 @@ class RootSceneNode : public SceneNode
 			Vertex i		= ray.extrapolate(tmin);
 			Vertex normal	= model->getNormal(i);
 
+			//FIXME punk switch... needs some abstraction and setters
 			switch( SHADER )
 			{
 				case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
 				case 1 : return Phong() . calculateColor(ray, model, i, normal, lights);
 				case 2 : return Ward()  . calculateColor(ray, model, i, normal, lights);
 			}
-			//return phongModel(ray, model, i, normal);
 		}
 
 		return *context.clear;
 	}
 
 
-	
+
 
 	/**
 	 Sets currentNode to node
