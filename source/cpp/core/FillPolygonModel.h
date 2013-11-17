@@ -23,7 +23,6 @@ public:
 	 */
 	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material){}
 	
-	
 	/**
 	 Rasterizes this model with lights affecting it
 	 @param lights	lights affecting appearance of this model
@@ -129,11 +128,8 @@ public:
 		delete[] edges             ;
 	}
 	
-	
 	virtual bool findIntersection(const Ray &ray, float &t)
-	{
-		return triangle_intersection(vertices[0], vertices[1], vertices[2], ray, t);
-	}
+	{ return triangle_intersection(vertices[0], vertices[1], vertices[2], ray, t); }
 	
 	/**
 	 Triangle intersection.
@@ -199,20 +195,11 @@ public:
 	
 	virtual Vertex getNormal(const Vertex &i)
 	{
-
-		Vertex ab(vertices[0],vertices[1]);
-		Vertex ac(vertices[0],vertices[2]);
-
-		float x = ab.y* ac.z - (ab.z*ac.y);
-		float y = ab.z* ac.x - (ab.x*ac.z);
-		float z = ab.x* ac.y - (ab.y*ac.x);
-
-		Vertex vec(x,y,z);
-
-		vec = vec / vec.length();
-
-				return vec;
-		//return n;
+		Vertex a = i - vertices[0];
+		 Vertex b = i - vertices[1];
+		 Vertex n = a.crossProduct(b);
+		 n.normalise();
+		 return n;
 	}
 
 };

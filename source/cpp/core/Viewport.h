@@ -37,16 +37,7 @@ struct Viewport
 	}
 
 	inline float calculateRatio()
-	{
-		//Fast square root
-		float number = width * width + height * height;
-		float y = number;
-		long i = *(long*)&y;
-		i = 0x5f3759df - (i >> 1);
-		y = *(float*)&i;
-		y = y * (1.5f - ((number * 0.5f)*y*y));
-		return (static_cast<int>(1/y + 0.5f))/2.8284271247461903f;
-	}
+	{ return Helper::q3sqrt( width * width + height * height ); }
 
 	inline Viewport(int_fast16_t width, int_fast16_t height, int_fast16_t x, int_fast16_t y)
 	{ changeViewport(width, height, x, y); }

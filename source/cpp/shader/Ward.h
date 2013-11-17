@@ -23,7 +23,7 @@ struct Ward
 	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
 	{
 		Color color;
-		Material material = model->getMaterial();
+		const Material material = model->getMaterial();
 
 		//Parametry antromorfisovaneho odlesku
 		float alfa_y	= 0.35f;
@@ -43,10 +43,13 @@ struct Ward
 		Vertex V =  -1.0f * ray.direction;
 		V.normalise();
 
-		for( std::vector< Light >::const_iterator light = lights.begin(); light != lights.end(); ++light )
+		const int size			= lights.size();
+		int off					= -1;
+
+		while( ++off<size)
 		{
 			// L - smer k svetlu
-			Vertex L = light->position - i;
+			Vertex L = lights[off].position - i;
 			L.normalise();
 
 			// H - "halfangle direction" - na polovine cesty mezi vektorem a pozorovatelem (V) a vektorem ke svetlu (L)
@@ -77,8 +80,9 @@ struct Ward
 			Color Ls = Color(material.ks, material.ks, material.ks) * Helper::max(0.0f, kspec);
 
 			// výsledná barva
+
 			Ld = Ld + Ls;
-			//Ld = Ld * light->color;
+			Ld = Ld * lights[off].color;
 
 			color = color+Ld;
 		}

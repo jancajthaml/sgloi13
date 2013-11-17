@@ -20,13 +20,16 @@ struct Phong
 	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
 	{
 		Color color;
-		Material material = model->getMaterial();
 
-		for( std::vector< Light >::const_iterator light = lights.begin(); light != lights.end(); ++light )
+		const Material material = model->getMaterial();
+		const int size			= lights.size();
+		int off					= -1;
+
+		while( ++off<size)
 		{
 
 			//Light direction
-			Vertex L = light->position - i;
+			Vertex L = lights[off].position - i;
 			L.normalise();
 
 			float NL = N*L;
@@ -40,13 +43,12 @@ struct Phong
 
 			//---------------[ SPECULAR
 
-			Color Ls = Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L, N)), material.shine);
+			const Color Ls = Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L, N)), material.shine);
 
 			//---------------[ RESULT
 
 			Ld = Ld + Ls;
-
-			//Ld = Ld * light->color;		//Uncomment if light is no longer white
+			Ld = Ld * lights[off].color;
 
 			color = color + Ld;
 		}

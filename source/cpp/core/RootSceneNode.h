@@ -26,94 +26,92 @@
 //#define ADAPTIVE_AA
 #define SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
+#define FLOAT_MAX std::numeric_limits<float>::max()
+
 class RootSceneNode : public SceneNode
 {
-private:
-	///lights on scene
-	std::vector< Light > lights;
+	private:
+		///lights on scene
+		std::vector< Light > lights;
 	
-	///Pointer to node currently being changed
-	/// - i.e. when the node is being created using sglVertexnf().
-	///when not null, this node is not part of child nodes.
-	///Once commitCurrentNode() is called, the node is added to child nodes
-	///and this pointer becomes NULL.
-	SceneNode *currentNode;
-	
-	//Shader shader;
+		///Pointer to node currently being changed
+		/// - i.e. when the node is being created using sglVertexnf().
+		///when not null, this node is not part of child nodes.
+		///Once commitCurrentNode() is called, the node is added to child nodes
+		///and this pointer becomes NULL.
+		SceneNode *currentNode;
 
-public:
-	Chunk context;
+	public:
+		Chunk context;
 	
-	RootSceneNode()
-	{ currentNode = NULL; }
+		RootSceneNode()
+		{ currentNode = NULL; }
 	
-	/**
-	 Constructor of root scene node
-	 */
-	RootSceneNode(Chunk _context)
-	{
-		this->context	= _context;
-		currentNode		= NULL;
-
-	}
+		/**
+	 	 Constructor of root scene node
+		 */
+		RootSceneNode(Chunk _context)
+		{
+			this->context	= _context;
+			currentNode		= NULL;
+		}
 	
-	/**
-	 Adds light to the scene
-	 @param _light	the light to be added
-	 */
-	virtual void addLight(Light _light)
-	{
-		lights.push_back(_light);
-	}
+		/**
+	 	 Adds light to the scene
+	 	 @param _light	the light to be added
+		 */
+		virtual void addLight(Light _light)
+		{ lights.push_back(_light); }
 	
-	/**
-	 Rasterizes this node
-	 @param _lights additional lights to be added before rasterization
+		/**
+	 	 Rasterizes this node
+	 	 @param _lights additional lights to be added before rasterization
 					effective when all lights are known so far and were not 
 					added one by one to the RootSceneNode.
-	 */
-	virtual void rasterize(std::vector< Light > _lights)
-	{
-		this->lights.insert(this->lights.end(), _lights.begin(), _lights.end());
-		this->rasterize();
-	}
-	
-	void rasterize()
-	{
-		//FIXME
-		for (std::vector< SceneNode* >::iterator it = children.begin(); it != children.end(); ++it)
-			(*it)->rasterize(this->lights);
-		
-		//after rasterization delete all children to avoid redrawing.
-		children.clear();
-	}
-	
-	void raytrace()
-	{
-		printf("raytrace\n");
-
-		//todo raytrace
-
-		Matrix I = MVP.inverse();
-
-		int_fast16_t y = -1;
-		int_fast16_t x = -1;
-
-		while( ++x<context.w )
+		 */
+		virtual void rasterize(std::vector< Light > _lights)
 		{
-			y=-1;
-			while( ++y<context.h )
-			{
-				context.lastSetPixelIndex					= ( x+context.w*y );
+			this->lights.insert(this->lights.end(), _lights.begin(), _lights.end());
+			this->rasterize();
+		}
+	
+		void rasterize()
+		{
+			const int size			= children.size();
+			int off					= -1;
 
-				#ifdef ADAPTIVE_AA
-					context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex((float)x, (float)y), Vertex((float) (x + 1), (float) (y + 1)), I, 0);
-				#else
-					context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex((float)x, (float)y), I));
-				#endif
+			while( ++off<size )
+				children[off]->rasterize(this->lights);
+		
+			//after rasterization delete all children to avoid redrawing.
+			children.clear();
+		}
+	
+		void raytrace()
+		{
+			printf("raytrace\n");
+
+			//todo raytrace
+
+			const Matrix I = MVP.inverse();
+			short y = -1;
+			short x = -1;
+
+			while( ++x<context.w )
+			{
+				y=-1;
+				while( ++y<context.h )
+				{
+					context.lastSetPixelIndex					= ( x+context.w*y );
+
+					#ifdef ADAPTIVE_AA
+						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex((float)x, (float)y), Vertex((float) (x + 1), (float) (y + 1)), I, 0);
+					#else
+						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex((float)x, (float)y), I));
+					#endif
+				}
 			}
 		}
-	}
 
 	//This method is horribly slow.... !!!!
 	//FIXME
@@ -207,9 +205,9 @@ public:
 	Color castAndShade(const Ray &ray)
 	{
 
-		float tmin = std::numeric_limits<float>::max();
+		float tmin = FLOAT_MAX;
 		Model *model;
-		float t	 = std::numeric_limits<float>::max();
+		float t	 = FLOAT_MAX;
 
 		//FIXME
 		for (std::vector<SceneNode *>::iterator it = children.begin(); it != children.end(); ++it)
@@ -225,7 +223,7 @@ public:
 				}
 			}
 		}
-		if( tmin<std::numeric_limits<float>::max() )
+		if( tmin<FLOAT_MAX )
 		{
 			Vertex i		= ray.extrapolate(tmin);
 			Vertex normal	= model->getNormal(i);

@@ -31,7 +31,6 @@ public:
 		r = _r;
 	}
 	
-	
 	/**
 	 Rasterizes this model with lights affecting it
 	 @param lights	lights affecting appearance of this model
@@ -44,13 +43,10 @@ public:
 	
 	virtual bool findIntersection(const Ray &ray, float &t)
 	{
-		//printf("finding intersect of sphere\n");
-		//position.print();
-		const Vertex dst = ray.origin - position;
-		//ray.origin.print();
-		const float b = dst * ray.direction;
-		const float c = (dst * dst) - r*r;
-		const float d = b*b - c;
+		const Vertex dst	= ray.origin - position;
+		const float b		= dst * ray.direction;
+		const float c		= (dst * dst) - r*r;
+		const float d		= b*b - c;
 		
 		if( d>0 )
 		{
@@ -63,7 +59,7 @@ public:
 	
 	virtual Vertex getNormal(const Vertex &i)
 	{
-		Vertex dir	= i - position;
+		Vertex dir = i - position;
 		dir.normalise();
 		return dir;
 	}
