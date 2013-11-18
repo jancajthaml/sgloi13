@@ -207,8 +207,8 @@ class RootSceneNode : public SceneNode
 		switch( USE_SHADER )
 		{
 				//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
-			case 1 : return Phong() . castAndShade( ray, children, lights, *context.clear );
-			case 2 : return Ward()  . castAndShade( ray, children, lights, *context.clear );
+			case 1 : return Phong::castAndShade( ray, children, lights, *context.clear );
+			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
 			default: return *context.clear;
 		}
 	}

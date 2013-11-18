@@ -17,15 +17,13 @@
 //#define REFRACTION
 //#define SHADOWS
 
-struct Phong
+class Phong
 {
-	Phong()
-	{}
 
-	~Phong()
-	{}
+private:
+	Phong(){}
 
-	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Color& clear) const
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Color& clear)
 	{
 
 		Color color;
@@ -135,9 +133,8 @@ struct Phong
 		return color;
 	}
 
-
-
-	Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Color &clear) const
+public:
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Color &clear)
 	{
 		float tmin = FLOAT_MAX;
 		Model *model;
