@@ -10,6 +10,7 @@
 
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
+#include "./../struct/Color.h"
 
 //TODO COMMENT !!!!!!!
 struct Helper
@@ -99,6 +100,24 @@ struct Helper
 	}
 
 
+	static inline bool areColorsSimilar(const Color x1,const Color x2)
+	{
+		float match= 0.15f;
+
+		if(x1.r+match>x2.r && x1.r<x2.r+match)
+			if(x1.g+match>x2.g && x1.g<x2.g+match)
+				if(x1.b+match>x2.b && x1.b<x2.b+match)
+					return true;
+		return false;
+	}
+
+	static inline bool areColorsSame(const Color x1,const Color x2, const Color x3, const Color x4)
+	{
+		if(x1.r==x2.r==x3.r==x4.r)
+			if(x1.g==x2.g==x3.g==x4.g)
+				if(x1.b==x2.b==x3.b==x4.b) return true;
+		return false;
+	}
 };
 
 #endif /* HELPERS_H_ */

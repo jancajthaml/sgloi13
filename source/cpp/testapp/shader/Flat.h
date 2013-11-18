@@ -8,16 +8,14 @@
 #ifndef FLATSHADER_H_
 #define FLATSHADER_H_
 
-struct Flat
+class Flat
 {
 
-	Flat()
-	{}
+private:
+	Flat(){}
 
-	~Flat()
-	{}
-
-	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
+public:
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights)
 	{ return model->getMaterial().color; }
 
 };

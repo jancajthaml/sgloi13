@@ -120,14 +120,12 @@ struct Vertex
 
 	//Ray helper functions
 
-	static Vertex crossNormalised(const Vertex &a, const Vertex &b)
+	static Vertex cross(const Vertex &a, const Vertex &b)
 	{
 		Vertex result;
 		result.x = a.y*b.z - a.z*b.y;
 		result.y = a.z*b.x - a.x*b.z;
 		result.z = a.x*b.y - a.y*b.x;
-
-		result.normalise();
 		return result;
 	}
 
@@ -141,7 +139,12 @@ struct Vertex
 
 
 	//FIXME DOT PRODUCT!!!
-
+	friend float dot(const Vertex& a,const Vertex& b)
+	{
+		return (a.x * b.x) +
+			   (a.y * b.y) +
+			   (a.z * b.z);
+	}
 	//FIXME SCALAR HERE!!!
 };
 
