@@ -8,11 +8,22 @@
 #ifndef CROSSREFERENCEDISPATCHER_H_
 #define CROSSREFERENCEDISPATCHER_H_
 
+//Custom type definitions
+typedef struct { float f1; float f2; float f3;} __color;
 
-//God Fucking Damn you C++
+//Define basic structures
+typedef unsigned int		uint;
+typedef unsigned char		uint8;
+typedef unsigned short		uint16;
+typedef unsigned int		uint32;
+typedef unsigned long long	uint64;
 
-typedef struct { float f1; float f2; float f3;} /*__attribute__((packed))*/ __color;
+typedef char				int8;
+typedef short				int16;
+typedef int					int32;
+typedef long long			int64;
 
+//Shared includes
 #include <vector>
 #include <list>
 #include <cmath>
@@ -24,6 +35,7 @@ typedef struct { float f1; float f2; float f3;} /*__attribute__((packed))*/ __co
 #include <cstdio>
 #include <stdint.h>
 
+//API
 #include "./../sgl.h"
 
 

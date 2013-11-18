@@ -22,7 +22,7 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-#define ADAPTIVE_AA
+//#define ADAPTIVE_AA
 //#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
@@ -210,6 +210,7 @@ class RootSceneNode : public SceneNode
 
 	Color DOF(const Vertex sample, int depth, Matrix I)
 	{
+
 		Ray     ray;
 		Color   color;
 		Color   color1;
@@ -217,7 +218,7 @@ class RootSceneNode : public SceneNode
 		Color   color3;
 		Color   color4;
 
-		float shift = powf(0.6f,float(depth));
+		float shift = powf(0.5f,float(depth));
 
 		Vertex sample1 = Vertex(sample.x+shift, sample.y+shift, 1.f);
 		Vertex sample2 = Vertex(sample.x+shift, sample.y-shift, 1.f);
