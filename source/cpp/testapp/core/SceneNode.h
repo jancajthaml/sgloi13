@@ -68,13 +68,12 @@ public:
 	{
 		model->rasterize(lights, this->MVP);
 
-		std::vector< SceneNode* >::iterator iter	= children.begin();
-		std::vector< SceneNode* >::iterator end		= children.end();
+		for( std::vector< SceneNode* >::iterator iter = children.begin(); iter != children.end(); ++iter )
+			(*iter)->rasterize(lights);
 
-	    while( iter != end )
-			(*iter++)->rasterize(lights);
+		 children.clear();
 	}
-	
+
 	/**
 	 Adds child to children
 	 @param child	the child to be added

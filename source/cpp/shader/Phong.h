@@ -23,7 +23,7 @@ class Phong
 private:
 	Phong(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Color& clear)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
 
 		Color color;
@@ -31,6 +31,9 @@ private:
 		const Material material = model->getMaterial();
 		const int size = lights.size();
 		int pointer = -1;
+
+		//####################[DEPTH OF FIELD
+
 
 		while( ++pointer<size )
 	    {
@@ -96,7 +99,7 @@ private:
 				ray_2.direction	= i+R*0.1f;
 				ray_2.depth		= ray.depth-1;
 
-				color = color + castAndShade(ray_2,children,lights,clear);
+				color = color + castAndShade(ray_2,children,lights,context);
 			}
 			#endif
 
@@ -107,7 +110,7 @@ private:
 			float R_index = 1.0f/material.ior;
 			if( R_index != 0 && trans > 0 && ray.depth >= 0)
 			{
-				Vertex M = Vertex::crossNormalised(N,L);
+				Vertex M = Vertex::cross(N,L);
 				M.normalise();
 
 				float cosI =  - (M* ray.direction );
@@ -124,7 +127,7 @@ private:
 					r_r.origin		= O;
 					r_r.direction	= T;
 					r_r.depth		= ray.depth-1;
-					color = color + castAndShade(r_r,children,lights,clear);
+					color = color + castAndShade(r_r,children,lights,context);
 				}
 			}
 			#endif
@@ -134,7 +137,7 @@ private:
 	}
 
 public:
-	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Color &clear)
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
 	{
 		float tmin = FLOAT_MAX;
 		Model *model;
@@ -158,9 +161,9 @@ public:
 			Vertex i		= ray.extrapolate(tmin);
 			Vertex normal	= model->getNormal(i);
 
-			return calculateColor(ray, model, i, normal, lights, children, clear);
+			return calculateColor(ray, model, i, normal, lights, children, context);
 		}
-		return clear;
+		return *context.clear;
 	}
 
 };

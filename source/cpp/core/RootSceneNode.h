@@ -22,7 +22,8 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-//#define ADAPTIVE_AA
+#define ADAPTIVE_AA
+//#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
 class RootSceneNode : public SceneNode
@@ -96,10 +97,16 @@ class RootSceneNode : public SceneNode
 				{
 					context.lastSetPixelIndex					= ( x+context.w*y );
 
-					#ifdef ADAPTIVE_AA
-						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y ), Vertex( x+1,y+1 ), I, 1);
+					#ifdef DOF_AA
+						context.buffer[context.lastSetPixelIndex] = DOF(Vertex(x,y),0,I);
 					#else
-						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
+					{
+						#ifdef ADAPTIVE_AA
+							context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y ), Vertex( x+1,y+1 ), I, 2);
+						#else
+							context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
+						#endif
+					}
 					#endif
 				}
 			}
@@ -165,7 +172,7 @@ class RootSceneNode : public SceneNode
 		Color c3 = castAndShade( createRay(p3,I) );
 		Color c4 = castAndShade( createRay(p4,I) );
 
-		if( c1==c2 && c2==c3 && c3==c4 ) return c1;
+		if(Helper::areColorsSame(c1,c2,c3,c4)) return c1;
 		else if( depth==0 )
 		{
 			return Color
@@ -194,20 +201,65 @@ class RootSceneNode : public SceneNode
 
 			return Color
 			(
-				( c1.r + c2.r + c3.r + c4.r ) * 0.25f,
-				( c1.g + c2.g + c3.g + c4.g ) * 0.25f,
-				( c1.b + c2.b + c3.b + c4.b ) * 0.25f
-			);
+				 c1.r + c2.r + c3.r + c4.r  ,
+				 c1.g + c2.g + c3.g + c4.g  ,
+				 c1.b + c2.b + c3.b + c4.b
+			)* 0.25f;
 		}
 	}
 
+	Color DOF(const Vertex sample, int depth, Matrix I)
+	{
+		Ray     ray;
+		Color   color;
+		Color   color1;
+		Color   color2;
+		Color   color3;
+		Color   color4;
+
+		float shift = powf(0.6f,float(depth));
+
+		Vertex sample1 = Vertex(sample.x+shift, sample.y+shift, 1.f);
+		Vertex sample2 = Vertex(sample.x+shift, sample.y-shift, 1.f);
+		Vertex sample3 = Vertex(sample.x-shift, sample.y+shift, 1.f);
+		Vertex sample4 = Vertex(sample.x-shift, sample.y-shift, 1.f);
+
+		ray = createRay(sample1,I);
+
+		color1	= castAndShade(ray);
+		ray		= createRay(sample2, I);
+		color2	= castAndShade(ray);
+		ray		= createRay(sample3, I);
+		color3	= castAndShade(ray);
+		ray		= createRay(sample4, I);
+		color4	= castAndShade(ray);
+
+		if((Helper::areColorsSimilar(color1,color2) && Helper::areColorsSimilar(color3,color4) && Helper::areColorsSimilar(color1,color3)) || depth > 4)
+		{
+			color = (color1+color2+color3+color4)*0.25f;
+		}
+		else
+		{
+			depth++;
+			shift*=0.5f;
+			color = (DOF(Vertex(sample.x+shift, sample.y+shift, 1.f), depth,I)+
+					DOF(Vertex(sample.x+shift, sample.y-shift, 1.f), depth,I)+
+					DOF(Vertex(sample.x-shift, sample.y+shift, 1.f), depth,I)+
+					DOF(Vertex(sample.x-shift, sample.y-shift, 1.f), depth,I))*0.25f;
+		}
+
+		return color;
+	}
+
+
+	///
 	Color castAndShade(const Ray &ray)
 	{
 		//FIXME punk switch... needs some abstraction and setters
 		switch( USE_SHADER )
 		{
 				//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
-			case 1 : return Phong::castAndShade( ray, children, lights, *context.clear );
+			case 1 : return Phong::castAndShade( ray, children, lights ,context);
 			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
 			default: return *context.clear;
 		}

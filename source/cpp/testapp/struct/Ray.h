@@ -18,7 +18,13 @@ struct Ray
 	///Direction of the ray
 	Vertex direction;
 	
+	///Depth of a ray
+	int depth;
 	
+
+	float t_max;
+	float t_min;
+
 	inline Vertex extrapolate( const float t ) const
 	{ return origin + (direction * t); }
 

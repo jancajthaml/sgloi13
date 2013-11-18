@@ -12,44 +12,43 @@ const float PI4 = 12.5663706144;
 
 #include "./../helpers/Helpers.h"
 
-struct Ward
+class Ward
 {
-	Ward()
-	{}
+private:
+	Ward(){}
 
-	~Ward()
-	{}
-
-	Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights) const
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Color& clear)
 	{
+		Material material = model->getMaterial();
+		const int size = lights.size();
+		int pointer		= -1;
 		Color color;
-		const Material material = model->getMaterial();
 
 		//Parametry antromorfisovaneho odlesku
-		float alfa_y	= 0.35f;
-		float alfa_x	= 0.05f;
-		float ps		= 0.75f;
+		float alfa_y	= 0.10f;
+		float alfa_x	= 0.13f;
+		float ps		= 0.155f;
 		float alfa_xy	= alfa_x * alfa_y * PI4;
 
 		alfa_x = 1.0f/alfa_x;
 		alfa_y = 1.0f/alfa_y;
 
 		// X, Y - "two orthogonal vectors in the normal plane which specify the anisotropic directions"
-		Vertex up(1,0,0);
-		Vertex X = Vertex::crossNormalised(N, up);
-		Vertex Y = Vertex::crossNormalised(N, X);
+
+		Vertex X = Vertex::cross(N,Vertex(1,0,0));
+		X.normalise();
+
+		Vertex Y = Vertex::cross(N,X);
+		Y.normalise();
 
 		// V - vektor k pozorovateli
 		Vertex V =  -1.0f * ray.direction;
 		V.normalise();
 
-		const int size			= lights.size();
-		int off					= -1;
-
-		while( ++off<size)
+		while( ++pointer<size )
 		{
 			// L - smer k svetlu
-			Vertex L = lights[off].position - i;
+			Vertex L = lights[pointer].position - i;
 			L.normalise();
 
 			// H - "halfangle direction" - na polovine cesty mezi vektorem a pozorovatelem (V) a vektorem ke svetlu (L)
@@ -63,10 +62,7 @@ struct Ward
 			float NV = N * V;
 
 			if( NL>0.0f && NV>0.0f && X.length()>=0.0f && Y.length()>=0.0f )
-			{
-				//FIXME here
 				kspec = (ps / (alfa_xy * Helper::q3sqrt(NV*NL))) * expf(-2.0f * ((powf((H*X) * alfa_x,2) + (powf((H*Y) * alfa_y,2)) / (1.0f + (H*N)))));
-			}
 
 			//---------------[ AMBIENT
 			// none
@@ -82,13 +78,44 @@ struct Ward
 			// výsledná barva
 
 			Ld = Ld + Ls;
-			Ld = Ld * lights[off].color;
+			Ld = Ld * lights[pointer].color;
 
 			color = color+Ld;
 		}
 
 		return color;
 	}
+
+public:
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Color &clear)
+	{
+			float tmin = FLOAT_MAX;
+			Model *model;
+			float t	 = FLOAT_MAX;
+
+			for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
+			{
+				Model* m = (*child)->getModel();
+				//find nearest object
+				if( m->findIntersection(ray, t) )
+				{
+					if( t<tmin )
+					{
+						tmin  = t;
+						model = m;
+					}
+				}
+			}
+			if( tmin<FLOAT_MAX )
+			{
+				Vertex i		= ray.extrapolate(tmin);
+				Vertex normal	= model->getNormal(i);
+
+				return calculateColor(ray, model, i, normal, lights, children, clear);
+			}
+			return clear;
+		}
+
 };
 
 #endif /* WARD_H_ */

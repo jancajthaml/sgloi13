@@ -14,7 +14,6 @@
 #include "SceneNode.h"
 #include "ContextChunk.h"
 #include "../struct/Ray.h"
-#include <limits>
 #include "./../shader/Flat.h"
 #include "./../shader/Phong.h"
 #include "./../shader/Ward.h"
@@ -24,15 +23,13 @@
 
 //Adaptive antialiasing and shader types defined there
 //#define ADAPTIVE_AA
+#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
-
-#define FLOAT_MAX std::numeric_limits<float>::max()
 
 class RootSceneNode : public SceneNode
 {
 	private:
 		///lights on scene
-		//FIXME std::vector really slow
 		std::vector< Light > lights;
 	
 		///Pointer to node currently being changed
@@ -78,12 +75,9 @@ class RootSceneNode : public SceneNode
 	
 		void rasterize()
 		{
-			const int size			= children.size();
-			int off					= -1;
+			for( std::vector< SceneNode* >::iterator iter = children.begin(); iter != children.end(); ++iter )
+				(*iter)->rasterize(lights);
 
-			while( ++off<size )
-				children[off]->rasterize(this->lights);
-		
 			//after rasterization delete all children to avoid redrawing.
 			children.clear();
 		}
@@ -103,7 +97,9 @@ class RootSceneNode : public SceneNode
 				{
 					context.lastSetPixelIndex					= ( x+context.w*y );
 
-					#ifdef ADAPTIVE_AA
+					#ifdef DOF_AA
+						context.buffer[context.lastSetPixelIndex] = DOF(Vertex(x,y),0,I);
+					#elif ADAPTIVE_AA
 						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y ), Vertex( x+1,y+1 ), I, 1);
 					#else
 						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
@@ -146,6 +142,7 @@ class RootSceneNode : public SceneNode
 		Ray ray;
 		ray.origin		= A;
 		ray.direction	= D;
+		ray.depth		= 1;
 
 		return ray;
 	}
@@ -171,7 +168,7 @@ class RootSceneNode : public SceneNode
 		Color c3 = castAndShade( createRay(p3,I) );
 		Color c4 = castAndShade( createRay(p4,I) );
 
-		if( c1==c2 && c2==c3 && c3==c4 ) return c1;
+		if(Helper::areColorsSimilar(c1,c2) && Helper::areColorsSimilar(c2,c3) && Helper::areColorsSimilar(c3,c3)) return c1;
 		else if( depth==0 )
 		{
 			return Color
@@ -200,54 +197,69 @@ class RootSceneNode : public SceneNode
 
 			return Color
 			(
-				( c1.r + c2.r + c3.r + c4.r ) * 0.25f,
-				( c1.g + c2.g + c3.g + c4.g ) * 0.25f,
-				( c1.b + c2.b + c3.b + c4.b ) * 0.25f
-			);
+				 c1.r + c2.r + c3.r + c4.r  ,
+				 c1.g + c2.g + c3.g + c4.g  ,
+				 c1.b + c2.b + c3.b + c4.b
+			)* 0.25f;
 		}
 	}
+
+	Color DOF(const Vertex sample, int depth, Matrix I)
+	{
+		Ray     ray;
+		Color   color;
+		Color   color1;
+		Color   color2;
+		Color   color3;
+		Color   color4;
+
+		float shift = powf(0.5f,float(depth));
+
+		Vertex sample1 = Vertex(sample.x+shift, sample.y+shift, 1.f);
+		Vertex sample2 = Vertex(sample.x+shift, sample.y-shift, 1.f);
+		Vertex sample3 = Vertex(sample.x-shift, sample.y+shift, 1.f);
+		Vertex sample4 = Vertex(sample.x-shift, sample.y-shift, 1.f);
+
+		ray = createRay(sample1,I);
+
+		color1	= castAndShade(ray);
+		ray		= createRay(sample2, I);
+		color2	= castAndShade(ray);
+		ray		= createRay(sample3, I);
+		color3	= castAndShade(ray);
+		ray		= createRay(sample4, I);
+		color4	= castAndShade(ray);
+
+		if((Helper::areColorsSimilar(color1,color2) && Helper::areColorsSimilar(color3,color4) && Helper::areColorsSimilar(color1,color3)) || depth > 3)
+		{
+			color = (color1+color2+color3+color4)*0.25f;
+		}
+		else
+		{
+			depth++;
+			shift*=0.2f;
+			color = 0.25f*DOF(Vertex(sample.x+shift, sample.y+shift, 1.f), depth,I)+
+					0.25f*DOF(Vertex(sample.x+shift, sample.y-shift, 1.f), depth,I)+
+					0.25f*DOF(Vertex(sample.x-shift, sample.y+shift, 1.f), depth,I)+
+					0.25f*DOF(Vertex(sample.x-shift, sample.y-shift, 1.f), depth,I);
+		}
+
+		return color;
+	}
+
+
+	///
 	Color castAndShade(const Ray &ray)
 	{
-
-		float tmin = FLOAT_MAX;
-		Model *model;
-		float t	 = FLOAT_MAX;
-
-		const int size = children.size();
-		int off = -1;
-
-		while( ++off<size )
+		//FIXME punk switch... needs some abstraction and setters
+		switch( USE_SHADER )
 		{
-			//find nearest object
-			if( children[off]->getModel()->findIntersection(ray, t) )
-			{
-				if( t<tmin )
-				{
-					tmin  = t;
-					model = children[off]->getModel();
-				}
-			}
-		}
-		if( tmin<FLOAT_MAX )
-		{
-			Vertex i		= ray.extrapolate(tmin);
-			Vertex normal	= model->getNormal(i);
-
-			//FIXME punk switch... needs some abstraction and setters
-			switch( USE_SHADER )
-			{
 				//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
-				case 1 : return Phong() . calculateColor(ray, model, i, normal, lights);
-				case 2 : return Ward()  . calculateColor(ray, model, i, normal, lights);
-				default: return *context.clear;
-			}
+			case 1 : return Phong::castAndShade( ray, children, lights ,context);
+			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
+			default: return *context.clear;
 		}
-
-		return *context.clear;
 	}
-
-
-
 
 	/**
 	 Sets currentNode to node
