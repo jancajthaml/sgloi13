@@ -9,7 +9,7 @@
 #define VIEWPORT_H_
 
 #include "./../struct/Matrix.h"
-
+#include <cstdio>
 //TODO COMMENT !!!!!!!
 struct Viewport
 {
@@ -53,6 +53,7 @@ struct Viewport
 
 	inline void changeViewport(int_fast16_t x, int_fast16_t y, int_fast16_t width, int_fast16_t height)
 	{
+		printf("width: %d, height: %d\n", width, height);
 		this->width			=  width;
 		this->height		=  height;
 		this->width_2_x		=  width>>1;
