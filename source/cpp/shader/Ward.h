@@ -25,9 +25,9 @@ private:
 		Color color;
 
 		//Parametry antromorfisovaneho odlesku
-		float alfa_y	= 0.10f;
-		float alfa_x	= 0.13f;
-		float ps		= 0.155f;
+		float alfa_y	= 0.5f;
+		float alfa_x	= 0.1f;
+		float ps		= 0.75f;
 		float alfa_xy	= alfa_x * alfa_y * PI4;
 
 		alfa_x = 1.0f/alfa_x;

@@ -22,7 +22,7 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-//#define ADAPTIVE_AA
+#define ADAPTIVE_AA
 //#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
@@ -175,12 +175,7 @@ class RootSceneNode : public SceneNode
 		if(Helper::areColorsSame(c1,c2,c3,c4)) return c1;
 		else if( depth==0 )
 		{
-			return Color
-			(
-				( c1.r + c2.r + c3.r + c4.r ) * 0.25f,
-				( c1.g + c2.g + c3.g + c4.g ) * 0.25f,
-				( c1.b + c2.b + c3.b + c4.b ) * 0.25f
-			);
+			return (c1+c2+c3+c4)*0.25f;
 		}
 		else
 		{
@@ -199,12 +194,7 @@ class RootSceneNode : public SceneNode
 			c3 = antialiasing( f,  e,  I, depth );
 			c4 = antialiasing( p2, p3, I, depth );
 
-			return Color
-			(
-				 c1.r + c2.r + c3.r + c4.r  ,
-				 c1.g + c2.g + c3.g + c4.g  ,
-				 c1.b + c2.b + c3.b + c4.b
-			)* 0.25f;
+			return (c1+c2+c3+c4)*0.25f;
 		}
 	}
 
