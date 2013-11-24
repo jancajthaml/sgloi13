@@ -15,7 +15,7 @@
 
 //#define REFLECTION
 //#define REFRACTION
-//#define SHADOWS
+#define SHADOWS
 
 class Phong
 {
@@ -49,16 +49,16 @@ private:
 			float length= L.length();
 
 			Ray r;
-			r.origin=lights[pointer].position;
+			r.origin=i;
 			r.direction=L;
 
 			float t	 = FLOAT_MAX;
-			for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
+			if (0.0f < length - 0.1)
 			{
-				Model* m = (*child)->getModel();
-				if( m->findIntersection(r, t) )
+				for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 				{
-					if (0.0f < length - 0.01f)
+					Model* m = (*child)->getModel();
+					if( m->findIntersection(r, t) && t > 0.01)
 					{
 						under_the_shadow=true;
 						break;
