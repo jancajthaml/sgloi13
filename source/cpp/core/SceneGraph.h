@@ -22,95 +22,101 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-#define ADAPTIVE_AA
+//#define ADAPTIVE_AA
 //#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
 class RootSceneNode : public SceneNode
 {
-	private:
-		///lights on scene
-		std::vector< Light > lights;
-	
-		///Pointer to node currently being changed
-		/// - i.e. when the node is being created using sglVertexnf().
-		///when not null, this node is not part of child nodes.
-		///Once commitCurrentNode() is called, the node is added to child nodes
-		///and this pointer becomes NULL.
-		SceneNode *currentNode;
+private:
+	///lights on scene
+	std::vector< Light > lights;
 
-	public:
-		Chunk context;
-	
-		RootSceneNode()
-		{ currentNode = NULL; }
-	
-		/**
-	 	 Constructor of root scene node
-		 */
-		RootSceneNode(Chunk _context)
-		{
-			this->context	= _context;
-			currentNode		= NULL;
-		}
-	
-		/**
-	 	 Adds light to the scene
-	 	 @param _light	the light to be added
-		 */
-		virtual void addLight(Light _light)
-		{ lights.push_back(_light); }
-	
-		/**
-	 	 Rasterizes this node
-	 	 @param _lights additional lights to be added before rasterization
-					effective when all lights are known so far and were not 
-					added one by one to the RootSceneNode.
-		 */
-		virtual void rasterize(std::vector< Light > _lights)
-		{
-			this->lights.insert(this->lights.end(), _lights.begin(), _lights.end());
-			this->rasterize();
-		}
-	
-		void rasterize()
-		{
-			for( std::vector< SceneNode* >::iterator iter = children.begin(); iter != children.end(); ++iter )
-				(*iter)->rasterize(lights);
+	///Pointer to node currently being changed
+	/// - i.e. when the node is being created using sglVertexnf().
+	///when not null, this node is not part of child nodes.
+	///Once commitCurrentNode() is called, the node is added to child nodes
+	///and this pointer becomes NULL.
+	SceneNode *currentNode;
 
-			//after rasterization delete all children to avoid redrawing.
-			children.clear();
-		}
-	
-		void raytrace()
+public:
+	Chunk context;
+
+	RootSceneNode()
+	{ currentNode = NULL; }
+
+	/**
+	 Constructor of root scene node
+	 */
+	RootSceneNode(Chunk _context)
+	{
+		this->context	= _context;
+		currentNode		= NULL;
+	}
+
+	/**
+	 Adds light to the scene
+	 @param _light	the light to be added
+	 */
+	virtual void addLight(Light _light)
+	{ lights.push_back(_light); }
+
+	/**
+	 Rasterizes this node
+	 @param _lights additional lights to be added before rasterization
+				effective when all lights are known so far and were not 
+				added one by one to the RootSceneNode.
+	 */
+	virtual void rasterize(std::vector< Light > _lights)
+	{
+		this->lights.insert(this->lights.end(), _lights.begin(), _lights.end());
+		this->rasterize();
+	}
+
+	void rasterize()
+	{
+		for( std::vector< SceneNode* >::iterator iter = children.begin(); iter != children.end(); ++iter )
+			(*iter)->rasterize(lights);
+
+		//after rasterization delete all children to avoid redrawing.
+		children.clear();
+	}
+
+	void reset()
+	{
+		children.clear();
+		lights.clear();
+	}
+
+	void raytrace()
+	{
+		//todo raytrace
+
+		const Matrix I = MVP.inverse();
+		short y = -1;
+		short x = -1;
+
+		while( ++x<context.w )
 		{
-			//todo raytrace
-
-			const Matrix I = MVP.inverse();
-			short y = -1;
-			short x = -1;
-
-			while( ++x<context.w )
+			y=-1;
+			while( ++y<context.h )
 			{
-				y=-1;
-				while( ++y<context.h )
-				{
-					context.lastSetPixelIndex					= ( x+context.w*y );
+				context.lastSetPixelIndex					= ( x+context.w*y );
 
-					#ifdef DOF_AA
-						context.buffer[context.lastSetPixelIndex] = DOF(Vertex(x,y),0,I);
+				#ifdef DOF_AA
+					context.buffer[context.lastSetPixelIndex] = DOF(Vertex(x,y),0,I);
+				#else
+				{
+					#ifdef ADAPTIVE_AA
+						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y ), Vertex( x+1,y+1 ), I, 2);
 					#else
-					{
-						#ifdef ADAPTIVE_AA
-							context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y ), Vertex( x+1,y+1 ), I, 2);
-						#else
-							context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
-						#endif
-					}
+						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
 					#endif
 				}
+				#endif
 			}
 		}
+	}
 
 	//This method is horribly slow.... !!!!
 	//FIXME
@@ -262,7 +268,7 @@ class RootSceneNode : public SceneNode
 	 */
 	void beginNewNode(SceneNode *node)
 	{ this->currentNode = node; }
-	
+
 	/**
 	 Adds currentNode to children and sets currentNode to NULL.
 	 As the currentNode was pointer to allocated memory (using new), it will be freed using delete.
@@ -272,13 +278,13 @@ class RootSceneNode : public SceneNode
 		if( currentNode!=NULL )  children.push_back(currentNode);
 		currentNode = NULL;
 	}
-	
+
 	/**
 	 Get the current node
 	 */
 	inline SceneNode * getCurrentNode()
 	{ return currentNode; }
-	
+
 	void setMVP(Matrix mvp)
 	{ MVP = mvp; }
 	
