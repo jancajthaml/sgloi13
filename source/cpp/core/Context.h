@@ -9,7 +9,7 @@
 #define DATA_H_
 
 #include <vector>
-#include "./RootSceneNode.h"
+#include "./SceneGraph.h"
 #include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
 #include "./../struct/Vertex.h"

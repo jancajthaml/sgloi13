@@ -175,12 +175,7 @@ class RootSceneNode : public SceneNode
 		if(Helper::areColorsSame(c1,c2,c3,c4)) return c1;
 		else if( depth==0 )
 		{
-			return Color
-			(
-				( c1.r + c2.r + c3.r + c4.r ) * 0.25f,
-				( c1.g + c2.g + c3.g + c4.g ) * 0.25f,
-				( c1.b + c2.b + c3.b + c4.b ) * 0.25f
-			);
+			return (c1+c2+c3+c4)*0.25f;
 		}
 		else
 		{
@@ -199,17 +194,13 @@ class RootSceneNode : public SceneNode
 			c3 = antialiasing( f,  e,  I, depth );
 			c4 = antialiasing( p2, p3, I, depth );
 
-			return Color
-			(
-				 c1.r + c2.r + c3.r + c4.r  ,
-				 c1.g + c2.g + c3.g + c4.g  ,
-				 c1.b + c2.b + c3.b + c4.b
-			)* 0.25f;
+			return (c1+c2+c3+c4)*0.25f;
 		}
 	}
 
 	Color DOF(const Vertex sample, int depth, Matrix I)
 	{
+
 		Ray     ray;
 		Color   color;
 		Color   color1;
@@ -217,7 +208,7 @@ class RootSceneNode : public SceneNode
 		Color   color3;
 		Color   color4;
 
-		float shift = powf(0.6f,float(depth));
+		float shift = powf(0.5f,float(depth));
 
 		Vertex sample1 = Vertex(sample.x+shift, sample.y+shift, 1.f);
 		Vertex sample2 = Vertex(sample.x+shift, sample.y-shift, 1.f);

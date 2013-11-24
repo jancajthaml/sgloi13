@@ -12,16 +12,22 @@
 #include "../helpers/Helpers.h"
 #define EPSILON 0.000001
 
+#define USE_TRIANGLE_NORMAL
 
 class FillPolygonModel : public Model
 {
+private:
+	Vertex normal;
 public:
 	/**
 	 Constructor of model
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material){}
+	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material)
+	{
+		normal.w=-1;
+	}
 	
 	/**
 	 Rasterizes this model with lights affecting it
@@ -141,6 +147,8 @@ public:
 							   const Ray &ray,
 							   float &param)
 	{
+
+
 		Vertex    u, v, n;              // triangle vectors
 		Vertex    dir, w0, w;           // ray vectors
 		float     r, a, b;              // params to calc ray-plane intersect
@@ -195,10 +203,18 @@ public:
 	
 	virtual Vertex getNormal(const Vertex &i)
 	{
-		Vertex a = i - vertices[0];
-		Vertex b = i - vertices[1];
-		Vertex n = a.crossProduct(b);
+		#ifdef USE_TRIANGLE_NORMAL
+		if(normal.w==-1)
+		{
+			normal = (vertices[2] - vertices[0]).crossProduct(vertices[2] - vertices[1]);
+			normal.normalise();
+		}
+		return normal;
+		#endif
+
+		Vertex n = (i - vertices[0]).crossProduct(i - vertices[1]);
 		n.normalise();
+
 		return n;
 	}
 
