@@ -148,7 +148,7 @@ public:
 		{
 			Model* m = (*child)->getModel();
 			//find nearest object
-			if( m->findIntersection(ray, t) && t > 0.01 )
+			if( m->findIntersection(ray, t) && t > 0.1 )
 			{
 				if( t<tmin )
 				{
