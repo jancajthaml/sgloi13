@@ -364,7 +364,10 @@ struct Context
 	{ return BEGIN_SCENE; }
 	
 	inline void beginScene()
-	{ BEGIN_SCENE = true; }
+	{
+		scene.reset();
+		BEGIN_SCENE = true;
+	}
 	
 	inline void endScene()
 	{ BEGIN_SCENE = false; }
