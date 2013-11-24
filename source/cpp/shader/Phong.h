@@ -108,24 +108,32 @@ private:
 			#ifdef REFRACTION
 			//idealni lom
 			float trans		= material.trn;
-			float R_index = 1.0f/material.ior;
+			Vertex nN = N;
+			float dot = ray.direction * nN;
+
+			float R_index = 0.0f;
+			if (dot < 0.0f)
+			{
+				R_index = 1.0f/material.ior;
+			}
+			else
+			{
+				R_index = material.ior;
+				dot = -dot;
+				nN = N * -1.0;
+			}
 			if( R_index != 0 && trans > 0 && ray.depth >= 0)
 			{
-				Vertex M = Vertex::cross(N,L);
-				M.normalise();
 
-				float cosI =  - (M* ray.direction );
-
-				float cosT2 = 1.0f - R_index*R_index*(1.0f-cosI*cosI);
+				float cosT2 = 1.0f - R_index*R_index*(1.0f-dot*dot);
 
 				if( cosT2>0.0f )
 				{
-					Vertex T = (ray.direction * R_index) + (M *(R_index * cosI - Helper::q3sqrt( cosT2 ))) ;
-					T.normalise();
-					Color barv( 0, 0, 0 );
-					Vertex O = i + (T * 0.1f);
+					
+					cosT2 = dot * R_index + sqrt(cosT2);
+					Vertex T = -cosT2 * nN + ray.direction * R_index;
 					Ray r_r;
-					r_r.origin		= O;
+					r_r.origin		= i + T*0.1;
 					r_r.direction	= T;
 					r_r.depth		= ray.depth-1;
 					color = color + castAndShade(r_r,children,lights,context);
