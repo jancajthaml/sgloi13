@@ -13,8 +13,8 @@
 
 #define FLOAT_MAX std::numeric_limits<float>::max()
 
-//#define REFLECTION
-//#define REFRACTION
+#define REFLECTION
+#define REFRACTION
 #define SHADOWS
 
 class Phong
@@ -89,17 +89,18 @@ private:
 
 			//####################[REFLECTION
 			#ifdef REFLECTION
-			if (material.ior == 1.0f && material.trn == 0.0f && material.ks > 0.0f && ray.depth >= 0)
+			if (material.ior >= 0.0f && material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0)
 			{
+				
 				Vertex R = ray.direction - ( N * (ray.direction*N*2) );
 				R.normalise();
 
 				Ray ray_2;
-				ray_2.origin	= R;
-				ray_2.direction	= i+R*0.1f;
+				ray_2.origin	= i;
+				ray_2.direction	= R;
 				ray_2.depth		= ray.depth-1;
 
-				color = color + castAndShade(ray_2,children,lights,context);
+				color = color + material.ior * castAndShade(ray_2,children,lights,context);
 			}
 			#endif
 
@@ -147,7 +148,7 @@ public:
 		{
 			Model* m = (*child)->getModel();
 			//find nearest object
-			if( m->findIntersection(ray, t) )
+			if( m->findIntersection(ray, t) && t > 0.01 )
 			{
 				if( t<tmin )
 				{

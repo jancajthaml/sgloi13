@@ -152,7 +152,7 @@ public:
 		Ray ray;
 		ray.origin		= A;
 		ray.direction	= D;
-		ray.depth		= 1;
+		ray.depth		= 8;
 
 		return ray;
 	}
