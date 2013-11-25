@@ -26,6 +26,8 @@
 //#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
+const int RAY_RECURSION_DEPTH = 20;
+
 class RootSceneNode : public SceneNode
 {
 private:
@@ -152,7 +154,7 @@ public:
 		Ray ray;
 		ray.origin		= A;
 		ray.direction	= D;
-		ray.depth		= 7;
+		ray.depth		= RAY_RECURSION_DEPTH-1;
 
 		return ray;
 	}

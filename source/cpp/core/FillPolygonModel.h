@@ -224,13 +224,7 @@ public:
 	}
 	
 	virtual bool backfaceCull(const Ray &ray, const float &t)
-	{
-		Vertex i = ray.extrapolate(t);
-		Vertex n = getNormal(i);
-		Vertex dir = ray.direction;
-		float cosa = dir * n;
-		return cosa >= 0.0;
-	}
+	{ return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0; }
 
 };
 

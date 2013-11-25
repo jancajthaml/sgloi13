@@ -79,12 +79,14 @@ using namespace std;
 
 
 /// Main windows parameters
-//#define WIDTH  512
-//#define HEIGHT 512
+#define WIDTH  512
+#define HEIGHT 512
 
 
-#define WIDTH  1024
-#define HEIGHT 1024
+#define WIDTH  1000
+#define HEIGHT 1000
+
+
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8
 
