@@ -64,6 +64,16 @@ public:
 		return dir;
 	}
 	
+	virtual const char * getName()
+	{
+		return "SPH\n";
+	}
+	
+	virtual bool backfaceCull(const Ray &ray, const float &t)
+	{
+		return false;
+	}
+	
 };
 
 #endif

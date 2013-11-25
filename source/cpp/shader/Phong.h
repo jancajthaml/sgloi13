@@ -60,8 +60,11 @@ private:
 					Model* m = (*child)->getModel();
 					if( m->findIntersection(r, t) && t > 0.01)
 					{
+						if(m->backfaceCull(ray, t))
+							continue;
 						under_the_shadow=true;
 						break;
+						
 					}
 				}
 			}
@@ -89,7 +92,7 @@ private:
 
 			//####################[REFLECTION
 			#ifdef REFLECTION
-			if (material.ior >= 0.0f && material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0)
+			if (material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0)
 			{
 				
 				Vertex R = ray.direction - ( N * (ray.direction*N*2) );
@@ -100,7 +103,7 @@ private:
 				ray_2.direction	= R;
 				ray_2.depth		= ray.depth-1;
 
-				color = color + material.ior * castAndShade(ray_2,children,lights,context);
+				color = color + material.ks * castAndShade(ray_2,children,lights,context);
 			}
 			#endif
 
@@ -122,7 +125,7 @@ private:
 				dot = -dot;
 				nN = N * -1.0;
 			}
-			if( R_index != 0 && trans > 0 && ray.depth >= 0)
+			if(trans > 0 && ray.depth >= 0)
 			{
 
 				float cosT2 = 1.0f - R_index*R_index*(1.0f-dot*dot);
@@ -136,7 +139,7 @@ private:
 					r_r.origin		= i + T*0.1;
 					r_r.direction	= T;
 					r_r.depth		= ray.depth-1;
-					color = color + castAndShade(r_r,children,lights,context);
+					color = color + trans * castAndShade(r_r,children,lights,context);
 				}
 			}
 			#endif
@@ -158,6 +161,8 @@ public:
 			//find nearest object
 			if( m->findIntersection(ray, t) && t > 0.1 )
 			{
+				if(m->backfaceCull(ray, t))
+					continue;
 				if( t<tmin )
 				{
 					tmin  = t;

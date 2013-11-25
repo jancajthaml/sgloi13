@@ -217,6 +217,20 @@ public:
 
 		return n;
 	}
+	
+	virtual const char * getName()
+	{
+		return "TRI\n";
+	}
+	
+	virtual bool backfaceCull(const Ray &ray, const float &t)
+	{
+		Vertex i = ray.extrapolate(t);
+		Vertex n = getNormal(i);
+		Vertex dir = ray.direction;
+		float cosa = dir * n;
+		return cosa >= 0.0;
+	}
 
 };
 

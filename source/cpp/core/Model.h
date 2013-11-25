@@ -59,6 +59,8 @@ public:
 		this->material = _material;
 	}
 	
+	virtual const char * getName(){ return "\n";};
+	
 	/**
 	 Rasterizes this model with lights affecting it
 	 @param lights	lights affecting appearance of this model
@@ -226,6 +228,8 @@ public:
 			v.z *= w;
 		}
 	}
+	
+	virtual bool backfaceCull(const Ray &ray, const float &t){ return true;}
 	
 };
 
