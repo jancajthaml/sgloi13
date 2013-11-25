@@ -66,7 +66,7 @@ struct Vertex
 	{
 		if( w==0.0f ) return 0.0f;
 		if( w==1.0f ) return Helper::q3sqrt( x*x + y*y + z*z);
-
+		
 		float v = 1.0f/w;
 		float x1 = x*v;
 		float y1 = y*v;

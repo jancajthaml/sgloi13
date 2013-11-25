@@ -29,7 +29,7 @@ private:
 		Color color;
 
 		const Material material = model->getMaterial();
-		const int size = lights.size();
+		const long size = lights.size();
 		int pointer = -1;
 
 		//####################[DEPTH OF FIELD
@@ -39,6 +39,7 @@ private:
 	    {
 			//Light direction
 			Vertex L = lights[pointer].position - i;
+			float length= L.length();
 			L.normalise();
 
 			float NL = N*L;
@@ -46,24 +47,34 @@ private:
 
 			//####################[SHADOWS
 			#ifdef SHADOWS
-			float length= L.length();
+			
 
 			Ray r;
 			r.origin=i;
 			r.direction=L;
 
 			float t	 = FLOAT_MAX;
-			if(0.0f < length - 0.1 && ray.depth==7)
+			if(0.0f < length - 0.1 && ray.depth >= 0)
 			{
 				for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 				{
 					Model* m = (*child)->getModel();
-					if( m->findIntersection(r, t) && t > 0.01)
+					if( m->findIntersection(r, t) && abs(t) > 0.01)
 					{
-						if(m->backfaceCull(ray, t))
-							continue;
-						under_the_shadow=true;
-						break;
+						//calculate the intersection point that causes the shadow
+						Vertex intersection = r.extrapolate(t);
+						//calculate the distance between intersection point and the point where we are going to calculate the color
+						float distanceToIntersection = (intersection - i).length();
+						//the intersection point that causes the shadow must be between the current point and the light.
+						//if the distanceToIntersection is > length, then the point causing the shadow is behind the light and
+						//therefore it cannot cause the shadow. Simple :-)
+						if (distanceToIntersection <= length - 0.1)
+						{
+							if(m->backfaceCull(ray, t))
+								continue;
+							under_the_shadow=true;
+							break;
+						}
 						
 					}
 				}
