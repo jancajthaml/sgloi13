@@ -48,15 +48,13 @@ public:
 		const float c		= (dst * dst) - r*r;
 		const float d		= b*b - c;
 		
-		if( d > 0 )
+		if( d>0 )
 		{
-			t = -b - Helper::q3sqrt(d);
-			if( t < 0.0f )
-				t = -b + Helper::q3sqrt(d);
+							t = -b - Helper::q3sqrt(d);
+			if( t<0.0f )	t = -b + Helper::q3sqrt(d);
 			return true;
 		}
 		return false;
-
 	}
 	
 	virtual Vertex getNormal(const Vertex &i)
