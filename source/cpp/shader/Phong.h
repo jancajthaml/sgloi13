@@ -24,36 +24,64 @@ private:
 	{
 		Vertex normal	= model->getNormal(i);
 		Color color;
+<<<<<<< HEAD
 		const Material material	= model->getMaterial();
 		const long size			= lights.size();
 		int pointer				= -1;
+=======
+
+		const Material material = model->getMaterial();
+		const long size = lights.size();
+		int pointer = -1;
+>>>>>>> cbee90fcf2d7566027e57fc90275372dc940bcaa
 
 		//####################[DEPTH OF FIELD
 
 		while( ++pointer<size )
+<<<<<<< HEAD
 		{
 			Vertex light_direction		= lights[pointer].position - i;
 			float length				= light_direction.length();
 
 			light_direction.normalise();
+=======
+	    {
+			//Light direction
+			Vertex L = lights[pointer].position - i;
+			float length= L.length();
+			L.normalise();
+>>>>>>> cbee90fcf2d7566027e57fc90275372dc940bcaa
 
 			float NL				= normal*light_direction;
 			bool under_the_shadow	= false;
 
 			//####################[SHADOWS
+<<<<<<< HEAD
+=======
+			#ifdef SHADOWS
+			
+>>>>>>> cbee90fcf2d7566027e57fc90275372dc940bcaa
 
 			//COMMENT!
 			Ray r;
 			r.origin    = i;
 			r.direction = light_direction;
 
+<<<<<<< HEAD
 			float t         = FLOAT_MAX;
+=======
+			float t	 = FLOAT_MAX;
+>>>>>>> cbee90fcf2d7566027e57fc90275372dc940bcaa
 			if(0.0f < length - 0.1 && ray.depth >= 0)
 			{
 				for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 				{
 					Model* m = (*child)->getModel();
+<<<<<<< HEAD
 					if( m->findIntersection(r, t) && Helper::abs(t) > 0.01)
+=======
+					if( m->findIntersection(r, t) && abs(t) > 0.01)
+>>>>>>> cbee90fcf2d7566027e57fc90275372dc940bcaa
 					{
 						//calculate the intersection point that causes the shadow
 						Vertex intersection = r.extrapolate(t);
@@ -62,12 +90,23 @@ private:
 						//the intersection point that causes the shadow must be between the current point and the light.
 						//if the distanceToIntersection is > length, then the point causing the shadow is behind the light and
 						//therefore it cannot cause the shadow. Simple :-)
+<<<<<<< HEAD
 						if( distanceToIntersection<=length - 0.1 )
 						{
 							if(m->backfaceCull(ray, t)) continue;
 							under_the_shadow=true;
 							break;
 						}
+=======
+						if (distanceToIntersection <= length - 0.1)
+						{
+							if(m->backfaceCull(ray, t))
+								continue;
+							under_the_shadow=true;
+							break;
+						}
+						
+>>>>>>> cbee90fcf2d7566027e57fc90275372dc940bcaa
 					}
 				}
 			}
