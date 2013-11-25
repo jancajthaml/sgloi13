@@ -53,7 +53,7 @@ private:
 			r.direction=L;
 
 			float t	 = FLOAT_MAX;
-			if (0.0f < length - 0.1)
+			if(0.0f < length - 0.1 && ray.depth==7)
 			{
 				for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 				{
