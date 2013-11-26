@@ -26,7 +26,7 @@
 //#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
 
-const int RAY_RECURSION_DEPTH = 20;
+const int RAY_RECURSION_DEPTH = 8;
 
 class RootSceneNode : public SceneNode
 {
@@ -136,7 +136,7 @@ public:
 		A.x = A.x*w;
 		A.y = A.y*w;
 		A.z = A.z*w;
-		A.w = 1.0;
+		A.w = 1.0f;
 
 		v.z	= 1.0f;
 		Vertex B = I * v;//[x y 1 1];
@@ -146,7 +146,7 @@ public:
 		B.x = B.x*w;
 		B.y = B.y*w;
 		B.z = B.z*w;
-		B.w = 1.0;
+		B.w = 1.0f;
 
 		Vertex D = (B - A);
 		D.normalise();
@@ -162,6 +162,7 @@ public:
 	// Recursive 4-point AA
 	Color antialiasing(Vertex s, Vertex e, Matrix I, int depth)
 	{
+		//FIXME THIS WORKS BADLY
 		float dx = e.x - s.x;
 		float dy = e.y - s.y;
 
@@ -208,7 +209,7 @@ public:
 
 	Color DOF(const Vertex sample, int depth, Matrix I)
 	{
-
+		//FIXME THIS DOESNT WORK
 		Ray     ray;
 		Color   color;
 		Color   color1;
@@ -257,7 +258,7 @@ public:
 		//FIXME punk switch... needs some abstraction and setters
 		switch( USE_SHADER )
 		{
-				//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
+			//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
 			case 1 : return Phong::castAndShade( ray, children, lights ,context);
 			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
 			default: return *context.clear;

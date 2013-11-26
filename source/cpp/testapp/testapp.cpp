@@ -10,8 +10,8 @@
 //#define TEST0
 //#define TEST1
 //#define TEST2
-#define TEST3
-//#define TEST4
+//#define TEST3
+#define TEST4
 //#define TEST5
 
 #ifdef TEST0
@@ -79,16 +79,12 @@ using namespace std;
 
 
 /// Main windows parameters
-//#define WIDTH  512
-//#define HEIGHT 512
+#define WIDTH  512
+#define HEIGHT 512
 
 //#define WIDTH  1000
 //#define HEIGHT 1000
 
-
-
-#define WIDTH  1024
-#define HEIGHT 1024
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8
 

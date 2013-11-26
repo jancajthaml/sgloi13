@@ -13,7 +13,6 @@
 
 #define FLOAT_MAX std::numeric_limits<float>::max()
 
-
 class Phong
 {
 
@@ -22,62 +21,37 @@ private:
 
 	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
-		Vertex normal	= model->getNormal(i);
+		Vertex normal			= model->getNormal(i);
 		Color color;
-<<<<<<< HEAD
 		const Material material	= model->getMaterial();
 		const long size			= lights.size();
 		int pointer				= -1;
-=======
-
-		const Material material = model->getMaterial();
-		const int size = lights.size();
-		int pointer = -1;
->>>>>>> parent of cbee90f... Fix of the wrong shadow calculation -> TEST4C should be OK now.
 
 		//####################[DEPTH OF FIELD
 
 		while( ++pointer<size )
-<<<<<<< HEAD
 		{
 			Vertex light_direction		= lights[pointer].position - i;
 			float length				= light_direction.length();
 
 			light_direction.normalise();
-=======
-	    {
-			//Light direction
-			Vertex L = lights[pointer].position - i;
-			L.normalise();
->>>>>>> parent of cbee90f... Fix of the wrong shadow calculation -> TEST4C should be OK now.
 
 			float NL				= normal*light_direction;
 			bool under_the_shadow	= false;
 
 			//####################[SHADOWS
-<<<<<<< HEAD
-=======
-			#ifdef SHADOWS
-			float length= L.length();
->>>>>>> parent of cbee90f... Fix of the wrong shadow calculation -> TEST4C should be OK now.
 
 			//COMMENT!
 			Ray r;
 			r.origin    = i;
 			r.direction = light_direction;
 
-<<<<<<< HEAD
 			float t         = FLOAT_MAX;
 			if(0.0f < length - 0.1 && ray.depth >= 0)
-=======
-			float t	 = FLOAT_MAX;
-			if(0.0f < length - 0.1 && ray.depth==7)
->>>>>>> parent of cbee90f... Fix of the wrong shadow calculation -> TEST4C should be OK now.
 			{
 				for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 				{
 					Model* m = (*child)->getModel();
-<<<<<<< HEAD
 					if( m->findIntersection(r, t) && Helper::abs(t) > 0.01)
 					{
 						//calculate the intersection point that causes the shadow
@@ -93,15 +67,6 @@ private:
 							under_the_shadow=true;
 							break;
 						}
-=======
-					if( m->findIntersection(r, t) && t > 0.01)
-					{
-						if(m->backfaceCull(ray, t))
-							continue;
-						under_the_shadow=true;
-						break;
-						
->>>>>>> parent of cbee90f... Fix of the wrong shadow calculation -> TEST4C should be OK now.
 					}
 				}
 			}
@@ -170,34 +135,25 @@ private:
 		return color;
 	}
 
-#define DOFVALUE 675
-#define DOFPOWER 0.025
 public:
 	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
 	{
+		Model *model;
 		float tmin	= FLOAT_MAX;
 		float t		= FLOAT_MAX;
-		Model *model;
 
 		for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 		{
 			Model* m = (*child)->getModel();
-			if( m->findIntersection(ray, t) && t > 0.1 )
-			{
-				if(m->backfaceCull(ray, t)) continue;
 
-				if( t<tmin )
-				{
-					tmin  = t;
-					model = m;
-				}
+			if( m->findIntersection(ray, t) && !m->backfaceCull(ray, t) && t > 0.1 && t<tmin)
+			{
+				tmin  = t;
+				model = m;
 			}
 		}
 
-
-		if(( tmin<FLOAT_MAX )) return *context.clear;
-
-			return calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context);
+		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
 
 	}
 
