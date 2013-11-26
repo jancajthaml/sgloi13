@@ -110,7 +110,7 @@ public:
 			context.buffer[context.lastSetPixelIndex]	= context.color;
 		}
 	}
-	
+
 	static inline void bresenham_x(int x1, int y1, int z1, int x2, int y2, int z2, Chunk &context)
 	{
 		int dx	= x2 - x1;
