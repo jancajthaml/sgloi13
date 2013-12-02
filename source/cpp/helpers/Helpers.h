@@ -12,6 +12,8 @@
 #include "./../struct/Edge.h"
 #include "./../struct/Color.h"
 
+
+
 //TODO COMMENT !!!!!!!
 struct Helper
 {

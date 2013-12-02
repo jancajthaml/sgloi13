@@ -16,6 +16,8 @@
 #include "../struct/Ray.h"
 #include "./../shader/Flat.h"
 #include "./../shader/Phong.h"
+#include "./../shader/Toon.h"
+#include "./../shader/Rim.h"
 #include "./../shader/Ward.h"
 #include <cmath>
 #include <stdio.h>
@@ -24,7 +26,7 @@
 //Adaptive antialiasing and shader types defined there
 //#define ADAPTIVE_AA
 //#define DOF_AA
-#define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward
+#define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward, 3-Toon, 4-Rim
 
 const int RAY_RECURSION_DEPTH = 8;
 
@@ -261,6 +263,8 @@ public:
 			//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
 			case 1 : return Phong::castAndShade( ray, children, lights ,context);
 			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
+			case 3 : return Toon::castAndShade( ray, children, lights ,context );
+			case 4 : return Rim::castAndShade( ray, children, lights ,context );
 			default: return *context.clear;
 		}
 	}
