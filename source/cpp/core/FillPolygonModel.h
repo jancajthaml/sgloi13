@@ -153,18 +153,14 @@ public:
 
 			// Compute second barycentric coordinate
 			Vertex s2 = d.crossProduct(e1);
-			s2.normalise();
+			//s2.normalise();
 			float b2 = (ray.direction* s2) * invDivisor;
 			if (b2 < 0.0f || b1 + b2 > 1.0f)
 				return false;
 
 			// Compute _t_ to intersection point
 			float hit = (e2*s2) * invDivisor;
-
-			if (hit < ray.t_min || hit > ray.t_max)
-				return false;
-
-			//printf("tu");
+		
 			t = hit;
 			return true;
 
