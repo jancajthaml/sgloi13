@@ -182,7 +182,7 @@ public:
 				cache_20 = vertices[2] - vertices[0];
 				cache_10 = vertices[1] - vertices[0];
 			}
-			normal = (cache_10).crossProduct(cache_20);
+			normal = (cache_10).crossProduct(vertices[2] - vertices[0]);
 			normal.normalise();
 		}
 		return normal;
@@ -197,8 +197,14 @@ public:
 	virtual const char * getName()
 	{ return "TRI\n"; }
 	
-	virtual bool backfaceCull(const Ray &ray, const float &t)
-	{ return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0; }
+	virtual inline bool backfaceCull(const Ray &ray, const float &t)
+	{
+		#ifdef USE_TRIANGLE_NORMAL
+			return ray.direction * getNormal(normal) >= 0.0f;
+		#endif
+
+		return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0f;
+	}
 
 };
 

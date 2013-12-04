@@ -65,14 +65,10 @@ public:
 	}
 	
 	virtual const char * getName()
-	{
-		return "SPH\n";
-	}
+	{ return "SPH\n"; }
 	
-	virtual bool backfaceCull(const Ray &ray, const float &t)
-	{
-		return false;
-	}
+	virtual inline bool backfaceCull(const Ray &ray, const float &t)
+	{ return false; }
 	
 };
 

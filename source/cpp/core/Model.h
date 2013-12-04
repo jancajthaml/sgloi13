@@ -79,7 +79,7 @@ public:
 	 calculates normal at intersection point i
 	 @param i	intersection point of ray and model
 	 */
-	virtual Vertex getNormal(const Vertex &i)
+	virtual inline Vertex getNormal(const Vertex &i)
 	{ return Vertex(0.0f, 0.0f, 0.0f, 1.0f); }
 	
 	void addVertex(Vertex v)
@@ -229,7 +229,8 @@ public:
 		}
 	}
 	
-	virtual bool backfaceCull(const Ray &ray, const float &t){ return true;}
+	virtual inline bool backfaceCull(const Ray &ray, const float &t)
+	{ return true;}
 	
 };
 
