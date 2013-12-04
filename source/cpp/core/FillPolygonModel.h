@@ -160,7 +160,8 @@ public:
 
 			// Compute _t_ to intersection point
 			float hit = (e2*s2) * invDivisor;
-		
+			if (hit < 0.0)
+				return false;
 			t = hit;
 			return true;
 
