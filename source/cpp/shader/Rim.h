@@ -21,7 +21,7 @@ private:
 	{
 		Vertex normal			= model->getNormal(i);
 		Color color;
-		const Material material	= model->getMaterial();
+		//const Material material	= model->getMaterial();
 		const long size			= lights.size();
 		int pointer				= -1;
 
@@ -34,7 +34,7 @@ private:
 
 			light_direction.normalise();
 
-			float NL				= normal*light_direction;
+		//	float NL				= normal*light_direction;
 			bool under_the_shadow	= false;
 
 			//####################[SHADOWS

@@ -94,7 +94,7 @@ struct Vertex
 	friend Vertex operator+(const Vertex& v1,const Vertex& v2)
 	{ return Vertex(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z); }
 
-	Vertex crossProduct(const Vertex& v2)
+	Vertex crossProduct(const Vertex& v2) const
 	{
 		Vertex result;
 

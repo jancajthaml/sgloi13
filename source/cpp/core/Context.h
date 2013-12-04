@@ -128,18 +128,17 @@ struct Context
 
 		//----------------------//
 
-		storage.size   = 1                                            ;
-		storage.buffer = (Color*) malloc(sizeof(Color) * storage.w_h) ;
-		storage.depth  = (float*) malloc(sizeof(float) * storage.w_h) ;
-		storage.clear  = (Color*) malloc(sizeof(Color) * storage.w_h) ;
+		storage.size    = 1                                            ;
+		storage.buffer  = (Color*) malloc(sizeof(Color) * storage.w_h) ;
+		storage.depth   = (float*) malloc(sizeof(float) * storage.w_h) ;
+		storage.clear   = (Color*) malloc(sizeof(Color) * storage.w_h) ;
+		current_M	    = MatrixCache::identity()                      ;
+		current_P       = MatrixCache::identity()                      ;
 
-		current_M	   = MatrixCache::identity()                      ;
-		current_P      = MatrixCache::identity()                      ;
-
-		P_changed      = true                                         ;
-		M_changed      = true                                         ;
-		drawType       = SGL_FILL                                     ;
-		matrixMode     = SGL_MODELVIEW                                ;
+		P_changed       = true                                         ;
+		M_changed       = true                                         ;
+		drawType        = SGL_FILL                                     ;
+		matrixMode      = SGL_MODELVIEW                                ;
 
 		this->disableDepthTest();
 		

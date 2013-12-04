@@ -24,7 +24,7 @@
 #include <iostream>
 
 //Adaptive antialiasing and shader types defined there
-//#define ADAPTIVE_AA
+#define ADAPTIVE_AA
 //#define DOF_AA
 #define USE_SHADER 1	//0-Flat, 1-Phong, 2-Ward, 3-Toon, 4-Rim
 
@@ -112,7 +112,7 @@ public:
 				#else
 				{
 					#ifdef ADAPTIVE_AA
-						context.buffer[context.lastSetPixelIndex] = antialiasing(Vertex( x,y ), Vertex( x+1,y+1 ), I, 2);
+						context.buffer[context.lastSetPixelIndex] = castAndShadeAntialiased(createRay(Vertex( x,y ), I),x,y);
 					#else
 						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
 					#endif
@@ -157,56 +157,9 @@ public:
 		ray.origin		= A;
 		ray.direction	= D;
 		ray.depth		= RAY_RECURSION_DEPTH-1;
-
+		ray.t_min		= -1;
+		ray.t_max		= D.length();
 		return ray;
-	}
-
-	// Recursive 4-point AA
-	Color antialiasing(Vertex s, Vertex e, Matrix I, int depth)
-	{
-		//FIXME THIS WORKS BADLY
-		float dx = e.x - s.x;
-		float dy = e.y - s.y;
-
-		float dx_1 = dx*0.25f;
-		float dy_1 = dy*0.25f;
-		float dx_2 = dx*0.75f;
-		float dy_2 = dy*0.75f;
-
-		Vertex p1( s.x + dx_1, s.y + dy_1 );
-		Vertex p2( s.x + dx_2, s.y + dy_1 );
-		Vertex p3( s.x + dx_1, s.y + dy_2 );
-		Vertex p4( s.x + dx_2, s.y + dy_2 );
-
-		Color c1 = castAndShade( createRay(p1,I) );
-		Color c2 = castAndShade( createRay(p2,I) );
-		Color c3 = castAndShade( createRay(p3,I) );
-		Color c4 = castAndShade( createRay(p4,I) );
-
-		if(Helper::areColorsSame(c1,c2,c3,c4)) return c1;
-		else if( depth==0 )
-		{
-			return (c1+c2+c3+c4)*0.25f;
-		}
-		else
-		{
-			dx_1 = dx*0.5f;
-			dy_1 = dy*0.5f;
-			Vertex f(s.x + dx_1, s.y + dy_1);
-			p1 = Vertex(s.x + dx_1, s.y);
-			p2 = Vertex(s.x, s.y + dy_1);
-			p3 = Vertex(s.x + dx_1, e.y);
-			p3 = Vertex(e.x, s.y + dy_1);
-
-			depth--;
-
-			c1 = antialiasing( s,  f,  I, depth );
-			c2 = antialiasing( p1, p4, I, depth );
-			c3 = antialiasing( f,  e,  I, depth );
-			c4 = antialiasing( p2, p3, I, depth );
-
-			return (c1+c2+c3+c4)*0.25f;
-		}
 	}
 
 	Color DOF(const Vertex sample, int depth, Matrix I)
@@ -261,7 +214,22 @@ public:
 		switch( USE_SHADER )
 		{
 			//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
-			case 1 : return Phong::castAndShade( ray, children, lights ,context);
+			case 1 : return Phong::castAndShade( ray, children, lights ,context, false ,0 ,0);
+			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
+			case 3 : return Toon::castAndShade( ray, children, lights ,context );
+			case 4 : return Rim::castAndShade( ray, children, lights ,context );
+			default: return *context.clear;
+		}
+	}
+
+	///
+	Color castAndShadeAntialiased(const Ray &ray,const short x, const short y)
+	{
+		//FIXME punk switch... needs some abstraction and setters
+		switch( USE_SHADER )
+		{
+			//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
+			case 1 : return Phong::castAndShade( ray, children, lights ,context,true,x,y);
 			case 2 : return Ward::castAndShade( ray, children, lights, *context.clear );
 			case 3 : return Toon::castAndShade( ray, children, lights ,context );
 			case 4 : return Rim::castAndShade( ray, children, lights ,context );

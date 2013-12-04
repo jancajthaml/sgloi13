@@ -19,7 +19,7 @@ class Phong
 private:
 	Phong(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context, const bool antialiased, const short x, const short y)
 	{
 		Vertex normal			= model->getNormal(i);
 		Color color;
@@ -46,7 +46,8 @@ private:
 			r.origin    = i;
 			r.direction = light_direction;
 
-			float t         = FLOAT_MAX;
+			float t     = FLOAT_MAX;
+
 			if(0.0f < length - 0.1 && ray.depth >= 0)
 			{
 				for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
@@ -63,13 +64,17 @@ private:
 						//therefore it cannot cause the shadow. Simple :-)
 						if( distanceToIntersection<=length - 0.1 )
 						{
-							if(m->backfaceCull(ray, t)) continue;
+							if( m->backfaceCull(ray, t) ) continue;
 							under_the_shadow=true;
 							break;
 						}
 					}
 				}
 			}
+
+
+			//if(antialiased);
+
 
 			//####################[ SHADING
 
@@ -87,7 +92,7 @@ private:
 
 			//####################[REFLECTION
 
-			if (material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0)
+			if( material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0 )
 			{
 				Ray reflection_ray;
 				reflection_ray.origin     = i;
@@ -96,7 +101,7 @@ private:
 
 				reflection_ray.direction.normalise();
 
-				color = color + material.ks * castAndShade(reflection_ray,children,lights,context);
+				color = color + material.ks * castAndShade(reflection_ray,children,lights,context,antialiased,x,y);
 			}
 
 			//####################[REFRACTION
@@ -125,10 +130,10 @@ private:
 					Vertex T	= -cosT2 * nN + ray.direction * R_index;
 
 					Ray refraction_ray;
-					refraction_ray.origin		= i + T*0.1;
+					refraction_ray.origin		= i + T * 0.1f;
 					refraction_ray.direction	= T;
 					refraction_ray.depth		= ray.depth-1;
-					color						= color + material.trn * castAndShade(refraction_ray,children,lights,context);
+					color						= color + material.trn * castAndShade(refraction_ray,children,lights,context,antialiased,x,y);
 				}
 			}
 		}
@@ -136,7 +141,7 @@ private:
 	}
 
 public:
-	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context, const bool antialiased, const short x, const short y)
 	{
 		Model *model;
 		float tmin	= FLOAT_MAX;
@@ -153,8 +158,7 @@ public:
 			}
 		}
 
-		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
-
+		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context, antialiased, x, y) : *context.clear;
 	}
 
 };
