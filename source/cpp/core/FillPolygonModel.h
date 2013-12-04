@@ -18,6 +18,9 @@ class FillPolygonModel : public Model
 {
 private:
 	Vertex normal;
+	bool cached;
+	Vertex cache_10;
+	Vertex cache_20;
 public:
 	/**
 	 Constructor of model
@@ -26,7 +29,8 @@ public:
 	 */
 	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material)
 	{
-		normal.w=-1;
+		normal.w = -1;
+		cached   = false;
 	}
 	
 	/**
@@ -134,40 +138,38 @@ public:
 		delete[] edges             ;
 	}
 	
+
+
 	virtual bool findIntersection(const Ray &ray, float &t)
 	{
-		Vertex p1 = vertices[0];
-		Vertex p2 = vertices[1];
-		Vertex p3 = vertices[2];
-		Vertex e1 = p2 - p1;
-		Vertex e2 = p3 - p1;
-		Vertex s1 = ray.direction.crossProduct(e2);
-		float divisor = s1*e1;
+		if(!cached)
+		{
+			cached   = true;
+			cache_20 = vertices[2] - vertices[0];
+			cache_10 = vertices[1] - vertices[0];
+		}
+
+		//Vertex e1 = cache_10;
+		//Vertex e2 = cache_20;
+		Vertex s1 = ray.direction.crossProduct(cache_20);
+		float divisor = s1*cache_10;
 		if (divisor == 0.0f) return false;
 
-		float invDivisor = 1.f / divisor;
+		float inverse = 1.0f / divisor;
 
-		Vertex d = ray.origin - p1;
-		float b1 = (d* s1) * invDivisor;
-		if (b1 < 0.0f || b1 > 1.0f) return false;
+		Vertex d = ray.origin - vertices[0];
+		float b1 = ( d*s1) * inverse;
+		if( b1 < 0.0f || b1 > 1.0f ) return false;
+		Vertex s2 = d.crossProduct(cache_10);
+		float b2 = (ray.direction*s2) * inverse;
 
-			// Compute second barycentric coordinate
-			Vertex s2 = d.crossProduct(e1);
-			s2.normalise();
-			float b2 = (ray.direction* s2) * invDivisor;
-			if (b2 < 0.0f || b1 + b2 > 1.0f)
-				return false;
+		if( b2 < 0.0f || b1 + b2 > 1.0f ) return false;
 
-			// Compute _t_ to intersection point
-			float hit = (e2*s2) * invDivisor;
+		float hit = (cache_20*s2) * inverse;
+		if( hit < 0.0f) return false;
 
-			if (hit < ray.t_min || hit > ray.t_max)
-				return false;
-
-			//printf("tu");
-			t = hit;
-			return true;
-
+		t = hit;
+		return true;
 	}
 	
 
@@ -176,7 +178,13 @@ public:
 		#ifdef USE_TRIANGLE_NORMAL
 		if(normal.w==-1)
 		{
-			normal = (vertices[2] - vertices[0]).crossProduct(vertices[2] - vertices[1]);
+			if(!cached)
+			{
+				cached   = true;
+				cache_20 = vertices[2] - vertices[0];
+				cache_10 = vertices[1] - vertices[0];
+			}
+			normal = (cache_20).crossProduct(vertices[2] - vertices[1]);
 			normal.normalise();
 		}
 		return normal;
