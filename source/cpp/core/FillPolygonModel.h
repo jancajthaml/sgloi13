@@ -137,8 +137,6 @@ public:
 		vertices.clear()		   ;
 		delete[] edges             ;
 	}
-	
-
 
 	virtual bool findIntersection(const Ray &ray, float &t)
 	{
@@ -149,29 +147,29 @@ public:
 			cache_10 = vertices[1] - vertices[0];
 		}
 
-		//Vertex e1 = cache_10;
-		//Vertex e2 = cache_20;
-		Vertex s1 = ray.direction.crossProduct(cache_20);
-		float divisor = s1*cache_10;
-		if (divisor == 0.0f) return false;
+		Vertex s1		= ray.direction.crossProduct(cache_20);
+		float divisor	= s1*cache_10;
 
-		float inverse = 1.0f / divisor;
+		if( divisor==0.0f ) return false;
 
-		Vertex d = ray.origin - vertices[0];
-		float b1 = ( d*s1) * inverse;
+		float inverse = 1.0f/divisor;
+
+		Vertex d	= ray.origin - vertices[0];
+		float b1	= ( d*s1) * inverse;
+
 		if( b1 < 0.0f || b1 > 1.0f ) return false;
-		Vertex s2 = d.crossProduct(cache_10);
-		float b2 = (ray.direction*s2) * inverse;
+
+		Vertex s2	= d.crossProduct(cache_10);
+		float b2	= (ray.direction*s2) * inverse;
 
 		if( b2 < 0.0f || b1 + b2 > 1.0f ) return false;
 
 		float hit = (cache_20*s2) * inverse;
-		if( hit < 0.0f) return false;
+		if( hit < 0.0f || hit > 1073741824.0f ) return false;
 
 		t = hit;
 		return true;
 	}
-	
 
 	virtual Vertex getNormal(const Vertex &i)
 	{
@@ -184,7 +182,7 @@ public:
 				cache_20 = vertices[2] - vertices[0];
 				cache_10 = vertices[1] - vertices[0];
 			}
-			normal = (cache_20).crossProduct(vertices[2] - vertices[1]);
+			normal = (cache_10).crossProduct(cache_20);
 			normal.normalise();
 		}
 		return normal;
@@ -197,9 +195,7 @@ public:
 	}
 	
 	virtual const char * getName()
-	{
-		return "TRI\n";
-	}
+	{ return "TRI\n"; }
 	
 	virtual bool backfaceCull(const Ray &ray, const float &t)
 	{ return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0; }
