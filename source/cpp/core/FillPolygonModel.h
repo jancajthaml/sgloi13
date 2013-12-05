@@ -10,7 +10,6 @@
 #define libsgl_FillPolygonModel_h
 
 #include "../helpers/Helpers.h"
-#define EPSILON 0.000001
 
 #define USE_TRIANGLE_NORMAL
 
@@ -140,7 +139,7 @@ public:
 
 	virtual bool findIntersection(const Ray &ray, float &t)
 	{
-		if(!cached)
+		if( !cached )
 		{
 			cached   = true;
 			cache_20 = vertices[2] - vertices[0];
@@ -150,47 +149,22 @@ public:
 		Vertex s1		= ray.direction.crossProduct(cache_20);
 		float divisor	= s1*cache_10;
 
-		if( divisor==0.0f )
-		{
-			delete s1;
-			return false;
-		}
+		if( divisor==0.0f )  return false;
 
 		float inverse = 1.0f/divisor;
 
 		Vertex d	= ray.origin - vertices[0];
 		float b1	= ( d*s1) * inverse;
 
-		if( b1 < 0.0f || b1 > 1.0f )
-		{
-			delete s1;
-			delete d;
-			return false;
-		}
+		if( b1 < 0.0f || b1 > 1.0f ) return false;
 
 		Vertex s2	= d.crossProduct(cache_10);
 		float b2	= (ray.direction*s2) * inverse;
 
-		if( b2 < 0.0f || b1 + b2 > 1.0f )
-		{
-			delete s1;
-			delete s2;
-			delete d;
-			return false;
-		}
+		if( b2 < 0.0f || b1 + b2 > 1.0f ) return false;
 
 		float hit = (cache_20*s2) * inverse;
-		if( hit < 0.0f || hit > 1073741824.0f )
-		{
-			delete s1;
-			delete s2;
-			delete d;
-			return false;
-		}
-
-		delete s1;
-		delete s2;
-		delete d;
+		if( hit < 0.0f || hit > 1073741824.0f ) return false;
 
 		t = hit;
 		return true;
