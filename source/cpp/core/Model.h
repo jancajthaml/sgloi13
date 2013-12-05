@@ -79,10 +79,10 @@ public:
 	 calculates normal at intersection point i
 	 @param i	intersection point of ray and model
 	 */
-	virtual Vertex getNormal(const Vertex &i)
+	virtual inline Vertex getNormal(const Vertex &i)
 	{ return Vertex(0.0f, 0.0f, 0.0f, 1.0f); }
 	
-	inline void addVertex(Vertex v)
+	void addVertex(Vertex v)
 	{ vertices.push_back(v); }
 	
 	static inline void setPixelChunk( int y, int start, int end, float z, float z_growth, Chunk &context )
@@ -229,7 +229,8 @@ public:
 		}
 	}
 	
-	virtual bool backfaceCull(const Ray &ray, const float &t){ return true;}
+	virtual inline bool backfaceCull(const Ray &ray, const float &t)
+	{ return true;}
 	
 };
 

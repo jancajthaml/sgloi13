@@ -206,7 +206,6 @@ public:
 		return color;
 	}
 
-
 	///
 	Color castAndShade(const Ray &ray)
 	{
@@ -257,7 +256,7 @@ public:
 	/**
 	 Get the current node
 	 */
-	inline SceneNode * getCurrentNode()
+	SceneNode * getCurrentNode()
 	{ return currentNode; }
 
 	void setMVP(Matrix mvp)

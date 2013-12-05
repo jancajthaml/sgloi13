@@ -78,13 +78,13 @@ public:
 	 Adds child to children
 	 @param child	the child to be added
 	 */
-	inline void addChild(SceneNode * child)
+	void addChild(SceneNode * child)
 	{ children.push_back(child); }
 	
-	inline void addVertex(Vertex v)
+	void addVertex(Vertex v)
 	{ model->addVertex(v); }
 	
-	inline Model* getModel()
+	Model* getModel()
 	{ return model; }
 
 };

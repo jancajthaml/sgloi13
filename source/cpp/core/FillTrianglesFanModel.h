@@ -47,7 +47,7 @@ public:
 	}
 
 
-	inline void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
+	void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Chunk &context)
 	{
 		//TODO IMPLEMENT WITH Z!
 	}

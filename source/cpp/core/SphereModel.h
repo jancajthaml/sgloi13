@@ -24,11 +24,11 @@ public:
 	 */
 	SphereModel( Chunk _context, Material _material, const float _x, const float _y, const float _z, const float _r) : Model( _context, _material)
 	{
-		position.x = _x;
-		position.y = _y;
-		position.z = _z;
-		position.w = 1.0f;
-		r = _r;
+		position.x	= _x;
+		position.y	= _y;
+		position.z	= _z;
+		position.w	= 1.0f;
+		r			= _r;
 	}
 	
 	/**
@@ -45,7 +45,7 @@ public:
 	{
 		const Vertex dst	= ray.origin - position;
 		const float b		= dst * ray.direction;
-		const float c		= (dst * dst) - r*r;
+		const float c		= ( dst*dst ) - r*r;
 		const float d		= b*b - c;
 		
 		if( d>0 )
@@ -64,15 +64,11 @@ public:
 		return dir;
 	}
 	
-	virtual const char * getName()
-	{
-		return "SPH\n";
-	}
+	virtual const char* getName()
+	{ return "SPH\n"; }
 	
-	virtual bool backfaceCull(const Ray &ray, const float &t)
-	{
-		return false;
-	}
+	virtual inline bool backfaceCull(const Ray &ray, const float &t)
+	{ return false; }
 	
 };
 
