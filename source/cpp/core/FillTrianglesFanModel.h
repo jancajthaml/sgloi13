@@ -27,23 +27,24 @@ public:
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
 		Model::multiplyVerticesWithMVP(mpv);
-		uint_fast16_t size = vertices.size();
-		if(size < 3) return;
+		const uint16 size = vertices.size();
 		
-		Vertex center	= vertices[0];
+		if( size<3 ) return;
+
+		const Vertex center	= vertices[0];
 		Vertex A		= vertices[1];
 		Vertex B		= vertices[2];
 		
-		size_t i = 1;
+		uint16 i = 1;
 
 		while( ++i<size )
 		{
-			triangle(center, A, B, context);
-			A	= B;
-			B	= vertices[i];
+			triangle( center,A,B,context );
+			A = B;
+			B = vertices[i];
 		}
 
-		triangle(center, A, B, context);
+		triangle( center,A,B,context );
 	}
 
 

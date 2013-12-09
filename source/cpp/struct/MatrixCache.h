@@ -88,14 +88,14 @@ struct MatrixCache
 		return O;
 	}
 
-	static inline Matrix rotateY(float angle)
+	static inline Matrix rotateY( float angle )
 	{
-		float sin = sinf(-angle);
-		float cos = cosf(-angle);
+		float sin    = sinf(-angle);
+		float cos    = cosf(-angle);
 
-		Y.matrix[0] = cos;
-		Y.matrix[2] = -sin;
-		Y.matrix[8] = sin;
+		Y.matrix[0]  = cos;
+		Y.matrix[2]  = -sin;
+		Y.matrix[8]  = sin;
 		Y.matrix[10] = cos;
 
 		return Y;

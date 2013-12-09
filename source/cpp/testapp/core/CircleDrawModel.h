@@ -8,10 +8,12 @@
 #ifndef CIRCLEDRAWMODEL_H_
 #define CIRCLEDRAWMODEL_H_
 
+#include "types.h"
+
 class CircleDrawModel : public Model
 {
 private:
-	int r;
+	uint16 r;
 	Vertex center;
 
 public:
@@ -20,9 +22,9 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	CircleDrawModel( Chunk _context, Material _material, int r, Vertex center ) : 	Model( _context, _material)
+	CircleDrawModel( Chunk _context, Material _material, uint16 r, Vertex center ) : 	Model( _context, _material)
 	{
-		this->r = r;
+		this->r      = r;
 		this->center = center;
 	}
 
@@ -34,11 +36,11 @@ public:
 	 @param lights	lights affecting appearance of this model
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 */
-	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
+	virtual void rasterize( std::vector<Light> lights, Matrix mpv )
 	{
-		int x = 0;
-		int y = r;
-		int p = 3 - (int(r) << 1);
+		uint16 x = 0;
+		uint16 y = r;
+		int32  p = 3 - (r << 1);
 
 		while( x<y )
 		{
@@ -57,12 +59,13 @@ public:
 		if( x==y ) setSymPixel(x, y, center.x, center.y, context);
 	}
 
-	static inline void setSymPixel(signed x, signed y, signed xs, signed ys, Chunk &context)
+	static inline void setSymPixel(uint32 x, uint32 y, uint32 xs, uint32 ys, Chunk &context)
 	{
-		int rx = x + xs;
-		int ry = y + ys;
-		int mrx = -x + xs;
-		int mry = -y + ys;
+		uint32 rx  = x + xs;
+		uint32 ry  = y + ys;
+		uint32 mrx = -x + xs;
+		uint32 mry = -y + ys;
+
 		setPixel3D(rx, ry, 0, context);
 		setPixel3D(rx, mry, 0, context);
 		setPixel3D(mrx, ry, 0, context);
@@ -76,6 +79,7 @@ public:
 		setPixel3D(mry, rx, 0, context);
 		setPixel3D(mry, mrx, 0, context);
 	}
+
 };
 
 #endif /* CIRCLEDRAWMODEL_H_ */

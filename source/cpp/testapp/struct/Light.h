@@ -9,16 +9,28 @@
 #ifndef libsgl_LightNode_h
 #define libsgl_LightNode_h
 #include "Color.h"
+#include "Vertex.h"
+#include "Ray.h"
 /** 
  GraphNode base element for Lights.
  */
-struct Light
+
+//TODO COMMENT
+class Light
 {
-	///Position of the light
-	Vertex position;
-	
-	///Color of the light
-	Color color;
+	public:
+		Vertex position;
+		Color color;
+
+		Light(){}
+		virtual ~Light(){};
+
+		virtual void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
+		{}
+
+		virtual bool isPoint()
+		{ return false; }
+
 };
 
 #endif

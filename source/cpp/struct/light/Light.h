@@ -8,9 +8,9 @@
 
 #ifndef libsgl_LightNode_h
 #define libsgl_LightNode_h
-#include "Color.h"
-#include "Vertex.h"
-#include "Ray.h"
+#include "./../Color.h"
+#include "./../Vertex.h"
+#include "./../Ray.h"
 /** 
  GraphNode base element for Lights.
  */

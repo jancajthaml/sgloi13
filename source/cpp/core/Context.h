@@ -8,9 +8,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 
-#include <vector>
 #include "./SceneGraph.h"
-#include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
@@ -30,6 +28,7 @@
 #include "../struct/Material.h"
 #include <cfloat>
 #include <vector>
+#include "./../sgl.h"
 
 /*
  * Side-notes:

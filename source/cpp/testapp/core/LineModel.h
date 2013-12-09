@@ -29,8 +29,8 @@ public:
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
 		Model::multiplyVerticesWithMVP(mpv);
-		int i = -2;
-		const int size = vertices.size();
+		uint16 i = -2;
+		const uint16 size = vertices.size();
 
 		while( (i+=2)<size )
 			drawLine2D(vertices[i],vertices[i+1],context);
@@ -38,8 +38,8 @@ public:
 
 	static inline void drawLine2D(Vertex a, Vertex b, Chunk &context)
 	{
-		int dx = Helper::abs(b.x - a.x);
-		int dy = Helper::abs(b.y - a.y);
+		const uint16 dx = Helper::abs(b.x - a.x);
+		const uint16 dy = Helper::abs(b.y - a.y);
 
 		if( dx>dy )
 			if( a.x<b.x )	bresenham_x(a.x, a.y, a.z, b.x, b.y, b.z, context);

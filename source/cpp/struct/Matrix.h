@@ -8,7 +8,6 @@
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
-#include "./../core/CrossReferenceDispatcher.h"
 #include "Vertex.h"
 
 static const int SIZE_FLOAT = sizeof(float) << 4;

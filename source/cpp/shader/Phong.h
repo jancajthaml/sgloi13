@@ -10,6 +10,7 @@
 
 #include "./../helpers/Helpers.h"
 #include <limits>
+#include <cmath>
 
 #define FLOAT_MAX std::numeric_limits<float>::max()
 
@@ -19,7 +20,7 @@ class Phong
 private:
 	Phong(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context, const bool antialiased, const short x, const short y)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
 		Vertex normal			= model->getNormal(i);
 		Color color;
@@ -31,7 +32,9 @@ private:
 
 		while( ++pointer<size )
 		{
-			Vertex light_direction		= lights[pointer].position - i;
+			Light light = lights[pointer];
+
+			Vertex light_direction		= light.position - i;
 			float length				= light_direction.length();
 
 			light_direction.normalise();
@@ -88,7 +91,7 @@ private:
 			//---------------[ SPECULAR
 
 			color = color + Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(light_direction, normal)), material.shine);
-			color = color * lights[pointer].color;
+			color = color * light.color;
 
 			//####################[REFLECTION
 
@@ -101,7 +104,7 @@ private:
 
 				reflection_ray.direction.normalise();
 
-				color = color + material.ks * castAndShade(reflection_ray,children,lights,context,antialiased,x,y);
+				color = color + material.ks * castAndShade(reflection_ray,children,lights,context);
 			}
 
 			//####################[REFRACTION
@@ -133,7 +136,7 @@ private:
 					refraction_ray.origin		= i + T * 0.1f;
 					refraction_ray.direction	= T;
 					refraction_ray.depth		= ray.depth-1;
-					color						= color + material.trn * castAndShade(refraction_ray,children,lights,context,antialiased,x,y);
+					color						= color + material.trn * castAndShade(refraction_ray,children,lights,context);
 				}
 			}
 		}
@@ -141,7 +144,7 @@ private:
 	}
 
 public:
-	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context, const bool antialiased, const short x, const short y)
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
 	{
 		Model *model;
 		float tmin	= FLOAT_MAX;
@@ -158,7 +161,7 @@ public:
 			}
 		}
 
-		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context, antialiased, x, y) : *context.clear;
+		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
 	}
 
 };

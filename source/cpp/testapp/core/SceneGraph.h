@@ -106,7 +106,18 @@ public:
 			while( ++y<context.h )
 			{
 				context.lastSetPixelIndex					= ( x+context.w*y );
-				context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
+
+				#ifdef DOF_AA
+					context.buffer[context.lastSetPixelIndex] = DOF(Vertex(x,y),0,I);
+				#else
+				{
+					#ifdef ADAPTIVE_AA
+						context.buffer[context.lastSetPixelIndex] = castAndShadeAntialiased(createRay(Vertex( x,y ), I),x,y);
+					#else
+						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
+					#endif
+				}
+				#endif
 			}
 		}
 	}
@@ -206,6 +217,21 @@ public:
 			case 3  : return Toon::castAndShade  ( ray, children, lights ,context );
 			case 4  : return Rim::castAndShade   ( ray, children, lights ,context );
 			default : return *context.clear;
+		}
+	}
+
+	///
+	Color castAndShadeAntialiased(const Ray &ray,const uint16 x, const uint16 y)
+	{
+		//FIXME punk switch... needs some abstraction and setters
+		switch( USE_SHADER )
+		{
+			//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
+			case 1 : return Phong::castAndShade ( ray, children, lights ,context);
+			case 2 : return Ward::castAndShade  ( ray, children, lights, *context.clear );
+			case 3 : return Toon::castAndShade  ( ray, children, lights ,context );
+			case 4 : return Rim::castAndShade   ( ray, children, lights ,context );
+			default: return *context.clear;
 		}
 	}
 

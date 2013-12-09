@@ -16,7 +16,6 @@
  */
 struct Material
 {
-	
 	///Color of the material
 	Color color;
 	

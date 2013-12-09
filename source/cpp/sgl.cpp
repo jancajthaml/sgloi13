@@ -29,7 +29,7 @@
  * 29.9.2013, Jan Cajthaml - added method sglDrawLine()
  *                         - body of sglEnd and sglBegin
  *
- * 30.9.2013, Jan Cajthaml - added sglDrawLine Bresenham´s algorithm draw line implementation
+ * 30.9.2013, Jan Cajthaml - added sglDrawLine Bresenham¬¥s algorithm draw line implementation
  *
  * 14.10.2013 ------- FIRST MILESTONE
  * bugs:
@@ -42,7 +42,7 @@
  * 15.10.2013, Jan Cajthaml - refactor of Viewport coords & matrix calculations
  *                          - conditioning of ERROR CODES by sgl.h specification
  *                          - "if" rewritten to "switch" as needed
- *                          - added current()–>begin() and current()->end() to check sglBegin and sglEnd of Context
+ *                          - added current()‚Äì>begin() and current()->end() to check sglBegin and sglEnd of Context
  *
  * */
 
@@ -111,13 +111,14 @@ sphere.findIntersection(ray, t)
  *
  */
 
-#include "core/CrossReferenceDispatcher.h"
-#include "core/Context.h"
-#include "core/ContextManager.h"
-#include "core/SphereModel.h"
-#include "struct/Material.h"
-#include "struct/Light.h"
 
+#include "./core/SphereModel.h"
+#include "./struct/Material.h"
+#include "./struct/light/PointLight.h"
+#include "./struct/light/AreaLight.h"
+
+#include "./core/Context.h"
+#include "./core/ContextManager.h"
 //------------------------------------------------------------
 // std::vector boost
 #define _SECURE_SCL 0
@@ -788,16 +789,14 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	
-	Light light;
-	light.color.r = r;
-	light.color.g = g;
-	light.color.b = b;
-	light.position.x = x;
-	light.position.y = y;
-	light.position.z = z;
-	light.position.w = 1.0f;
+
+	Vertex position		= Vertex(x,y,z,1.0f);
+	Color color			= Color(r,g,b);
+	PointLight light	= PointLight(position,color);
+
 	current()->scene.addLight(light);
+
+	//FIXME
 }
 
 // ?
@@ -806,6 +805,7 @@ void sglRayTraceScene()
 	switch( USE_SHADER )
 	{
 		case 0 : sglEnd(); return;
+		default:break;
 	}
 
 	current()->check_MVP();	//Commenting this line doesnt change anything

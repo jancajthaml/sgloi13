@@ -42,24 +42,25 @@ public:
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 		
-		const int    size   =  vertices.size()		;
+		const uint16 size   =  vertices.size()		;
 		Edge * edges  =  new Edge[size]         ;
 		float  delta  =  0.0f                   ;
 		
-		int* x     	=  new int[size]          ;
-		int* y      =  new int[size]          ;
+		int16* x     =  new int16[size]          ;
+		int16* y     =  new int16[size]          ;
 		
-		x[0] = int(vertices[0].x);
-		y[0] = int(vertices[0].y);
+		x[0] = int16(vertices[0].x);
+		y[0] = int16(vertices[0].y);
 		
-		int    min_y  =  y[0];
-		int    max_y  =  y[0];
+		int16    min_y  =  y[0];
+		int16    max_y  =  y[0];
 		
-		size_t i = -1;
+		uint16 i = -1;
+
 		while( ++i<size )
 		{
-			x[i] = int(vertices[i].x);
-			y[i] = int(vertices[i].y);
+			x[i] = int16(vertices[i].x);
+			y[i] = int16(vertices[i].y);
 			
 			if( y[i]<min_y )  min_y = y[i];
 			if( y[i]>max_y )  max_y = y[i];
@@ -69,14 +70,14 @@ public:
 				edges[i].min_y  =  y[i]-1 ;
 				edges[i].max_y  =  y[i-1]   ;
 				edges[i].x      =  x[i];
-				edges[i].z      =  vertices[i]   . z   ;
+				edges[i].z      =  vertices[i].z   ;
 			}
 			else
 			{
 				edges[i].min_y  =  y[i-1]-1 ;
 				edges[i].max_y  =  y[i]  ;
 				edges[i].x      =  x[i-1]   ;
-				edges[i].z      =  vertices[i-1] . z   ;
+				edges[i].z      =  vertices[i-1].z   ;
 			}
 			
 			delta            = float(y[i]-y[i-1]);
@@ -106,12 +107,12 @@ public:
 		
 		float * draw   =  new float[size] ;
 		float * drawZ  =  new float[size] ;
-		int     count  =  0;
+		uint16  count  =  0;
 		
-		for( int y=min_y ; y<max_y ; y++ )
+		for( uint16 y=min_y ; y<max_y ; y++ )
 		{
 			count = 0;
-			for( int v=0 ; v<size ; v++ )
+			for( uint16 v=0 ; v<size ; v++ )
 			{
 				if( (edges[v].min_y<y) & (edges[v].max_y>y) )
 				{
@@ -126,7 +127,7 @@ public:
 			
 			Helper::sort(draw,drawZ,count);
 			
-			for( int i=0 ; i<count ; i=i+2 )
+			for( uint16 i=0 ; i<count ; i=i+2 )
 				setPixelChunk( y+1, draw[i], draw[i+1], drawZ[i], (drawZ[i+1]-drawZ[i])/(draw[i+1]-draw[i]), context );
 		}
 		// BUBBLE SORT END

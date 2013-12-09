@@ -8,10 +8,12 @@
 #ifndef CIRCLEFILLMODEL_H_
 #define CIRCLEFILLMODEL_H_
 
+#include "types.h"
+
 class CircleFillModel : public Model
 {
 private:
-	int r;
+	uint16 r;
 	Vertex center;
 public:
 	/**
@@ -19,9 +21,9 @@ public:
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	CircleFillModel( Chunk _context, Material _material, int r, Vertex center) : 	Model( _context, _material)
+	CircleFillModel( Chunk _context, Material _material, uint16 r, Vertex center) : 	Model( _context, _material)
 	{
-		this->r = r;
+		this->r      = r;
 		this->center = center;
 	}
 
@@ -35,11 +37,11 @@ public:
 	 */
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
-		int x = 0;
-		int y = r;
-		int p = 3 - (int(r) << 1);
+		uint16 x = 0;
+		uint16 y = r;
+		int32  p = 3 - (r<<1);
 
-		while(x <= y)
+		while( x<=y )
 		{
 			fillSymPixel( x, y, center.x, center.y, context);
 
@@ -56,12 +58,12 @@ public:
 		}
 	}
 
-	static inline void fillSymPixel(int x, int y, int center_x, int center_y, Chunk &context)
+	static inline void fillSymPixel(uint32 x, uint32 y, uint32 center_x, uint32 center_y, Chunk &context)
 	{
-		int to        = center_x+x;
-		int from        = center_x-x;
-		int h1        = center_y+y;
-		int l1        = center_y-y;
+		uint32 to   = center_x+x;
+		uint32 from = center_x-x;
+		uint32 h1   = center_y+y;
+		uint32 l1   = center_y-y;
 
 		for( ; from <= to; from++ )
 		{
@@ -69,8 +71,8 @@ public:
 			setPixel3D( from, l1, 0, context );
 		}
 
-		to          = center_x+y;
-		from        = center_x-y;
+		to         = center_x+y;
+		from       = center_x-y;
 		h1         = center_y+x;
 		l1         = center_y-x;
 
