@@ -32,8 +32,8 @@ private:
 
 		const Material material	= model->getMaterial();
 
-		const int NUM_SAMPLES = 1;
-/*
+		const int NUM_SAMPLES = 0;
+
 		if( ray.type == RAY_PRIMARY )
 		{
 			float contrib = 1.0f / NUM_SAMPLES;
@@ -47,10 +47,15 @@ private:
 				global_illumination_ray.type		= RAY_SECONDARY;
 				global_illumination_ray.direction	= random;
 				global_illumination_ray.origin		= i;
-				color = color + (castAndShade( global_illumination_ray, children, lights, context) * material.kd * contrib );
+				Color m = material.color;
+				Color plus = (castAndShade( global_illumination_ray, children, lights, context) * material.kd * contrib) /* *m */ ;
+
+				color.r += m.r+plus.r;
+				color.g += m.g+plus.g;
+				color.b += m.b+plus.b;
 			}
 		}
-*/
+
 		const long size			= lights.size();
 		//int pointer				= -1;
 		//float lightContrib		= 1.0f/size;
@@ -64,10 +69,11 @@ private:
 			PointLight* point = static_cast<PointLight*>(&light);
 			bool is_point = (point != 0);
 
-			if( !is_point )
+			//if(light.isPoint())printf("area light is point\n");
+							//else printf("area light not point\n");
+			if( !light.isPoint() )
 			{
-				printf("area light\n");
-				maxSample = 8;
+				//maxSample = 8;
 			}
 
 			for( int sample = 0; sample < maxSample; sample++ )
@@ -131,13 +137,13 @@ private:
 				{
 					//---------------[ DIFFUSE
 
-					color = color + (material.kd * material.color) * Helper::max(0.0f, N*L);
+					color += (material.kd * material.color) * Helper::max(0.0f, N*L);
 				}
 
 				//---------------[ SPECULAR
 
-				color = color + Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
-				color = color * light.color;
+				color += Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
+				color *= light.color;
 
 				//####################[REFLECTION
 
@@ -151,7 +157,7 @@ private:
 					reflected_ray.type		 = RAY_SECONDARY;
 					reflected_ray.direction.normalise();
 
-					color = color + material.ks * castAndShade(reflected_ray,children,lights,context);
+					color += material.ks * castAndShade(reflected_ray,children,lights,context);
 				}
 
 				//####################[REFRACTION
@@ -187,7 +193,7 @@ private:
 
 						refracted_ray.direction.normalise();
 
-						color						= color + material.trn * castAndShade(refracted_ray,children,lights,context);
+						color						+= material.trn * castAndShade(refracted_ray,children,lights,context);
 					}
 				}
 			}

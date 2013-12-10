@@ -165,6 +165,7 @@ struct Context
 		if( !BEGIN_SCENE )
 		{
 			v = MVP * v;
+			//v.normalise();
 			float w = 1.0f/v.w;
 			v.x*=w;
 			v.y*=w;

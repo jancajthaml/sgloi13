@@ -15,7 +15,8 @@
 
 //Custom type definitions
 
-typedef struct { float f1; float f2; float f3; } __color;
+typedef struct { float f1; float f2; float f3;          } __color  ;
+typedef struct { float x;  float y;  float z;  float w; } __vertex ;
 
 typedef unsigned char      uint8  ;
 typedef unsigned short     uint16 ;

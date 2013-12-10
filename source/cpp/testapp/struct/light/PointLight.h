@@ -2,10 +2,6 @@
 #define libsgl_PointLightNode_h
 
 #include "Light.h"
-/**
- GraphNode base element for Lights.
- */
-
 
 class PointLight : public Light
 {
@@ -17,18 +13,20 @@ public:
 		this->color		= color;
 	}
 
-	virtual void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
+	void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
 	{
-		ray.origin = position;
-		ray.direction = point - position;
+		ray.origin		= position;
+		ray.direction	= point - position;
+
 		ray.direction.normalise();
-		contribution = color;
+
+		contribution	= color;
 	}
 
-	virtual bool isPoint()
+	bool isPoint()
 	{ return true; }
 
-	virtual Color getIntensity() const
+	Color getIntensity() const
 	{ return color; }
 
 };

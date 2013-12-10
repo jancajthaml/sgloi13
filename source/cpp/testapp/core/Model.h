@@ -11,7 +11,7 @@
 
 #include <vector>
 #include "./../helpers/Helpers.h"
-#include "../struct/Light.h"
+#include "../struct/light/Light.h"
 #include "../struct/Material.h"
 #include "../struct/Vertex.h"
 #include "ContextChunk.h"
@@ -217,11 +217,11 @@ public:
 		while( ++i<size )
 		{
 			v	 = vertices[i];
-			w	 = 1.0f/v.w;
+			w	 = 1.0f/v.w();
 			v	 = MVP * v;
-			v.x *= w;
-			v.y *= w;
-			v.z *= w;
+			v.x() *= w;
+			v.y() *= w;
+			v.z() *= w;
 		}
 	}
 	

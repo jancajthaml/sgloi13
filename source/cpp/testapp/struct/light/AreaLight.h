@@ -49,7 +49,7 @@ public:
 
 		float d			= ray.direction.length();
 		ray.direction.normalise();
-		contribution	= color * (1.0f/(atten.x + atten.y*d + atten.z*d*d));
+		contribution	= color * (1.0f/(atten.x() + atten.y()*d + atten.z()*d*d));
 		contribution	= contribution* ((ray.direction*normal)*area);
 	}
 

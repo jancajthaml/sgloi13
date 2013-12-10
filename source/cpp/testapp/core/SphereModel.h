@@ -26,11 +26,8 @@ public:
 	 */
 	SphereModel( Chunk _context, Material _material, const float _x, const float _y, const float _z, const uint16 _r ) : Model( _context, _material)
 	{
-		position.x	= _x;
-		position.y	= _y;
-		position.z	= _z;
-		position.w	= 1.0f;
-		r			= _r;
+		position = Vertex(_x,_y,_z);
+		r				= _r;
 	}
 	
 	/**

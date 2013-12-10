@@ -106,18 +106,7 @@ public:
 			while( ++y<context.h )
 			{
 				context.lastSetPixelIndex					= ( x+context.w*y );
-
-				#ifdef DOF_AA
-					context.buffer[context.lastSetPixelIndex] = DOF(Vertex(x,y),0,I);
-				#else
-				{
-					#ifdef ADAPTIVE_AA
-						context.buffer[context.lastSetPixelIndex] = castAndShadeAntialiased(createRay(Vertex( x,y ), I),x,y);
-					#else
-						context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
-					#endif
-				}
-				#endif
+				context.buffer[context.lastSetPixelIndex] = castAndShade(createRay(Vertex( x,y ), I));
 			}
 		}
 	}
@@ -128,27 +117,29 @@ public:
 	{
 		float w=0.0f;
 
-		v.z	= -1.0f;
-		v.w	= 1.0f;
+		v.z() = -1.0f;
+		v.w() = 1.0f;
 
 		Vertex A	= I * v;//I * [x y -1 1];
 
 		//SLOW HERE
-		w	= 1.0f/A.w;
-		A.x = A.x*w;
-		A.y = A.y*w;
-		A.z = A.z*w;
-		A.w = 1.0f;
+		//A.normalise();
+		w	= 1.0f/A.w();
+		A.x() *= w;
+		A.y() *= w;
+		A.z() *= w;
+		A.w() = 1.0f;
 
-		v.z	= 1.0f;
+		v.z()	= 1.0f;
 		Vertex B = I * v;//[x y 1 1];
 
 		//SLOW HERE
-		w	= 1.0f/B.w;
-		B.x = B.x*w;
-		B.y = B.y*w;
-		B.z = B.z*w;
-		B.w = 1.0f;
+		w	= 1.0f/B.w();
+		//B.normalise();
+		B.x() *= w;
+		B.y() *= w;
+		B.z() *= w;
+		B.w() = 1.0f;
 
 		Ray ray;
 
@@ -159,50 +150,6 @@ public:
 		ray.direction.normalise();
 
 		return ray;
-	}
-
-	Color DOF(const Vertex sample, int8 depth, Matrix I)
-	{
-		//FIXME THIS DOESNT WORK
-		Ray     ray;
-		Color   color;
-		Color   color1;
-		Color   color2;
-		Color   color3;
-		Color   color4;
-
-		float shift = powf(0.5f,float(depth));
-
-		Vertex sample1 = Vertex(sample.x+shift, sample.y+shift, 1.f);
-		Vertex sample2 = Vertex(sample.x+shift, sample.y-shift, 1.f);
-		Vertex sample3 = Vertex(sample.x-shift, sample.y+shift, 1.f);
-		Vertex sample4 = Vertex(sample.x-shift, sample.y-shift, 1.f);
-
-		ray = createRay(sample1,I);
-
-		color1	= castAndShade(ray);
-		ray		= createRay(sample2, I);
-		color2	= castAndShade(ray);
-		ray		= createRay(sample3, I);
-		color3	= castAndShade(ray);
-		ray		= createRay(sample4, I);
-		color4	= castAndShade(ray);
-
-		if((Helper::areColorsSimilar(color1,color2) && Helper::areColorsSimilar(color3,color4) && Helper::areColorsSimilar(color1,color3)) || depth > 4)
-		{
-			color = (color1+color2+color3+color4)*0.25f;
-		}
-		else
-		{
-			depth++;
-			shift*=0.5f;
-			color = (DOF(Vertex(sample.x+shift, sample.y+shift, 1.f), depth,I)+
-					DOF(Vertex(sample.x+shift, sample.y-shift, 1.f), depth,I)+
-					DOF(Vertex(sample.x-shift, sample.y+shift, 1.f), depth,I)+
-					DOF(Vertex(sample.x-shift, sample.y-shift, 1.f), depth,I))*0.25f;
-		}
-
-		return color;
 	}
 
 	///
@@ -217,21 +164,6 @@ public:
 			case 3  : return Toon::castAndShade  ( ray, children, lights ,context );
 			case 4  : return Rim::castAndShade   ( ray, children, lights ,context );
 			default : return *context.clear;
-		}
-	}
-
-	///
-	Color castAndShadeAntialiased(const Ray &ray,const uint16 x, const uint16 y)
-	{
-		//FIXME punk switch... needs some abstraction and setters
-		switch( USE_SHADER )
-		{
-			//case 0 : return Flat()  . calculateColor(ray, model, i, normal, lights);
-			case 1 : return Phong::castAndShade ( ray, children, lights ,context);
-			case 2 : return Ward::castAndShade  ( ray, children, lights, *context.clear );
-			case 3 : return Toon::castAndShade  ( ray, children, lights ,context );
-			case 4 : return Rim::castAndShade   ( ray, children, lights ,context );
-			default: return *context.clear;
 		}
 	}
 

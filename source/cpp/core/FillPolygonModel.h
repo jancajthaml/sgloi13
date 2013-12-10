@@ -90,7 +90,7 @@ public:
 			edges[0].min_y  =  y[0]-1 ;
 			edges[0].max_y  =  y[size-1]  ;
 			edges[0].x      =  x[0] ;
-			edges[0].z      =  vertices[0]      . z   ;
+			edges[0].z      =  vertices[0] . z   ;
 		}
 		else
 		{
@@ -147,7 +147,7 @@ public:
 			cache_10 = vertices[1] - vertices[0];
 		}
 
-		Vertex s1		= ray.direction.crossProduct(cache_20);
+		Vertex s1		= Vertex::cross(ray.direction,cache_20);
 		float divisor	= s1*cache_10;
 
 		if( divisor==0.0f )  return false;
@@ -159,7 +159,7 @@ public:
 
 		if( b1 < 0.0f || b1 > 1.0f ) return false;
 
-		Vertex s2	= d.crossProduct(cache_10);
+		Vertex s2	= Vertex::cross(d,cache_10);
 		float b2	= (ray.direction*s2) * inverse;
 
 		if( b2 < 0.0f || b1 + b2 > 1.0f ) return false;
@@ -182,13 +182,13 @@ public:
 				cache_20 = vertices[2] - vertices[0];
 				cache_10 = vertices[1] - vertices[0];
 			}
-			normal = (cache_10).crossProduct(vertices[2] - vertices[0]);
+			normal = Vertex::cross(cache_10,(vertices[2] - vertices[0]));
 			normal.normalise();
 		}
 		return normal;
 		#endif
 
-		Vertex n = (i - vertices[0]).crossProduct(i - vertices[1]);
+		Vertex n = Vertex::cross((i - vertices[0]),(i - vertices[1]));
 		n.normalise();
 
 		return n;

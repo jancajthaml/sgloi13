@@ -44,7 +44,7 @@ public:
 
 		while( x<y )
 		{
-			setSymPixel(x, y, center.x, center.y, context);
+			setSymPixel(x, y, center.x(), center.y(), context);
 			if( p<0 )
 			{
 				p += (x << 2) + 6;
@@ -56,7 +56,7 @@ public:
 			}
 			x += 1;
 		}
-		if( x==y ) setSymPixel(x, y, center.x, center.y, context);
+		if( x==y ) setSymPixel(x, y, center.x(), center.y(), context);
 	}
 
 	static inline void setSymPixel(uint32 x, uint32 y, uint32 xs, uint32 ys, Chunk &context)

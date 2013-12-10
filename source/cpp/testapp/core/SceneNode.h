@@ -11,7 +11,7 @@
 
 #include <vector>
 #include "../struct/Matrix.h"
-#include "../struct/Light.h"
+#include "../struct/light/Light.h"
 #include "Model.h"
 /** 
  Basic SceneGraph Node, other elements except Lights extends this one.

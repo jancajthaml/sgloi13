@@ -117,16 +117,17 @@ public:
 	{
 		float w=0.0f;
 
-		v.z	= -1.0f;
-		v.w	= 1.0f;
+		v.z = -1.0f;
+		v.w = 1.0f;
 
 		Vertex A	= I * v;//I * [x y -1 1];
 
 		//SLOW HERE
+		//A.normalise();
 		w	= 1.0f/A.w;
-		A.x = A.x*w;
-		A.y = A.y*w;
-		A.z = A.z*w;
+		A.x *= w;
+		A.y *= w;
+		A.z *= w;
 		A.w = 1.0f;
 
 		v.z	= 1.0f;
@@ -134,9 +135,10 @@ public:
 
 		//SLOW HERE
 		w	= 1.0f/B.w;
-		B.x = B.x*w;
-		B.y = B.y*w;
-		B.z = B.z*w;
+		//B.normalise();
+		B.x *= w;
+		B.y *= w;
+		B.z *= w;
 		B.w = 1.0f;
 
 		Ray ray;
@@ -148,50 +150,6 @@ public:
 		ray.direction.normalise();
 
 		return ray;
-	}
-
-	Color DOF(const Vertex sample, int8 depth, Matrix I)
-	{
-		//FIXME THIS DOESNT WORK
-		Ray     ray;
-		Color   color;
-		Color   color1;
-		Color   color2;
-		Color   color3;
-		Color   color4;
-
-		float shift = powf(0.5f,float(depth));
-
-		Vertex sample1 = Vertex(sample.x+shift, sample.y+shift, 1.f);
-		Vertex sample2 = Vertex(sample.x+shift, sample.y-shift, 1.f);
-		Vertex sample3 = Vertex(sample.x-shift, sample.y+shift, 1.f);
-		Vertex sample4 = Vertex(sample.x-shift, sample.y-shift, 1.f);
-
-		ray = createRay(sample1,I);
-
-		color1	= castAndShade(ray);
-		ray		= createRay(sample2, I);
-		color2	= castAndShade(ray);
-		ray		= createRay(sample3, I);
-		color3	= castAndShade(ray);
-		ray		= createRay(sample4, I);
-		color4	= castAndShade(ray);
-
-		if((Helper::areColorsSimilar(color1,color2) && Helper::areColorsSimilar(color3,color4) && Helper::areColorsSimilar(color1,color3)) || depth > 4)
-		{
-			color = (color1+color2+color3+color4)*0.25f;
-		}
-		else
-		{
-			depth++;
-			shift*=0.5f;
-			color = (DOF(Vertex(sample.x+shift, sample.y+shift, 1.f), depth,I)+
-					DOF(Vertex(sample.x+shift, sample.y-shift, 1.f), depth,I)+
-					DOF(Vertex(sample.x-shift, sample.y+shift, 1.f), depth,I)+
-					DOF(Vertex(sample.x-shift, sample.y-shift, 1.f), depth,I))*0.25f;
-		}
-
-		return color;
 	}
 
 	///

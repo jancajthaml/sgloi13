@@ -43,11 +43,32 @@ struct Color
 	friend Color operator*(float f, const Color& c)
 	{ return Color(c.r*f, c.g*f, c.b*f); }
 
-	friend Color operator+(float f, const Color& c)
-	{ return Color(c.r+f, c.g+f, c.b+f); }
+	void operator*=(const float f)
+	{
+		r *= f;
+		g *= f;
+		b *= f;
+	}
 
 	friend Color operator*(Color& c1, const Color& c2)
 	{ return Color(c1.r*c2.r, c1.g*c2.g, c1.b*c2.b); }
+
+	void operator*=(const Color& c)
+	{
+		r *= c.r;
+		g *= c.g;
+		b *= c.b;
+	}
+
+	friend Color operator+(float f, const Color& c)
+	{ return Color(c.r+f, c.g+f, c.b+f); }
+
+	void operator+=(const float f)
+	{
+		r += f;
+		g += f;
+		b += f;
+	}
 
 	/// Pricteni kontrastu
 	friend Color operator+(const Color& c, float f)
@@ -60,11 +81,38 @@ struct Color
 	friend Color operator-(const Color& c, float f)
 	{ return Color(c.r-f, c.g-f, c.b-f); }
 
+	void operator-(const float f)
+	{
+		r -= f;
+		g -= f;
+		b -= f;
+	}
+
 	friend Color operator+(const Color& c1, const Color& c2)
 	{ return Color(c1.r+c2.r, c1.g+c2.g, c1.b+c2.b); }
 
+	void operator+=(const Color& c)
+	{
+		r += c.r;
+		g += c.g;
+		b += c.b;
+	}
+	void operator+=(Color& c)
+	{
+		r += c.r;
+		g += c.g;
+		b += c.b;
+	}
+
 	friend Color operator-(const Color& c1, const Color& c2)
 	{ return Color(c1.r-c2.r, c1.g-c2.g, c1.b-c2.b); }
+
+	void operator-=(const Color& c)
+	{
+		r -= c.r;
+		g -= c.g;
+		b -= c.b;
+	}
 
 	bool operator==(const Color &other)
 	{ return (r==other.r && g==other.g && b==other.b); }

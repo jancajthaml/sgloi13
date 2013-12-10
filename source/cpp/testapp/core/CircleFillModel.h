@@ -43,7 +43,7 @@ public:
 
 		while( x<=y )
 		{
-			fillSymPixel( x, y, center.x, center.y, context);
+			fillSymPixel( x, y, center.x(), center.y(), context);
 
 			if( p<0 )
 			{

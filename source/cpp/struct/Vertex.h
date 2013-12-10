@@ -107,44 +107,56 @@ struct Vertex
 	friend Vertex operator-(const Vertex& v1,const Vertex& v2)
 	{ return Vertex(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z); }
 
+	/// Rozdíl vektorů
+	void operator-=(const Vertex& v)
+	{
+		x -= v.x;
+		y -= v.y;
+		z -= v.z;
+	}
+
 	/// Součet vektorů
 	friend Vertex operator+(const Vertex& v1,const Vertex& v2)
 	{ return Vertex(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z); }
 
-	Vertex crossProduct(const Vertex& v2) const
+	void operator+=(const Vertex& v)
 	{
-		Vertex result;
-
-		result.x = y*v2.z - z*v2.y;
-		result.y = z*v2.x - x*v2.z;
-		result.z = x*v2.y - y*v2.x;
-
-		return result;
+		x += v.x;
+		y += v.y;
+		z += v.z;
 	}
 
 	/// Součin čísla a vektoru
 	friend Vertex operator*(float f,const Vertex& v)
 	{ return Vertex(v.x * f,v.y * f,v.z * f); }
 
+	/// Součin čísla a vektoru
+	void operator*=(float f)
+	{
+		x *= f;
+		y *= f;
+		z *= f;
+	}
+
 	/// Podíl čísla a vektoru
 	friend Vertex operator/(const Vertex& v,float f)
-	{ return Vertex(v.x / f,v.y / f,v.z / f); }
+	{ return v*(1.0f/f); }
+
+	/// Podíl čísla a vektoru
+	void operator/=(float f)
+	{
+		f = 1.0f/f;
+		x *= f;
+		y *= f;
+		z *= f;
+	}
 
 	/// Součin čísla a vektoru
 	friend Vertex operator*(const Vertex& v, float f)
 	{ return Vertex(v.x * f,v.y * f,v.z * f); }
 
-
-	//Ray helper functions
-
 	static Vertex cross(const Vertex &a, const Vertex &b)
-	{
-		Vertex result;
-		result.x = a.y*b.z - a.z*b.y;
-		result.y = a.z*b.x - a.x*b.z;
-		result.z = a.x*b.y - a.y*b.x;
-		return result;
-	}
+	{ return Vertex( a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
 
 	static Vertex reflextionNormalised(const Vertex &a, const Vertex &b)
 	{
@@ -155,25 +167,14 @@ struct Vertex
 	}
 
 
-	//FIXME DOT PRODUCT!!!
-	friend float dot(const Vertex& a,const Vertex& b)
-	{
-		return (a.x * b.x) +
-			   (a.y * b.y) +
-			   (a.z * b.z);
-	}
-	//FIXME SCALAR HERE!!!
-
-
-
 	static inline Vertex random()
 	{
 		RandomPair random;
 
 		return Vertex (
-			cosf(random.value2)*sqrtf(1-random.value1),
-			sinf(random.value2)*sqrtf(1-random.value1),
-			sqrtf(random.value1));
+			cosf(random.value2)*Helper::q3sqrt(1-random.value1),
+			sinf(random.value2)*Helper::q3sqrt(1-random.value1),
+			Helper::q3sqrt(random.value1));
 	};
 
 	static inline Vertex rotate(const Vertex& N, const Vertex& vector)

@@ -13,7 +13,7 @@ public:
 		this->color		= color;
 	}
 
-	virtual void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
+	void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
 	{
 		ray.origin		= position;
 		ray.direction	= point - position;
@@ -23,10 +23,10 @@ public:
 		contribution	= color;
 	}
 
-	virtual bool isPoint()
+	bool isPoint()
 	{ return true; }
 
-	virtual Color getIntensity() const
+	Color getIntensity() const
 	{ return color; }
 
 };
