@@ -9,8 +9,13 @@
 #define VERTEX_H_
 
 #include "./../helpers/Helpers.h"
+<<<<<<< HEAD
 //#include <CoreServices/CoreServices.h>
 
+=======
+#include <smmintrin.h>
+#include <emmintrin.h>
+>>>>>>> c9beaae978d5681b9bfea09804cbb6990c233846
 //TODO COMMENT !!!!!!!
 //FIXME COMMEEEEEEENT!!
 struct Vertex
@@ -92,12 +97,21 @@ struct Vertex
 	/// Skalární součin vektorů
 	friend float operator*(const Vertex& v1,const Vertex& v2)
 	{
+<<<<<<< HEAD
 		//__m128 a, b, c;
 		//a = _mm_set_ps(v1.x, v1.y, v1.z, 0.0);
 		//b = _mm_set_ps(v2.x, v2.y, v2.z, 0.0);
 		//c = _mm_mul_ps(a, b);
 		//float f[4];
  	 	// _mm_store_ps(f, c);
+=======
+		/*__m128 a, b, c;
+		a = _mm_set_ps(v1.x, v1.y, v1.z, 0.0);
+		b = _mm_set_ps(v2.x, v2.y, v2.z, 0.0);
+		c = _mm_mul_ps(a, b);
+		float f[4];
+		_mm_store_ps(f, c);*/
+>>>>>>> c9beaae978d5681b9bfea09804cbb6990c233846
 		//return f[3]+ f[2] + f[1];
 		return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
 	}
