@@ -11,6 +11,8 @@
 #include <limits>
 
 #define FLOAT_MAX std::numeric_limits<float>::max()
+#define PI 3.14159265359
+
 //Custom type definitions
 
 typedef struct { float f1; float f2; float f3; } __color;

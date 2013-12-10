@@ -9,13 +9,9 @@
 #define VERTEX_H_
 
 #include "./../helpers/Helpers.h"
-<<<<<<< HEAD
+#include <cmath>
 //#include <CoreServices/CoreServices.h>
 
-=======
-#include <smmintrin.h>
-#include <emmintrin.h>
->>>>>>> c9beaae978d5681b9bfea09804cbb6990c233846
 //TODO COMMENT !!!!!!!
 //FIXME COMMEEEEEEENT!!
 struct Vertex
@@ -97,21 +93,12 @@ struct Vertex
 	/// Skalární součin vektorů
 	friend float operator*(const Vertex& v1,const Vertex& v2)
 	{
-<<<<<<< HEAD
 		//__m128 a, b, c;
 		//a = _mm_set_ps(v1.x, v1.y, v1.z, 0.0);
 		//b = _mm_set_ps(v2.x, v2.y, v2.z, 0.0);
 		//c = _mm_mul_ps(a, b);
 		//float f[4];
  	 	// _mm_store_ps(f, c);
-=======
-		/*__m128 a, b, c;
-		a = _mm_set_ps(v1.x, v1.y, v1.z, 0.0);
-		b = _mm_set_ps(v2.x, v2.y, v2.z, 0.0);
-		c = _mm_mul_ps(a, b);
-		float f[4];
-		_mm_store_ps(f, c);*/
->>>>>>> c9beaae978d5681b9bfea09804cbb6990c233846
 		//return f[3]+ f[2] + f[1];
 		return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
 	}
@@ -176,6 +163,39 @@ struct Vertex
 			   (a.z * b.z);
 	}
 	//FIXME SCALAR HERE!!!
+
+
+
+	static inline Vertex random()
+	{
+		RandomPair random;
+
+		return Vertex (
+			cosf(random.value2)*sqrtf(1-random.value1),
+			sinf(random.value2)*sqrtf(1-random.value1),
+			sqrtf(random.value1));
+	};
+
+	static inline Vertex rotate(const Vertex& N, const Vertex& vector)
+	{
+		Vertex cX, cY, cZ, n, m;
+		Vertex temp = N;
+		cZ = N;
+		temp.normalise();
+		cY.normalise();
+
+		n = Vertex(1.0f, 0.0f, 0.0f);
+		m = Vertex(0.0f, 1.0f, 0.0f);
+
+		cX = Vertex::cross(cZ, n);
+		if (cX.length() < 0.01f)
+			 cX = Vertex::cross(cZ, m);
+
+		cY = Vertex::cross(cZ, cX);
+
+		temp = (vector.x * cX + vector.y * cY + vector.z * cZ);
+		return temp;
+	}
 };
 
 #endif /* VERTEX_H_ */

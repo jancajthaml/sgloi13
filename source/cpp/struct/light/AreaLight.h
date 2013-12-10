@@ -21,7 +21,7 @@ public:
 
 	Vertex v0,v1,v2;			// vrcholy svetla
 
-	AreaLight(const Color &color, const Vertex &atten)
+	AreaLight( const Vertex &atten,const Color &color )
 	{
 		this->color = color;
 		this->atten = atten;

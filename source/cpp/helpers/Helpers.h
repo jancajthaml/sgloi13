@@ -8,11 +8,12 @@
 #ifndef HELPERS_H_
 #define HELPERS_H_
 
-#include "./../struct/Vertex.h"
+#include <cstdlib>
+
 #include "./../struct/Edge.h"
 #include "./../struct/Color.h"
 #include "../core/types.h"
-
+#include "./../struct/Vertex.h"
 
 //TODO COMMENT !!!!!!!
 struct Helper
@@ -120,6 +121,16 @@ struct Helper
 				if(x1.b==x2.b==x3.b==x4.b) return true;
 		return false;
 	}
+};
+
+struct RandomPair
+{
+	float value1, value2;
+	RandomPair()
+	{
+		this->value1 = ((float) rand() / RAND_MAX) ;
+		this->value2 = 2 * PI * ((float) rand() / RAND_MAX) ;
+	};
 };
 
 #endif /* HELPERS_H_ */

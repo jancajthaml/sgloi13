@@ -30,7 +30,6 @@ class Light
 
 		virtual bool isPoint()
 		{ return false; }
-
 };
 
 #endif

@@ -790,13 +790,7 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 		return;
 	}
 
-	Vertex position		= Vertex(x,y,z,1.0f);
-	Color color			= Color(r,g,b);
-	PointLight light	= PointLight(position,color);
-
-	current()->scene.addLight(light);
-
-	//FIXME
+	current()->scene.addLight( PointLight( Vertex(x,y,z,1.0f),Color(r,g,b) ) );
 }
 
 // ?
@@ -836,7 +830,13 @@ void sglEnvironmentMap(const int width, const int height, float *texels)
 // ?
 void sglEmissiveMaterial(const float r, const float g, const float b, const float c0, const float c1, const float c2)
 {
+	if( current()->beginBeforeEnd() )
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
 
+	current()->scene.addLight( AreaLight( Vertex(c0,c1,c2,1.0f),Color(r,g,b) ) );
 }
 
 //---------------------------------------------------------------------------
