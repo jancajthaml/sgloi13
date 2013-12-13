@@ -117,29 +117,29 @@ public:
 	{
 		float w=0.0f;
 
-		v.z = -1.0f;
-		v.w = 1.0f;
+		v.z() = -1.0f;
+		v.w() = 1.0f;
 
 		Vertex A	= I * v;//I * [x y -1 1];
 
 		//SLOW HERE
 		//A.normalise();
-		w	= 1.0f/A.w;
-		A.x *= w;
-		A.y *= w;
-		A.z *= w;
-		A.w = 1.0f;
+		w	= 1.0f/A.w();
+		A.x() *= w;
+		A.y() *= w;
+		A.z() *= w;
+		A.w() = 1.0f;
 
-		v.z	= 1.0f;
+		v.z()	= 1.0f;
 		Vertex B = I * v;//[x y 1 1];
 
 		//SLOW HERE
-		w	= 1.0f/B.w;
+		w	= 1.0f/B.w();
 		//B.normalise();
-		B.x *= w;
-		B.y *= w;
-		B.z *= w;
-		B.w = 1.0f;
+		B.x() *= w;
+		B.y() *= w;
+		B.z() *= w;
+		B.w() = 1.0f;
 
 		Ray ray;
 

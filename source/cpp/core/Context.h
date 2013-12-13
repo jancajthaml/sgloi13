@@ -8,9 +8,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 
-#include <vector>
 #include "./SceneGraph.h"
-#include "./CrossReferenceDispatcher.h"
 #include "./../struct/Color.h"
 #include "./../struct/Vertex.h"
 #include "./../struct/Edge.h"
@@ -30,6 +28,7 @@
 #include "../struct/Material.h"
 #include <cfloat>
 #include <vector>
+#include "./../sgl.h"
 
 /*
  * Side-notes:
@@ -166,6 +165,7 @@ struct Context
 		if( !BEGIN_SCENE )
 		{
 			v = MVP * v;
+			//v.normalise();
 			float w = 1.0f/v.w;
 			v.x*=w;
 			v.y*=w;

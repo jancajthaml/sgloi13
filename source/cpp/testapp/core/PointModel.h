@@ -35,17 +35,17 @@ public:
 	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
 	{
 		Model::multiplyVerticesWithMVP(mpv);
-		const int s = vertices.size();
+		const uint16 s = vertices.size();
 		
 		if( context.size==1 )
 		{
-			int i = -1;
+			uint16 i = -1;
 			while( ++i<s )
-				setPixel3D( (vertices)[i].x, (vertices)[i].y,(vertices)[i].z, context );
+				setPixel3D( (vertices)[i].x(), (vertices)[i].y(),(vertices)[i].z(), context );
 		}
 		else
 		{
-			int_fast8_t thickness = context.size;
+			uint8 thickness = context.size;
 			
 			if( (thickness%2)==0 ) thickness++;
 			
@@ -55,9 +55,9 @@ public:
 			while( ++i<s )
 			{
 				Vertex v = (vertices)[i];
-				for( int_fast8_t i = -thickness; i < context.size-1; i++ )
-				for( int_fast8_t j = -thickness; j < context.size-1; j++ )
-					setPixel3D(v.x+j, v.y+i,v.z, context);
+				for( uint8 i = -thickness; i < context.size-1; i++ )
+				for( uint8 j = -thickness; j < context.size-1; j++ )
+					setPixel3D(v.x()+j, v.y()+i,v.z(), context);
 			}
 		}
 

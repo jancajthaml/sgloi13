@@ -42,24 +42,25 @@ public:
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 		
-		const int    size   =  vertices.size()		;
+		const uint16 size   =  vertices.size()		;
 		Edge * edges  =  new Edge[size]         ;
 		float  delta  =  0.0f                   ;
 		
-		int* x     	=  new int[size]          ;
-		int* y      =  new int[size]          ;
+		int16* x     =  new int16[size]          ;
+		int16* y     =  new int16[size]          ;
 		
-		x[0] = int(vertices[0].x);
-		y[0] = int(vertices[0].y);
+		x[0] = int16(vertices[0].x);
+		y[0] = int16(vertices[0].y);
 		
-		int    min_y  =  y[0];
-		int    max_y  =  y[0];
+		int16    min_y  =  y[0];
+		int16    max_y  =  y[0];
 		
-		size_t i = -1;
+		uint16 i = -1;
+
 		while( ++i<size )
 		{
-			x[i] = int(vertices[i].x);
-			y[i] = int(vertices[i].y);
+			x[i] = int16(vertices[i].x);
+			y[i] = int16(vertices[i].y);
 			
 			if( y[i]<min_y )  min_y = y[i];
 			if( y[i]>max_y )  max_y = y[i];
@@ -69,14 +70,14 @@ public:
 				edges[i].min_y  =  y[i]-1 ;
 				edges[i].max_y  =  y[i-1]   ;
 				edges[i].x      =  x[i];
-				edges[i].z      =  vertices[i]   . z   ;
+				edges[i].z      =  vertices[i].z   ;
 			}
 			else
 			{
 				edges[i].min_y  =  y[i-1]-1 ;
 				edges[i].max_y  =  y[i]  ;
 				edges[i].x      =  x[i-1]   ;
-				edges[i].z      =  vertices[i-1] . z   ;
+				edges[i].z      =  vertices[i-1].z   ;
 			}
 			
 			delta            = float(y[i]-y[i-1]);
@@ -89,7 +90,7 @@ public:
 			edges[0].min_y  =  y[0]-1 ;
 			edges[0].max_y  =  y[size-1]  ;
 			edges[0].x      =  x[0] ;
-			edges[0].z      =  vertices[0]      . z   ;
+			edges[0].z      =  vertices[0] . z   ;
 		}
 		else
 		{
@@ -106,12 +107,12 @@ public:
 		
 		float * draw   =  new float[size] ;
 		float * drawZ  =  new float[size] ;
-		int     count  =  0;
+		uint16  count  =  0;
 		
-		for( int y=min_y ; y<max_y ; y++ )
+		for( uint16 y=min_y ; y<max_y ; y++ )
 		{
 			count = 0;
-			for( int v=0 ; v<size ; v++ )
+			for( uint16 v=0 ; v<size ; v++ )
 			{
 				if( (edges[v].min_y<y) & (edges[v].max_y>y) )
 				{
@@ -126,7 +127,7 @@ public:
 			
 			Helper::sort(draw,drawZ,count);
 			
-			for( int i=0 ; i<count ; i=i+2 )
+			for( uint16 i=0 ; i<count ; i=i+2 )
 				setPixelChunk( y+1, draw[i], draw[i+1], drawZ[i], (drawZ[i+1]-drawZ[i])/(draw[i+1]-draw[i]), context );
 		}
 		// BUBBLE SORT END
@@ -146,7 +147,7 @@ public:
 			cache_10 = vertices[1] - vertices[0];
 		}
 
-		Vertex s1		= ray.direction.crossProduct(cache_20);
+		Vertex s1		= Vertex::cross(ray.direction,cache_20);
 		float divisor	= s1*cache_10;
 
 		if( divisor==0.0f )  return false;
@@ -158,7 +159,7 @@ public:
 
 		if( b1 < 0.0f || b1 > 1.0f ) return false;
 
-		Vertex s2	= d.crossProduct(cache_10);
+		Vertex s2	= Vertex::cross(d,cache_10);
 		float b2	= (ray.direction*s2) * inverse;
 
 		if( b2 < 0.0f || b1 + b2 > 1.0f ) return false;
@@ -181,13 +182,13 @@ public:
 				cache_20 = vertices[2] - vertices[0];
 				cache_10 = vertices[1] - vertices[0];
 			}
-			normal = (cache_10).crossProduct(vertices[2] - vertices[0]);
+			normal = Vertex::cross(cache_10,(vertices[2] - vertices[0]));
 			normal.normalise();
 		}
 		return normal;
 		#endif
 
-		Vertex n = (i - vertices[0]).crossProduct(i - vertices[1]);
+		Vertex n = Vertex::cross((i - vertices[0]),(i - vertices[1]));
 		n.normalise();
 
 		return n;

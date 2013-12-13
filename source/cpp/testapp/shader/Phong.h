@@ -10,12 +10,8 @@
 
 #include "./../helpers/Helpers.h"
 #include <limits>
-
-#define FLOAT_MAX std::numeric_limits<float>::max()
-
-//#define REFLECTION
-//#define REFRACTION
-//#define SHADOWS
+#include <cmath>
+#include <typeinfo>
 
 class Phong
 {
@@ -23,149 +19,202 @@ class Phong
 private:
 	Phong(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &vantage_point,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
-
 		Color color;
+		if( ray.depth<=0 ) return color;
 
-		const Material material = model->getMaterial();
-		const int size = lights.size();
-		int pointer = -1;
+		Vertex  L;
+		Vertex N = model->getNormal(vantage_point);
 
-		//####################[DEPTH OF FIELD
+		//vector toward viewer
+		//V = -1.0f * ray.direction;
 
+		const Material material	= model->getMaterial();
 
-		while( ++pointer<size )
-	    {
-			//Light direction
-			Vertex L = lights[pointer].position - i;
-			L.normalise();
+		const int NUM_SAMPLES = 1;
+/*
+		if( ray.type == RAY_PRIMARY )
+		{
+			float contrib = 1.0f / NUM_SAMPLES;
 
-			float NL = N*L;
-			bool under_the_shadow = false;
-
-			//####################[SHADOWS
-			#ifdef SHADOWS
-			float length= L.length();
-
-			Ray r;
-			r.origin=lights[pointer].position;
-			r.direction=L;
-
-			float t	 = FLOAT_MAX;
-			for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
+			for (int i = 0; i < NUM_SAMPLES; ++i)
 			{
-				Model* m = (*child)->getModel();
-				if( m->findIntersection(r, t) )
+				Vertex random	= Vertex::random();
+				random			= Vertex::rotate( N,random );
+
+				Ray global_illumination_ray;
+				global_illumination_ray.type		= RAY_SECONDARY;
+				global_illumination_ray.direction	= random;
+				global_illumination_ray.origin		= i;
+				color = color + (castAndShade( global_illumination_ray, children, lights, context) * material.kd * contrib );
+			}
+		}
+*/
+		const long size			= lights.size();
+		//int pointer				= -1;
+		//float lightContrib		= 1.0f/size;
+		int maxSample			= 1;
+
+		for( int pointer = 0; pointer<size; pointer++ )
+		{
+			Light light = lights[pointer];
+
+			//C++ doesnt have a instanceof
+			PointLight* point = static_cast<PointLight*>(&light);
+			bool is_point = (point != 0);
+
+			//if(light.isPoint())printf("area light is point\n");
+							//else printf("area light not point\n");
+			if( !light.isPoint() )
+			{
+				//maxSample = 8;
+			}
+
+			for( int sample = 0; sample < maxSample; sample++ )
+			{
+
+				if(is_point)
 				{
-					if (0.0f < length - 0.01f)
+					//static_cast<PointLight*>(light)
+					//SAMPLE POINT LIGHT
+				}
+				else
+				{
+					//static_cast<AreaLight*>(light)
+					//SAMPLE AREA LIGHT
+				}
+
+				//LIGHT DIRECTION
+				L				= light.position - vantage_point;
+				float length	= L.length();
+
+				L.normalise();
+
+				bool under_the_shadow	= false;
+
+				//####################[SHADOWS
+
+				//COMMENT!
+				Ray shadow_ray;
+				shadow_ray.origin    = vantage_point;
+				shadow_ray.direction = L;
+
+				float t     = FLOAT_MAX;
+
+				if(0.0f < length - 0.1 && ray.depth >= 0)
+				{
+					for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 					{
-						under_the_shadow=true;
-						break;
+						Model* m = (*child)->getModel();
+						if( m->findIntersection( shadow_ray,t ) && Helper::abs(t) > 0.01)
+						{
+							//calculate the intersection point that causes the shadow
+							Vertex intersection = shadow_ray.extrapolate(t);
+							//calculate the distance between intersection point and the point where we are going to calculate the color
+							float distanceToIntersection = (intersection - vantage_point).length();
+							//the intersection point that causes the shadow must be between the current point and the light.
+							//if the distanceToIntersection is > length, then the point causing the shadow is behind the light and
+							//therefore it cannot cause the shadow. Simple :-)
+							if( distanceToIntersection<=length - 0.1 )
+							{
+								if( m->backfaceCull(ray, t) ) continue;
+								under_the_shadow=true;
+								break;
+							}
+						}
 					}
 				}
-			}
-			#endif
 
-			//####################[ SHADING
+				//####################[ SHADING
 
-			if(!under_the_shadow)
-			{
-				//---------------[ DIFFUSE
+				if(!under_the_shadow)
+				{
+					//---------------[ DIFFUSE
 
-				Color Ld = (material.kd * material.color) * Helper::max(0.0f, NL);
+					color = color + (material.kd * material.color) * Helper::max(0.0f, N*L);
+				}
 
 				//---------------[ SPECULAR
 
-				const Color Ls = Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L, N)), material.shine);
+				color = color + Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
+				color = color * light.color;
 
-				//---------------[ RESULT
+				//####################[REFLECTION
 
-				Ld = Ld + Ls;
-				Ld = Ld * lights[pointer].color;
-
-				color = color + Ld;
-			}
-
-			//####################[REFLECTION
-			#ifdef REFLECTION
-			if (material.ior == 1.0f && material.trn == 0.0f && material.ks > 0.0f && ray.depth >= 0)
-			{
-				Vertex R = ray.direction - ( N * (ray.direction*N*2) );
-				R.normalise();
-
-				Ray ray_2;
-				ray_2.origin	= R;
-				ray_2.direction	= i+R*0.1f;
-				ray_2.depth		= ray.depth-1;
-
-				color = color + castAndShade(ray_2,children,lights,clear);
-			}
-			#endif
-
-			//####################[REFRACTION
-			#ifdef REFRACTION
-			//idealni lom
-			float trans		= material.trn;
-			float R_index = 1.0f/material.ior;
-			if( R_index != 0 && trans > 0 && ray.depth >= 0)
-			{
-				Vertex M = Vertex::crossNormalised(N,L);
-				M.normalise();
-
-				float cosI =  - (M* ray.direction );
-
-				float cosT2 = 1.0f - R_index*R_index*(1.0f-cosI*cosI);
-
-				if( cosT2>0.0f )
+				if( material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0 )
 				{
-					Vertex T = (ray.direction * R_index) + (M *(R_index * cosI - Helper::q3sqrt( cosT2 ))) ;
-					T.normalise();
-					Color barv( 0, 0, 0 );
-					Vertex O = i + (T * 0.1f);
-					Ray r_r;
-					r_r.origin		= O;
-					r_r.direction	= T;
-					r_r.depth		= ray.depth-1;
-					color = color + castAndShade(r_r,children,lights,clear);
+					Ray reflected_ray;
+					reflected_ray.origin     = vantage_point;
+					reflected_ray.direction  = ray.direction - ( N * (ray.direction*N*2) );
+					//reflected_ray.direction	 = ray.direction + 2.0f * (N*V)*N;
+					reflected_ray.depth      = ray.depth-1;
+					reflected_ray.type		 = RAY_SECONDARY;
+					reflected_ray.direction.normalise();
+
+					color = color + material.ks * castAndShade(reflected_ray,children,lights,context);
+				}
+
+				//####################[REFRACTION
+
+				float dot		= ray.direction * N;
+				float R_index	= 0.0f;
+
+				if( dot<0.0f )
+				{
+					R_index = 1.0f/material.ior;
+				}
+				else
+				{
+					R_index	= material.ior;
+					dot		= -dot;
+					N		= -1.0f * N;
+				}
+				if( material.trn>0 && ray.depth>=0 )
+				{
+					float cosT2 = 1.0f - R_index*R_index*(1.0f-dot*dot);
+
+					if( cosT2>0.0f )
+					{
+						cosT2		= dot * R_index + Helper::q3sqrt(cosT2);
+						Vertex T	= -cosT2 * N + ray.direction * R_index;
+
+						Ray refracted_ray;
+						refracted_ray.origin		= vantage_point + T * 0.1f;
+						refracted_ray.direction		= T;
+						refracted_ray.depth			= ray.depth-1;
+						refracted_ray.type			= RAY_SECONDARY;
+						refracted_ray.environment	= R_index;
+
+						refracted_ray.direction.normalise();
+
+						color						= color + material.trn * castAndShade(refracted_ray,children,lights,context);
+					}
 				}
 			}
-			#endif
 		}
-
 		return color;
 	}
-
-
 
 public:
 	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
 	{
-		float tmin = FLOAT_MAX;
 		Model *model;
-		float t	 = FLOAT_MAX;
+		float tmin	= FLOAT_MAX;
+		float t		= FLOAT_MAX;
 
 		for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 		{
 			Model* m = (*child)->getModel();
-			//find nearest object
-			if( m->findIntersection(ray, t) )
+
+			if( m->findIntersection(ray, t) && !m->backfaceCull(ray, t) && t > 0.1 && t<tmin)
 			{
-				if( t<tmin )
-				{
-					tmin  = t;
-					model = m;
-				}
+				tmin  = t;
+				model = m;
 			}
 		}
-		if( tmin<FLOAT_MAX )
-		{
-			Vertex i		= ray.extrapolate(tmin);
-			Vertex normal	= model->getNormal(i);
 
-			return calculateColor(ray, model, i, normal, lights, children, context);
-		}
-		return *context.clear;
+		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
 	}
 
 };

@@ -8,24 +8,25 @@
 #ifndef HELPERS_H_
 #define HELPERS_H_
 
-#include "./../struct/Vertex.h"
+#include <cstdlib>
+
 #include "./../struct/Edge.h"
 #include "./../struct/Color.h"
-
-
+#include "../core/types.h"
+#include "./../struct/Vertex.h"
 
 //TODO COMMENT !!!!!!!
 struct Helper
 {
 
 	//FIXME this is a example of a HELPER ... move to Helpers.h
-	static inline int_fast32_t round(float x)
-	{ return ((x>=0.5f)?(int_fast32_t(x)+1):int_fast32_t(x)); }
+	static inline int32 round(float x)
+	{ return ((x>=0.5f)?(int32(x)+1):int32(x)); }
 
-	static void sort(float *a, int n)
+	static void sort(float *a, int32 n)
 	{
-		int i = 1;
-		int j = 2;
+		int32 i = 1;
+		int32 j = 2;
 		float t = 0.0f;
 
 		while( i<n )
@@ -36,21 +37,21 @@ struct Helper
 				a[i] = a[i-1];
 				a[i-1] = t;
 
-				if(--i)continue;
+				if( --i )continue;
 			}
 			i = j++;
 		}
 	}
 
 
-	static void sort(float* &a, float* &b, int n)
+	static void sort(float* &a, float* &b, int32 n)
 	{
 		float m = 0.0f;
-		int i = 1;
-		int j = 2;
+		int32 i = 1;
+		int32 j = 2;
 		float t = 0.0f;
 
-		while(i < n)
+		while( i<n )
 		{
 			if( a[i - 1] > a[i] )
 			{
@@ -69,10 +70,10 @@ struct Helper
 	}
 
 	static inline int min(float A, float B, float C)
-	{ return (A<B)?((A<C)?int(A):int(C)):int(B); }
+	{ return (A<B)?((A<C)?int32(A):int32(C)):int32(B); }
 
 	static inline int max(float A, float B, float C)
-	{ return (A>B)?((A>C)?int(A):int(C)):int(B); }
+	{ return (A>B)?((A>C)?int32(A):int32(C)):int32(B); }
 
 	static inline float max(float a, float b)
 	{ return a>b?a:b; }
@@ -88,7 +89,7 @@ struct Helper
 	{
 		union
 		{
-			int i;
+			int32 i;
 			float x;
 		} u;
 
@@ -120,6 +121,16 @@ struct Helper
 				if(x1.b==x2.b==x3.b==x4.b) return true;
 		return false;
 	}
+};
+
+struct RandomPair
+{
+	float value1, value2;
+	RandomPair()
+	{
+		this->value1 = ((float) rand() / RAND_MAX) ;
+		this->value2 = 2 * PI * ((float) rand() / RAND_MAX) ;
+	};
 };
 
 #endif /* HELPERS_H_ */

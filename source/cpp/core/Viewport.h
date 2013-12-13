@@ -14,12 +14,12 @@
 struct Viewport
 {
 
-	int_fast16_t width;		//Maximum 65536
-	int_fast16_t height;	//Maximum 65536
-	int_fast16_t width_2_x;
-	int_fast16_t height_2_y;
-	int_fast32_t x;
-	int_fast32_t y;
+	uint8 width;		//Maximum 65536
+	uint8 height;	//Maximum 65536
+	uint16 width_2_x;
+	uint16 height_2_y;
+	uint8 x;
+	uint8 y;
 	bool ready;
 	Matrix V;
 	bool V_changed;
@@ -39,7 +39,7 @@ struct Viewport
 	inline float calculateRatio()
 	{ return Helper::q3sqrt( width * width + height * height ); }
 
-	inline Viewport(int_fast16_t width, int_fast16_t height, int_fast16_t x, int_fast16_t y)
+	inline Viewport(uint8 width, uint8 height, uint8 x, uint8 y)
 	{ changeViewport(width, height, x, y); }
 
 	inline void calculateWindowCoordinates(Vertex & v)
@@ -51,9 +51,9 @@ struct Viewport
 		}
 	}
 
-	inline void changeViewport(int_fast16_t x, int_fast16_t y, int_fast16_t width, int_fast16_t height)
+	inline void changeViewport(uint8 x, uint8 y, uint16 width, uint16 height)
 	{
-		printf("width: %d, height: %d\n", width, height);
+		//printf("width: %d, height: %d\n", width, height);
 		this->width			=  width;
 		this->height		=  height;
 		this->width_2_x		=  width>>1;

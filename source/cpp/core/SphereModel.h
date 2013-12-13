@@ -10,25 +10,24 @@
 #define libsgl_SphereModel_h
 #include <cstdio>
 #include "../struct/Material.h"
+#include "../struct/Vertex.h"
+#include "Model.h"
 #include <vector>
 
 class SphereModel : public Model
 {
 public:
 	Vertex position;
-	float r;
+	uint16 r;
 	/**
 	 Constructor of Spehre model
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	SphereModel( Chunk _context, Material _material, const float _x, const float _y, const float _z, const float _r) : Model( _context, _material)
+	SphereModel( Chunk _context, Material _material, const float _x, const float _y, const float _z, const uint16 _r ) : Model( _context, _material)
 	{
-		position.x	= _x;
-		position.y	= _y;
-		position.z	= _z;
-		position.w	= 1.0f;
-		r			= _r;
+		position = Vertex(_x,_y,_z);
+		r				= _r;
 	}
 	
 	/**

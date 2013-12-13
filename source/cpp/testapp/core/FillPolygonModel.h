@@ -10,18 +10,27 @@
 #define libsgl_FillPolygonModel_h
 
 #include "../helpers/Helpers.h"
-#define EPSILON 0.000001
 
+#define USE_TRIANGLE_NORMAL
 
 class FillPolygonModel : public Model
 {
+private:
+	Vertex normal;
+	bool cached;
+	Vertex cache_10;
+	Vertex cache_20;
 public:
 	/**
 	 Constructor of model
 	 @param _g			drawing library
 	 @param _context	graphics context
 	 */
-	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material){}
+	FillPolygonModel( Chunk _context, Material _material) : Model( _context, _material)
+	{
+		normal.w() = -1;
+		cached   = false;
+	}
 	
 	/**
 	 Rasterizes this model with lights affecting it
@@ -33,24 +42,25 @@ public:
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 		
-		const int    size   =  vertices.size()		;
+		const uint16 size   =  vertices.size()		;
 		Edge * edges  =  new Edge[size]         ;
 		float  delta  =  0.0f                   ;
 		
-		int* x     	=  new int[size]          ;
-		int* y      =  new int[size]          ;
+		int16* x     =  new int16[size]          ;
+		int16* y     =  new int16[size]          ;
 		
-		x[0] = int(vertices[0].x);
-		y[0] = int(vertices[0].y);
+		x[0] = int16(vertices[0].x());
+		y[0] = int16(vertices[0].y());
 		
-		int    min_y  =  y[0];
-		int    max_y  =  y[0];
+		int16    min_y  =  y[0];
+		int16    max_y  =  y[0];
 		
-		size_t i = -1;
+		uint16 i = -1;
+
 		while( ++i<size )
 		{
-			x[i] = int(vertices[i].x);
-			y[i] = int(vertices[i].y);
+			x[i] = int16(vertices[i].x());
+			y[i] = int16(vertices[i].y());
 			
 			if( y[i]<min_y )  min_y = y[i];
 			if( y[i]>max_y )  max_y = y[i];
@@ -60,19 +70,19 @@ public:
 				edges[i].min_y  =  y[i]-1 ;
 				edges[i].max_y  =  y[i-1]   ;
 				edges[i].x      =  x[i];
-				edges[i].z      =  vertices[i]   . z   ;
+				edges[i].z      =  vertices[i].z()   ;
 			}
 			else
 			{
 				edges[i].min_y  =  y[i-1]-1 ;
 				edges[i].max_y  =  y[i]  ;
 				edges[i].x      =  x[i-1]   ;
-				edges[i].z      =  vertices[i-1] . z   ;
+				edges[i].z      =  vertices[i-1].z()   ;
 			}
 			
 			delta            = float(y[i]-y[i-1]);
 			edges[i].delta_x = float(x[i]-x[i-1]) / delta;
-			edges[i].delta_z = (vertices[i].z - vertices[i-1].z) / delta;
+			edges[i].delta_z = (vertices[i].z() - vertices[i-1].z()) / delta;
 		}
 		
 		if( y[0] < y[size-1] )
@@ -80,29 +90,29 @@ public:
 			edges[0].min_y  =  y[0]-1 ;
 			edges[0].max_y  =  y[size-1]  ;
 			edges[0].x      =  x[0] ;
-			edges[0].z      =  vertices[0]      . z   ;
+			edges[0].z      =  vertices[0] . z()   ;
 		}
 		else
 		{
 			edges[0].min_y  =  y[size-1]-1 ;
 			edges[0].max_y  =  y[0]   ;
 			edges[0].x      =  x[size-1]  ;
-			edges[0].z      =  vertices[size-1] . z   ;
+			edges[0].z      =  vertices[size-1] . z()   ;
 		}
 		
 		
 		delta             =  float(y[0]-y[size-1]);
 		edges[0].delta_x  =  float(x[0]-x[size-1])/ delta;
-		edges[0].delta_z  =  (vertices[0].z-vertices[size-1].z) / delta;
+		edges[0].delta_z  =  (vertices[0].z()-vertices[size-1].z()) / delta;
 		
 		float * draw   =  new float[size] ;
 		float * drawZ  =  new float[size] ;
-		int     count  =  0;
+		uint16  count  =  0;
 		
-		for( int y=min_y ; y<max_y ; y++ )
+		for( uint16 y=min_y ; y<max_y ; y++ )
 		{
 			count = 0;
-			for( int v=0 ; v<size ; v++ )
+			for( uint16 v=0 ; v<size ; v++ )
 			{
 				if( (edges[v].min_y<y) & (edges[v].max_y>y) )
 				{
@@ -117,7 +127,7 @@ public:
 			
 			Helper::sort(draw,drawZ,count);
 			
-			for( int i=0 ; i<count ; i=i+2 )
+			for( uint16 i=0 ; i<count ; i=i+2 )
 				setPixelChunk( y+1, draw[i], draw[i+1], drawZ[i], (drawZ[i+1]-drawZ[i])/(draw[i+1]-draw[i]), context );
 		}
 		// BUBBLE SORT END
@@ -127,79 +137,73 @@ public:
 		vertices.clear()		   ;
 		delete[] edges             ;
 	}
-	
-	virtual bool findIntersection(const Ray &ray, float &t)
-	{ return triangle_intersection(vertices[0], vertices[1], vertices[2], ray, t); }
-	
-	/**
-	 Triangle intersection.
-	 Algorithm used from: http://geomalgorithms.com/a06-_intersect-2.html
-	 */
-	bool triangle_intersection(const Vertex &V0,  // Triangle vertices
-							   const Vertex &V1,
-							   const Vertex &V2,
-							   const Ray &ray,
-							   float &param)
-	{
-		Vertex    u, v, n;              // triangle vectors
-		Vertex    dir, w0, w;           // ray vectors
-		float     r, a, b;              // params to calc ray-plane intersect
-		
-		// get triangle edge vectors and plane normal
-		u = V1 - V0;
-		v = V2 - V0;
-		n = u.crossProduct(v);
 
-		if (n.x == 0 && n.y == 0 && n.z == 0)             // triangle is degenerate
-			return false;                  // do not deal with this case
-		
-		dir = ray.direction;         // ray direction vector
-		w0 = ray.origin - V0;
-		a = (n * -1) * w0;
-		b = n * dir;
-		if (fabs(b) < EPSILON) {     // ray is  parallel to triangle plane
-			/*if (a == 0)                 // ray lies in triangle plane
-				return 2;
-			else return 0;*/		// ray disjoint from plane
-			return false;
+	virtual bool findIntersection(const Ray &ray, float &t)
+	{
+		if( !cached )
+		{
+			cached   = true;
+			cache_20 = vertices[2] - vertices[0];
+			cache_10 = vertices[1] - vertices[0];
 		}
-		
-		// get intersect point of ray with triangle plane
-		r = a / b;
-		if (r < 0.0)                    // ray goes away from triangle
-			return false;                   // => no intersect
-		// for a segment, also test if (r > 1.0) => no intersect
-		param = r;
-		Vertex I = ray.origin + (dir * r);            // intersect point of ray and plane
-		// is I inside T?
-		float    uu, uv, vv, wu, wv, D;
-		uu = u * u;
-		uv = u * v;
-		vv = v * v;
-		w = I - V0;
-		wu = w * u;
-		wv = w * v;
-		D = uv * uv - uu * vv;
-		
-		// get and test parametric coords
-		float s, t;
-		s = (uv * wv - vv * wu) / D;
-		if (s < 0.0 || s > 1.0)         // I is outside T
-			return false;
-		t = (uv * wu - uu * wv) / D;
-		if (t < 0.0 || (s + t) > 1.0)  // I is outside T
-			return false;
-		
-		return true;                       // I is in T	}
+
+		Vertex s1		= Vertex::cross(ray.direction,cache_20);
+		float divisor	= s1*cache_10;
+
+		if( divisor==0.0f )  return false;
+
+		float inverse = 1.0f/divisor;
+
+		Vertex d	= ray.origin - vertices[0];
+		float b1	= ( d*s1) * inverse;
+
+		if( b1 < 0.0f || b1 > 1.0f ) return false;
+
+		Vertex s2	= Vertex::cross(d,cache_10);
+		float b2	= (ray.direction*s2) * inverse;
+
+		if( b2 < 0.0f || b1 + b2 > 1.0f ) return false;
+
+		float hit = (cache_20*s2) * inverse;
+		if( hit < 0.0f || hit > 1073741824.0f ) return false;
+
+		t = hit;
+		return true;
 	}
-	
+
 	virtual Vertex getNormal(const Vertex &i)
 	{
-		Vertex a = i - vertices[0];
-		Vertex b = i - vertices[1];
-		Vertex n = a.crossProduct(b);
+		#ifdef USE_TRIANGLE_NORMAL
+		if(normal.w()==-1)
+		{
+			if(!cached)
+			{
+				cached   = true;
+				cache_20 = vertices[2] - vertices[0];
+				cache_10 = vertices[1] - vertices[0];
+			}
+			normal = Vertex::cross(cache_10,(vertices[2] - vertices[0]));
+			normal.normalise();
+		}
+		return normal;
+		#endif
+
+		Vertex n = Vertex::cross((i - vertices[0]),(i - vertices[1]));
 		n.normalise();
+
 		return n;
+	}
+	
+	virtual const char * getName()
+	{ return "TRI\n"; }
+	
+	virtual inline bool backfaceCull(const Ray &ray, const float &t)
+	{
+		#ifdef USE_TRIANGLE_NORMAL
+			return ray.direction * getNormal(normal) >= 0.0f;
+		#endif
+
+		return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0f;
 	}
 
 };

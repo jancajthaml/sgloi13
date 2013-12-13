@@ -11,7 +11,7 @@
 
 #include <vector>
 #include "../struct/Matrix.h"
-#include "../struct/Light.h"
+#include "../struct/light/Light.h"
 #include "Model.h"
 /** 
  Basic SceneGraph Node, other elements except Lights extends this one.
@@ -39,8 +39,8 @@ public:
 	{
 		if( model!=NULL ) delete model;
 
-		int i			= -1;
-		const int size	= children.size();
+		uint8 i				= -1;
+		const uint8 size	= children.size();
 
 		while( ++i<size )
 		   delete children[i];

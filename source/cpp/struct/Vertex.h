@@ -9,8 +9,9 @@
 #define VERTEX_H_
 
 #include "./../helpers/Helpers.h"
-#include <smmintrin.h>
-#include <emmintrin.h>
+#include <cmath>
+//#include <CoreServices/CoreServices.h>
+
 //TODO COMMENT !!!!!!!
 //FIXME COMMEEEEEEENT!!
 struct Vertex
@@ -33,6 +34,12 @@ struct Vertex
 		y = p2.y - p1.y;
 		z = p2.z - p1.z;
 		w = 1.0f;
+	}
+
+	Vertex(const float aVal)
+	{
+		x = y = z = aVal;
+		w= 1.0f;
 	}
 
 	Vertex(float X, float Y)
@@ -86,12 +93,12 @@ struct Vertex
 	/// Skalární součin vektorů
 	friend float operator*(const Vertex& v1,const Vertex& v2)
 	{
-		/*__m128 a, b, c;
-		a = _mm_set_ps(v1.x, v1.y, v1.z, 0.0);
-		b = _mm_set_ps(v2.x, v2.y, v2.z, 0.0);
-		c = _mm_mul_ps(a, b);
-		float f[4];
-		_mm_store_ps(f, c);*/
+		//__m128 a, b, c;
+		//a = _mm_set_ps(v1.x, v1.y, v1.z, 0.0);
+		//b = _mm_set_ps(v2.x, v2.y, v2.z, 0.0);
+		//c = _mm_mul_ps(a, b);
+		//float f[4];
+ 	 	// _mm_store_ps(f, c);
 		//return f[3]+ f[2] + f[1];
 		return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
 	}
@@ -100,44 +107,56 @@ struct Vertex
 	friend Vertex operator-(const Vertex& v1,const Vertex& v2)
 	{ return Vertex(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z); }
 
+	/// Rozdíl vektorů
+	void operator-=(const Vertex& v)
+	{
+		x -= v.x;
+		y -= v.y;
+		z -= v.z;
+	}
+
 	/// Součet vektorů
 	friend Vertex operator+(const Vertex& v1,const Vertex& v2)
 	{ return Vertex(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z); }
 
-	Vertex crossProduct(const Vertex& v2) const
+	void operator+=(const Vertex& v)
 	{
-		Vertex result;
-
-		result.x = y*v2.z - z*v2.y;
-		result.y = z*v2.x - x*v2.z;
-		result.z = x*v2.y - y*v2.x;
-
-		return result;
+		x += v.x;
+		y += v.y;
+		z += v.z;
 	}
 
 	/// Součin čísla a vektoru
 	friend Vertex operator*(float f,const Vertex& v)
 	{ return Vertex(v.x * f,v.y * f,v.z * f); }
 
+	/// Součin čísla a vektoru
+	void operator*=(float f)
+	{
+		x *= f;
+		y *= f;
+		z *= f;
+	}
+
 	/// Podíl čísla a vektoru
 	friend Vertex operator/(const Vertex& v,float f)
-	{ return Vertex(v.x / f,v.y / f,v.z / f); }
+	{ return v*(1.0f/f); }
+
+	/// Podíl čísla a vektoru
+	void operator/=(float f)
+	{
+		f = 1.0f/f;
+		x *= f;
+		y *= f;
+		z *= f;
+	}
 
 	/// Součin čísla a vektoru
 	friend Vertex operator*(const Vertex& v, float f)
 	{ return Vertex(v.x * f,v.y * f,v.z * f); }
 
-
-	//Ray helper functions
-
 	static Vertex cross(const Vertex &a, const Vertex &b)
-	{
-		Vertex result;
-		result.x = a.y*b.z - a.z*b.y;
-		result.y = a.z*b.x - a.x*b.z;
-		result.z = a.x*b.y - a.y*b.x;
-		return result;
-	}
+	{ return Vertex( a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
 
 	static Vertex reflextionNormalised(const Vertex &a, const Vertex &b)
 	{
@@ -148,14 +167,36 @@ struct Vertex
 	}
 
 
-	//FIXME DOT PRODUCT!!!
-	friend float dot(const Vertex& a,const Vertex& b)
+	static inline Vertex random()
 	{
-		return (a.x * b.x) +
-			   (a.y * b.y) +
-			   (a.z * b.z);
+		RandomPair random;
+
+		return Vertex (
+			cosf(random.value2)*Helper::q3sqrt(1-random.value1),
+			sinf(random.value2)*Helper::q3sqrt(1-random.value1),
+			Helper::q3sqrt(random.value1));
+	};
+
+	static inline Vertex rotate(const Vertex& N, const Vertex& vector)
+	{
+		Vertex cX, cY, cZ, n, m;
+		Vertex temp = N;
+		cZ = N;
+		temp.normalise();
+		cY.normalise();
+
+		n = Vertex(1.0f, 0.0f, 0.0f);
+		m = Vertex(0.0f, 1.0f, 0.0f);
+
+		cX = Vertex::cross(cZ, n);
+		if (cX.length() < 0.01f)
+			 cX = Vertex::cross(cZ, m);
+
+		cY = Vertex::cross(cZ, cX);
+
+		temp = (vector.x * cX + vector.y * cY + vector.z * cZ);
+		return temp;
 	}
-	//FIXME SCALAR HERE!!!
 };
 
 #endif /* VERTEX_H_ */

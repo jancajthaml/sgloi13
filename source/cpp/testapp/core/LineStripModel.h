@@ -29,8 +29,8 @@ public:
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 
-		int i			= -1;
-		const int size	= vertices.size()-1;
+		uint16 i			= -1;
+		const uint16 size	= vertices.size()-1;
 
 		while( ++i<size )
 			drawLine2D(vertices[i], vertices[i+1], context);

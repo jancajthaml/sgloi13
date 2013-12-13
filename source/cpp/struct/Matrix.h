@@ -8,7 +8,6 @@
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
-#include "./../core/CrossReferenceDispatcher.h"
 #include "Vertex.h"
 
 static const int SIZE_FLOAT = sizeof(float) << 4;
@@ -52,13 +51,18 @@ struct Matrix
 	
 	inline Vertex operator*(const Vertex & other)
 	{
+		float x = other.x;
+		float y = other.y;
+		float z = other.z;
+		float w = other.w;
+
 		Vertex res
 		(
-		 other.x * matrix[0] + other.y * matrix[4] + other.z * matrix[8] + other.w * matrix[12],
-		 other.x * matrix[1] + other.y * matrix[5] + other.z * matrix[9] + other.w * matrix[13],
-		 other.x * matrix[2] + other.y * matrix[6] + other.z * matrix[10] + other.w * matrix[14],
-		 other.x * matrix[3] + other.y * matrix[7] + other.z * matrix[11] + other.w * matrix[15]
-		 );
+				x * matrix[0] + y * matrix[4] + z * matrix[8] + w * matrix[12],
+				x * matrix[1] + y * matrix[5] + z * matrix[9] + w * matrix[13],
+				x * matrix[2] + y * matrix[6] + z * matrix[10] + w * matrix[14],
+				x * matrix[3] + y * matrix[7] + z * matrix[11] + w * matrix[15]
+		);
 		
 		return res;
 	}
@@ -66,13 +70,15 @@ struct Matrix
 	inline Matrix operator*(const Matrix & other) const
 	{
 		Matrix res = Matrix();
-		for (int r = 0; r < 4; r++) {
-		    for (int c = 0; c < 4; c++) {
-				res.matrix[r + (c<<2)] = 0.0f;
-				
-				for (int i = 0; i < 4; i++) {
-					res.matrix[r + (c<<2)] += matrix[r + (i<<2)] * other.matrix[i + (c<<2)];
-				}
+		int fn = 0;
+		for( int r = 0; r < 4; r++ )
+		{
+			for( int c = 0; c < 4; c++ )
+			{
+				fn = (c<<2);
+				res.matrix[r + fn] = 0.0f;
+				for( int i = 0; i < 4; i++ )
+					res.matrix[r + fn] += matrix[r + (i<<2)] * other.matrix[i + fn];
 		    }
 		}
 		
