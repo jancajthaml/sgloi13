@@ -11,8 +11,10 @@
 
 #include <vector>
 #include "../struct/Matrix.h"
-#include "../struct/light/Light.h"
 #include "Model.h"
+
+class Light;
+
 /** 
  Basic SceneGraph Node, other elements except Lights extends this one.
  */
@@ -64,7 +66,7 @@ public:
 	 Rasterizes this node
 	 @param lights	lights affecting this node.
 	 */
-	virtual void rasterize( std::vector< Light > lights )
+	virtual void rasterize( std::vector< Light* > lights )
 	{
 		model->rasterize(lights, this->MVP);
 
@@ -81,7 +83,7 @@ public:
 	void addChild(SceneNode * child)
 	{ children.push_back(child); }
 	
-	void addVertex(Vertex v)
+	virtual void addVertex(Vertex v)
 	{ model->addVertex(v); }
 	
 	Model* getModel()

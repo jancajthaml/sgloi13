@@ -16,9 +16,9 @@ public:
 	void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
 	{
 		ray.origin		= position;
-		ray.direction	= point - position;
+		ray.direction	= position - point;
 
-		ray.direction.normalise();
+		//ray.direction.normalise();
 
 		contribution	= color;
 	}

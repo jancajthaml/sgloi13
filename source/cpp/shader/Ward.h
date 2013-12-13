@@ -17,7 +17,7 @@ class Ward
 private:
 	Ward(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Color& clear)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light* > &lights, std::vector< SceneNode* > &children, const Color& clear)
 	{
 		Material material = model->getMaterial();
 		const int size = lights.size();
@@ -28,7 +28,7 @@ private:
 	}
 
 public:
-	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Color &clear)
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light* > &lights, const Color &clear)
 	{
 			float tmin = FLOAT_MAX;
 			Model *model;

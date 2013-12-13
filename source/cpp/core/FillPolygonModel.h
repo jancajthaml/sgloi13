@@ -38,7 +38,7 @@ public:
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 @author Jan Cajthaml
 	 */
-	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
+	virtual void rasterize(std::vector< Light* > lights, Matrix mpv)
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 		

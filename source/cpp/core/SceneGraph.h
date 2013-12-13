@@ -34,7 +34,7 @@ class RootSceneNode : public SceneNode
 {
 private:
 	///lights on scene
-	std::vector< Light > lights;
+	std::vector< Light* > lights;
 
 	///Pointer to node currently being changed
 	/// - i.e. when the node is being created using sglVertexnf().
@@ -57,12 +57,20 @@ public:
 		this->context	= _context;
 		currentNode		= NULL;
 	}
+	
+	~RootSceneNode()
+	{
+		for (std::vector<Light *>::iterator it = lights.begin(); it != lights.end(); ++it)
+		{
+			delete *it;
+		}
+	}
 
 	/**
 	 Adds light to the scene
 	 @param _light	the light to be added
 	 */
-	virtual void addLight(Light _light)
+	virtual void addLight(Light * _light)
 	{ lights.push_back(_light); }
 
 	/**
@@ -71,7 +79,7 @@ public:
 				effective when all lights are known so far and were not 
 				added one by one to the RootSceneNode.
 	 */
-	virtual void rasterize(std::vector< Light > _lights)
+	virtual void rasterize(std::vector< Light* > _lights)
 	{
 		this->lights.insert(this->lights.end(), _lights.begin(), _lights.end());
 		this->rasterize();
@@ -178,9 +186,10 @@ public:
 	 Adds currentNode to children and sets currentNode to NULL.
 	 As the currentNode was pointer to allocated memory (using new), it will be freed using delete.
 	 */
-	void commitCurrentNode()
+	void commitCurrentNode(bool isLight)
 	{
-		if( currentNode!=NULL )  children.push_back(currentNode);
+		if( !isLight && currentNode!=NULL )
+			children.push_back(currentNode);
 		currentNode = NULL;
 	}
 

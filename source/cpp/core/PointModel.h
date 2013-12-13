@@ -32,7 +32,7 @@ public:
 	 @param lights	lights affecting appearance of this model
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 */
-	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
+	virtual void rasterize(std::vector< Light* > lights, Matrix mpv)
 	{
 		Model::multiplyVerticesWithMVP(mpv);
 		const uint16 s = vertices.size();

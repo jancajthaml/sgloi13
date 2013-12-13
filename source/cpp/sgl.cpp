@@ -754,7 +754,7 @@ void sglSphere(const float x, const float y, const float z, const float r)
 	SphereModel *sphere = new SphereModel(c->storage, current()->material, x, y, z, r);
 	c->check_MVP();
 	c->scene.beginNewNode(new SceneNode(sphere, c->MVP));
-	c->scene.commitCurrentNode();
+	c->scene.commitCurrentNode(false);
 }
 
 //Material ******
@@ -790,7 +790,7 @@ void sglPointLight(const float x, const float y, const float z, const float r, c
 		return;
 	}
 
-	current()->scene.addLight( PointLight( Vertex(x,y,z,1.0f),Color(r,g,b) ) );
+	current()->scene.addLight( new PointLight( Vertex(x,y,z,1.0f),Color(r,g,b) ) );
 }
 
 // ?
@@ -835,8 +835,10 @@ void sglEmissiveMaterial(const float r, const float g, const float b, const floa
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-
-	current()->scene.addLight( AreaLight( Vertex(c0,c1,c2,1.0f),Color(r,g,b) ) );
+	Context *ctx = current();
+	ctx->emissiveColor = Color(r,g,b);
+	ctx->emissiveAtt = Vertex(c0,c1,c2,1.0f);
+	current()->areaLight = true;
 }
 
 //---------------------------------------------------------------------------

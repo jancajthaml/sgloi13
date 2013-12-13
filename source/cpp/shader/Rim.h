@@ -17,7 +17,7 @@ class Rim
 private:
 	Rim(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i,const std::vector< Light* > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
 //		Vertex normal			= model->getNormal(i);
 		Color color;
@@ -26,7 +26,7 @@ private:
 	}
 
 public:
-	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light* > &lights, const Chunk &context)
 	{
 		Model *model;
 		float tmin	= FLOAT_MAX;

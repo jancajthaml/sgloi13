@@ -11,7 +11,6 @@
 
 #include <vector>
 #include "./../helpers/Helpers.h"
-#include "../struct/light/Light.h"
 #include "../struct/Material.h"
 #include "../struct/Vertex.h"
 #include "ContextChunk.h"
@@ -19,6 +18,7 @@
 #include "../struct/Ray.h"
 #include "types.h"
 
+class Light;
 /**
  Base class for models. Models can be various types - line, line strip, polygon, triangle, etc.
  */
@@ -68,7 +68,7 @@ public:
 	 @param lights	lights affecting appearance of this model
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 */
-	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
+	virtual void rasterize(std::vector< Light* > lights, Matrix mpv)
 	{}
 	
 	virtual bool findIntersection(const Ray &ray, float &t)

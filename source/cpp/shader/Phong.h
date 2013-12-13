@@ -19,7 +19,7 @@ class Phong
 private:
 	Phong(){}
 
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &vantage_point,const std::vector< Light > &lights, std::vector< SceneNode* > &children, const Chunk& context)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &vantage_point,const std::vector< Light* > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
 		Color color;
 		if( ray.depth<=0 ) return color;
@@ -63,23 +63,21 @@ private:
 
 		for( int pointer = 0; pointer<size; pointer++ )
 		{
-			Light light = lights[pointer];
+			Light *light = lights[pointer];
 
 			//C++ doesnt have a instanceof
-			PointLight* point = static_cast<PointLight*>(&light);
-			bool is_point = (point != 0);
 
 			//if(light.isPoint())printf("area light is point\n");
 							//else printf("area light not point\n");
-			if( !light.isPoint() )
+			if( !light->isPoint() )
 			{
-				//maxSample = 8;
+				maxSample = 8;
 			}
 
 			for( int sample = 0; sample < maxSample; sample++ )
 			{
 
-				if(is_point)
+				/*if(is_point)
 				{
 					//static_cast<PointLight*>(light)
 					//SAMPLE POINT LIGHT
@@ -88,12 +86,15 @@ private:
 				{
 					//static_cast<AreaLight*>(light)
 					//SAMPLE AREA LIGHT
-				}
+				}*/
 
 				//LIGHT DIRECTION
-				L				= light.position - vantage_point;
+				//L				= light.position - vantage_point;
+				Ray lightRay;
+				Color lightColor;
+				light->Sample(vantage_point, lightRay, lightColor);
+				L = lightRay.direction;
 				float length	= L.length();
-
 				L.normalise();
 
 				bool under_the_shadow	= false;
@@ -143,7 +144,7 @@ private:
 				//---------------[ SPECULAR
 
 				color += Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
-				color *= light.color;
+				color *= light->color;
 
 				//####################[REFLECTION
 
@@ -202,7 +203,7 @@ private:
 	}
 
 public:
-	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light > &lights, const Chunk &context)
+	static inline Color castAndShade(const Ray &ray,std::vector< SceneNode* > &children,const std::vector< Light* > &lights, const Chunk &context)
 	{
 		Model *model;
 		float tmin	= FLOAT_MAX;

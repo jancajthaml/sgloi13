@@ -15,7 +15,7 @@ private:
 	Flat(){}
 
 public:
-	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light > &lights)
+	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &i, const Vertex &N,const std::vector< Light* > &lights)
 	{ return model->getMaterial().color; }
 
 };

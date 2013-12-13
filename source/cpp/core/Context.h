@@ -103,6 +103,13 @@ struct Context
 	
 	//current material
 	Material material;
+	
+	// this flag is true after sglEmissiveMaterial call till the next sglEnd() call.
+	bool areaLight;
+	
+	//Emissive Light parameters to be added
+	Color emissiveColor;
+	Vertex emissiveAtt; //< attenuation factor for this emissive light
 
 
 	Context(uint_fast16_t width, uint_fast16_t height)
@@ -142,13 +149,17 @@ struct Context
 		this->disableDepthTest();
 		
 		this->scene.context = storage;
+		
+		areaLight = false;
 	}
 
 	inline void setVertex2f(float x, float y)
 	{ scene.getCurrentNode()->addVertex(create(x, y, 0.0f, 1.0f)); }
 
 	inline void setVertex3f(float x, float y, float z)
-	{ scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f)); }
+	{
+		scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f));
+	}
 
 	inline void setVertex4f(float x, float y, float z, float w)
 	{ scene.getCurrentNode()->addVertex(create(x, y, z, w)); }
@@ -374,6 +385,19 @@ struct Context
 	inline void begin(sglEElementType mode)
 	{
 		BEGIN                  = true;
+		
+		//resolve AreaLights
+		if (areaLight)
+		{
+			printf("resolving area light\n");
+			pushTypeState(SGL_AREA_LIGHT);
+			AreaLight *light = new AreaLight(emissiveAtt, emissiveColor);
+			scene.addLight(light);
+			scene.beginNewNode(light);
+			return;
+		}
+		
+		
 		pushTypeState(mode);
 		check_MVP();
 		Model *m;
@@ -408,16 +432,16 @@ struct Context
 	inline void end()
 	{
 		BEGIN=false;
-		
+		areaLight = false;
 		//scene.
 		//handle creation of models and add them to scene (RootSceneNode)
 		sglEElementType type = types.back();
 		
 		switch( type )
 		{
-			case SGL_AREA_LIGHT        : 					      ; break;
-			case SGL_LAST_ELEMENT_TYPE : 					      ; break;
-			default                    : scene.commitCurrentNode(); break;
+			case SGL_AREA_LIGHT        : scene.commitCurrentNode(true)	; break;
+			case SGL_LAST_ELEMENT_TYPE :								; break;
+			default                    : scene.commitCurrentNode(false)	; break;
         }
 
 	}

@@ -11,12 +11,13 @@
 #include "./../Color.h"
 #include "./../Vertex.h"
 #include "./../Ray.h"
+#include "../../core/SceneNode.h"
 /** 
  GraphNode base element for Lights.
  */
 
 //TODO COMMENT
-class Light
+class Light : public SceneNode
 {
 	public:
 		Vertex position;
