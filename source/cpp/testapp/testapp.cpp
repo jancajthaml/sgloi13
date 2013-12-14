@@ -955,7 +955,7 @@ RayTraceScene(const char *scenename)
 	  for(int i=0; i<3; i++)
 		sglVertex3f(t.vertices[i].x,t.vertices[i].y,t.vertices[i].z);
 	  sglEnd();
-	}
+	  }
   }
 
   if (nffstore.envMap.cols) {

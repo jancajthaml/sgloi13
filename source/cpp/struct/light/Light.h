@@ -30,7 +30,14 @@ class Light : public SceneNode
 		{}
 
 		virtual bool isPoint()
-		{ return false; }
+		{
+			return false;
+		}
+	
+		virtual bool isAreaLight()
+		{
+			return false;
+		}
 };
 
 #endif

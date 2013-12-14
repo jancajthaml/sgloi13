@@ -434,7 +434,7 @@ struct Context
 	inline void end()
 	{
 		BEGIN=false;
-		areaLight = false;
+		//areaLight = false;
 		//scene.
 		//handle creation of models and add them to scene (RootSceneNode)
 		sglEElementType type = types.back();

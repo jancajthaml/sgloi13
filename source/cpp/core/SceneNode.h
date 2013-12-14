@@ -88,6 +88,11 @@ public:
 	
 	Model* getModel()
 	{ return model; }
+	
+	virtual bool isAreaLight()
+	{
+		return false;
+	}
 
 };
 

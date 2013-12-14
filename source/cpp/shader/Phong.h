@@ -22,6 +22,7 @@ private:
 
 	static inline Color calculateColor(const Ray &ray, Model *model, const Vertex &vantage_point,const std::vector< Light* > &lights, std::vector< SceneNode* > &children, const Chunk& context)
 	{
+		
 		Color color;
 		if( ray.depth<=0 ) return color;
 
@@ -170,18 +171,20 @@ public:
 		Model *model;
 		float tmin	= FLOAT_MAX;
 		float t		= FLOAT_MAX;
-
+		bool isAreaLight = false;
 		for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 		{
 			Model* m = (*child)->getModel();
 
 			if( m->findIntersection(ray, t) && !m->backfaceCull(ray, t) && t > 0.1 && t<tmin)
 			{
+				isAreaLight = (*child)->isAreaLight();
 				tmin  = t;
 				model = m;
 			}
 		}
-
+		if (isAreaLight)
+			return model->getMaterial().color;
 		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
 	}
 

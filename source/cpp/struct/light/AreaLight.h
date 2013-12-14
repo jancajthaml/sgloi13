@@ -36,7 +36,7 @@ public:
 
 	AreaLight(Chunk context, const Vertex atten,const Color color )
 	{
-		model = new FillPolygonModel(context, Material(color, 1,0, 0.0, 0.0, 0.0));
+		model = new FillPolygonModel(context, Material(color, 1.0, 0.0, 0.0, 0.0, 1.0));
 		this->color = color;
 		this->atten = atten;
 		vertexIndex = 0;
@@ -56,7 +56,7 @@ public:
 		edge2	= Vertex(model->vertices[1] - model->vertices[0]);
 		normal	= Vertex::cross(edge1,edge2);
 		normal.normalise();
-		area	= (edge1.length() * edge2.length()) / MAX_SAMPLES;
+		area	= (edge1.length() * edge2.length() * 0.5) / MAX_SAMPLES;
 	}
 
 	void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
@@ -86,6 +86,12 @@ public:
 
 	Color getIntensity() const
 	{ return color; }
+	
+	
+	virtual bool isAreaLight()
+	{
+		return true;
+	}
 
 };
 
