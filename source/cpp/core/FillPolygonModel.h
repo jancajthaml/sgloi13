@@ -33,6 +33,8 @@ public:
 	{
 		normal.w = -1;
 		cached   = false;
+		U	 	 = 0;
+		V		 = 0;
 	}
 	
 	/**
@@ -214,7 +216,7 @@ public:
 		return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0f;
 	}
 
-	inline Vertex getUV(const Vertex normal)
+	inline Vertex getUV(const Vertex vantage_point)
 	{
 		#ifdef USE_TRIANGLE_NORMAL
 			return Vertex(U,V);

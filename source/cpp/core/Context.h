@@ -195,9 +195,11 @@ struct Context
 
 	inline void drawCricle( float x, float y, float z, float r )
 	{
+		//printf("%f %f %f \n",storage.color.r,storage.color.g,storage.color.b);
+		//CircleDrawModel(storage, material, r*calculateRadiusScaleFactor(), create(x , y ,0.0f, 1.0f)).flush();
 		switch( drawType )
 		{
-			//case SGL_POINT  : g.drawPoints ( storage                                                            ) ; break;
+		//	case SGL_POINT  : g.drawPoints ( storage                                                            ) ; break;
 			case SGL_LINE   : CircleDrawModel(storage, material, r*calculateRadiusScaleFactor(), create(x , y ,0.0f, 1.0f)).flush(); break;
 			default         : CircleFillModel(storage, material, r*calculateRadiusScaleFactor(), create(x , y ,0.0f, 1.0f)).flush(); break;
 		}
@@ -389,7 +391,7 @@ struct Context
 		BEGIN                  = true;
 		
 		//resolve AreaLights
-		if (areaLight)
+		if( areaLight )
 		{
 			pushTypeState(SGL_AREA_LIGHT);
 			//create new light

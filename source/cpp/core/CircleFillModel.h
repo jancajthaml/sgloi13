@@ -28,14 +28,14 @@ public:
 	}
 
 	void flush()
-	{ rasterize(std::vector<Light>(),MatrixCache::identity()); }
+	{ rasterize(std::vector<Light*>(),MatrixCache::identity()); }
 
 	/**
 	 Rasterizes this model with lights affecting it
 	 @param lights	lights affecting appearance of this model
 	 @param mpv		model projection view matrix to be used when rasterizing
 	 */
-	virtual void rasterize(std::vector<Light> lights, Matrix mpv)
+	virtual void rasterize(std::vector< Light* > lights, Matrix mpv)
 	{
 		uint16 x = 0;
 		uint16 y = r;
@@ -67,8 +67,8 @@ public:
 
 		for( ; from <= to; from++ )
 		{
-			setPixel3D( from, h1, 0, context );
-			setPixel3D( from, l1, 0, context );
+			setPixel( from, h1, 0, context );
+			setPixel( from, l1, 0, context );
 		}
 
 		to         = center_x+y;
@@ -78,8 +78,8 @@ public:
 
 		for( ; from <= to; from++ )
 		{
-			setPixel3D( from, h1 , 0, context );
-			setPixel3D( from, l1 , 0, context );
+			setPixel( from, h1 , 0, context );
+			setPixel( from, l1 , 0, context );
 		}
 	}
 
