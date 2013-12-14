@@ -13,6 +13,7 @@
 #include <cmath>
 #include <typeinfo>
 
+
 class Phong
 {
 
@@ -23,6 +24,11 @@ private:
 	{
 		
 		Color color;
+		Color sampleColor;
+		Ray lightRay;
+		Color lightColor;
+		Ray shadow_ray;
+		
 		if( ray.depth<=0 ) return color;
 
 		Vertex  L;
@@ -42,9 +48,16 @@ private:
 
 			for( int sample = 0; sample < maxSample; ++sample )
 			{
+<<<<<<< HEAD
 				//printf("sampling %f\n",sample);
 				Ray lightRay;
 				Color lightColor;
+=======
+				sampleColor.r = 0;
+				sampleColor.g = 0;
+				sampleColor.b = 0;
+				
+>>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 				
 				//calculate random point in triangle
 
@@ -61,7 +74,6 @@ private:
 				//####################[SHADOWS
 
 				//COMMENT!
-				Ray shadow_ray;
 				shadow_ray.origin    = vantage_point;
 				shadow_ray.direction = L;
 
@@ -97,13 +109,13 @@ private:
 				{
 					//---------------[ DIFFUSE
 
-					color += lightColor * (material.kd * material.getColor(ray)) * Helper::max(0.0f, N*L);
+					sampleColor += (material.kd * material.color) * Helper::max(0.0f, N*L);
 				}
 
 				//---------------[ SPECULAR
 
-				color += lightColor * Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
-
+				sampleColor += Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
+				sampleColor *= lightColor;
 				//####################[REFLECTION
 
 				if( material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0 )
@@ -111,11 +123,12 @@ private:
 					Ray reflected_ray;
 					reflected_ray.origin     = vantage_point;
 					reflected_ray.direction  = ray.direction - ( N * (ray.direction*N*2) );
+					//reflected_ray.direction	 = ray.direction + 2.0f * (N*V)*N;
 					reflected_ray.depth      = ray.depth-1;
 					reflected_ray.type		 = RAY_SECONDARY;
 					reflected_ray.direction.normalise();
 
-					color += material.ks * castAndShade(reflected_ray,children,lights,context);
+					sampleColor += material.ks * castAndShade(reflected_ray,children,lights,context);
 				}
 
 				//####################[REFRACTION
@@ -151,9 +164,10 @@ private:
 
 						refracted_ray.direction.normalise();
 
-						color						+= material.trn * castAndShade(refracted_ray,children,lights,context);
+						sampleColor						+= material.trn * castAndShade(refracted_ray,children,lights,context);
 					}
 				}
+				color += sampleColor;
 			}
 		}
 		return color;
@@ -178,6 +192,7 @@ public:
 				model 		= m;
 			}
 		}
+<<<<<<< HEAD
 
 		if( isAreaLight )
 			return model->getMaterial().getColor( ray );
@@ -194,6 +209,22 @@ public:
 			int sy		= 3 * int(context.eh * v);
 			int index	= sx + context.ew * sy;
 			return Color( context.envMap[index], context.envMap[ index+1 ], context.envMap[ index+2 ]);
+=======
+		if (isAreaLight)
+			return model->getMaterial().color;
+		if ( tmin<FLOAT_MAX )
+			return calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context);
+		else if (context.envMapLoaded){
+			//return the sample from Environment map
+			float d = sqrt(ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y);
+			float r = d>0 ? 0.159154943*acos(ray.direction.z)/d : 0.0;
+			float u = 0.5 + ray.direction.x * r;
+			float v = 1 - (0.5 + ray.direction.y * r);
+			int sx = 3*(int)floor(context.ew * u);
+			int sy = 3*(int)floor(context.eh * v);
+			int index = sx + context.ew * sy;
+			return Color(context.envMap[index], context.envMap[index+1], context.envMap[index + 2]);
+>>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 		}
 		else
 			return *context.clear;

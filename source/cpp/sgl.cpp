@@ -825,6 +825,7 @@ void sglEnvironmentMap(const int width, const int height, float *texels)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+<<<<<<< HEAD
 
 	//set environment map
 	Context *c						= current();
@@ -833,6 +834,15 @@ void sglEnvironmentMap(const int width, const int height, float *texels)
 	c->scene.context.eh				= height;
 	c->scene.context.ew_h			= width * height;
 	c->scene.context.envMapLoaded	= true;
+=======
+	//set environment map
+	Context *c = current();
+	c->scene.context.envMap = texels;
+	c->scene.context.ew = width;
+	c->scene.context.eh = height;
+	c->scene.context.ew_h = width * height;
+	c->scene.context.envMapLoaded = true;
+>>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 }
 
 // ?
@@ -843,10 +853,10 @@ void sglEmissiveMaterial(const float r, const float g, const float b, const floa
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	Context *ctx			= current();
-	ctx->emissiveColor		= Color(r,g,b);
-	ctx->emissiveAtt		= Vertex(c0,c1,c2,1.0f);
-	current()->areaLight	= true;
+	Context *ctx = current();
+	ctx->emissiveColor = Color(r,g,b);
+	ctx->emissiveAtt = Vertex(c0,c1,c2,1.0f);
+	current()->areaLight = true;
 }
 
 //---------------------------------------------------------------------------
