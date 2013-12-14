@@ -70,7 +70,7 @@ struct Vertex
 	{ printf("[%f, %f, %f, %f]\n", x, y, z, w); }
 	
 	//FIXME use fast square root
-	inline float length()const
+	inline float length()
 	{
 		if( w==0.0f ) return 0.0f;
 		if( w==1.0f ) return Helper::q3sqrt( x*x + y*y + z*z);

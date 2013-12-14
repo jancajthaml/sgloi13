@@ -29,6 +29,7 @@
 #include <cfloat>
 #include <vector>
 #include "./../sgl.h"
+#include "./types.h"
 
 /*
  * Side-notes:
@@ -112,12 +113,8 @@ struct Context
 	Vertex emissiveAtt; //< attenuation factor for this emissive light
 
 
-<<<<<<< HEAD
 
 	Context(uint16 width, uint16 height)
-=======
-	Context(uint_fast16_t width, uint_fast16_t height)
->>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 	{
 		storage        = Chunk();
 		storage.w      = width;
@@ -127,10 +124,7 @@ struct Context
 		storage.size   = 1;
 		storage.envMap = NULL;
 		storage.envMapLoaded = false;
-<<<<<<< HEAD
 
-=======
->>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 		//----------------------//
 
 		//Initialise Drawing
@@ -167,9 +161,7 @@ struct Context
 	{ scene.getCurrentNode()->addVertex(create(x, y, 0.0f, 1.0f)); }
 
 	inline void setVertex3f(float x, float y, float z)
-	{
-		scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f));
-	}
+	{ scene.getCurrentNode()->addVertex(create(x, y, z, 1.0f)); }
 
 	inline void setVertex4f(float x, float y, float z, float w)
 	{ scene.getCurrentNode()->addVertex(create(x, y, z, w)); }
@@ -274,7 +266,7 @@ struct Context
 		float sa			= sinf(alpha)			;
 		float ca			= cosf(alpha)			;
 
-		int_fast32_t RR     = Helper::round(N)+offset;
+		uint16 RR     = Helper::round(N)+offset;
 
 		switch( drawType )
 		{
@@ -303,7 +295,7 @@ struct Context
 			}break;
 		}
 
-		for (int_fast32_t i = offset; i <= RR; i++)
+		for( uint16 i = offset; i <= RR; i++)
 		{
 			x2 = ca * x1 - sa * y1;
 			y2 = sa * x1 + ca * y1;
@@ -495,7 +487,7 @@ struct Context
 
 	inline void clearDepthBuffer()
 	{
-	    for(uint_fast32_t i = 0; i < storage.w_h; ++i)
+	    for( uint32 i = 0; i<storage.w_h; ++i )
 	        storage.depth[i] = std::numeric_limits<float>::max();;
 	}
 
@@ -534,10 +526,10 @@ struct Context
 		*((__color*) (storage.clear+7))	= *((__color*) &c);
 		*((__color*) (storage.clear+8))	= *((__color*) &c);
 
-		uint_fast32_t  l  =  8					;
-		int_fast8_t    s  =  sizeof(__color)	;
+		uint16   l  =  8				;
+		uint8    s  =  sizeof(__color)	;
 
-		for(uint_fast32_t offset=l ; offset < storage.w_h; offset <<= 1)
+		for( uint32 offset=l ; offset < storage.w_h; offset <<= 1 )
 		{
 			memcpy(&storage.clear[offset], &storage.clear[l], s);
 			l = offset;

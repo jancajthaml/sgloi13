@@ -9,7 +9,11 @@
 #ifndef libsgl_Material_h
 #define libsgl_Material_h
 
-#include "../struct/Color.h"
+#include "./Color.h"
+#include "./Bitmap.h"
+#include "./Ray.h"
+
+#include <vector>
 
 /**
  Definition of material used on particular models.
@@ -34,6 +38,10 @@ struct Material
 	///index of refraction
 	float ior;
 	
+	//Texture bitmap
+	Bitmap texture;
+	bool using_textures;
+
 	/**
 	 Material constructor
 	 @param _color	color of the material
@@ -45,24 +53,38 @@ struct Material
 	 */
 	Material(Color _color, const float _kd, const float _ks, const float _shine, const float _trn, const float _ior)
 	{
-		this->color	= _color;
-		this->kd	= _kd;
-		this->ks	= _ks;
-		this->shine	= _shine;
-		this->trn	= _trn;
-		this->ior	= _ior;
+		this->color				= _color;
+		this->kd				= _kd;
+		this->ks				= _ks;
+		this->shine				= _shine;
+		this->trn				= _trn;
+		this->ior				= _ior;
+		this->using_textures	= false;
+		//this->texture	= *NULL;
 	}
 	
 	Material()
 	{
-		this->color	= Color();
-		this->kd	= 0.0f;
-		this->ks	= 0.0f;
-		this->shine	= 0.0f;
-		this->trn	= 0.0f;
-		this->ior	= 0.0f;
+		this->color				= Color();
+		this->kd				= 0.0f;
+		this->ks				= 0.0f;
+		this->shine				= 0.0f;
+		this->trn				= 0.0f;
+		this->ior				= 0.0f;
+		this->using_textures	= false;
+		//this->texture	= 0;
 	}
 	
+	Color getColor(const Ray &ray) const
+	{
+		if( this->using_textures )
+		{
+			return color;
+		}
+
+		return color;
+	}
+
 };
 
 #endif

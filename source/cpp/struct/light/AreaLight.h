@@ -16,9 +16,10 @@
 #define libsgl_AreaLightNode_h
 
 #include "Light.h"
-#include "./../helpers/Helpers.h"
+
 #include "../../core/FillPolygonModel.h"
 #include "../../core/ContextChunk.h"
+#include "../../core/Model.h"
 
 class AreaLight : public Light
 {

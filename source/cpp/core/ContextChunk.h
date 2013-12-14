@@ -20,21 +20,12 @@ struct Chunk
 	Color* buffer					;	// COLOR BUFFER
 	float* depth					;	// DEPTH BUFFER
 	Color* clear					;	// CLEAR COLOR CACHE
-<<<<<<< HEAD
 	float* envMap;                 	;        // ENVIRONMENT MAP
 	bool envMapLoaded               ;        // TRUE IF ENVIRONMENT MAP IS LOADED
 
 	uint16 ew                       ;        // ENVIRONMENT MAP WIDTH
 	uint16 eh                       ;        // ENVIRONMENT MAP HEIGHT
 	uint32 ew_h                     ;        // ENVIRONMENT MAP WIDTH * HEIGHT
-=======
-	float* envMap;					;	// ENVIRONMENT MAP
-	bool envMapLoaded				;	// TRUE IF ENVIRONMENT MAP IS LOADED
-	
-	uint32 ew						;	// ENVIRONMENT MAP WIDTH
-	uint32 eh						;	// ENVIRONMENT MAP HEIGHT
-	uint32 ew_h						;	// ENVIRONMENT MAP WIDTH * HEIGHT
->>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 
 	uint16 w						;	// CONTEXT WIDTH  (maximum 65536)
 	uint16 h						;	// CONTEXT HEIGHT (maximum 65536)
