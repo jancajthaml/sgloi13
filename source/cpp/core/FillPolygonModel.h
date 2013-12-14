@@ -218,6 +218,8 @@ public:
 
 	virtual inline Vertex getUV(const Vertex vantage_point)
 	{
+		if (material.using_textures)
+		{
 		#ifdef USE_TRIANGLE_NORMAL
 			//calculate uv with texturing coordinates set in vertex
 			//vantage_point.print();
@@ -248,6 +250,7 @@ public:
 			return Vertex(u,v);
 		
 		#endif
+		}
 		return Vertex(-1);
 	}
 };

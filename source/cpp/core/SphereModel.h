@@ -116,11 +116,14 @@ public:
 	
 	virtual inline Vertex getUV(const Vertex vantage_point)	//const ?
 	{
-		Vertex d = vantage_point - position;
-		d.normalise();
-		float u = 0.5 + (atan2(d.z, d.x))/(2*M_PI);
-		float v = 0.5 - (asin(d.y)/M_PI);
-		return Vertex(u,v);
+		if (material.using_textures)
+		{
+			Vertex d = vantage_point - position;
+			d.normalise();
+			float u = 0.5 + (atan2(d.z, d.x))/(2*M_PI);
+			float v = 0.5 - (asin(d.y)/M_PI);
+			return Vertex(u,v);
+		}
 	}
 
 };

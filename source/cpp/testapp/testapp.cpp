@@ -12,7 +12,7 @@
 //#define TEST2
 //#define TEST3
 //#define TEST4
-//#define TEST5
+#define TEST5
 #define TEST6
 
 #ifdef TEST0
@@ -1476,11 +1476,7 @@ int main(int argc, char **argv)
 #ifdef TEST6
 {
 	sglSetContext(_contexts[5]);
-<<<<<<< HEAD
-	DrawTestScene2D();
-=======
 	DrawTestScene1A();
->>>>>>> e97d279d40fabe763fae7b06f908ac2bd5fe6801
 	float *texture = sglGetColorBufferPointer();
 	sglSetContext(_contexts[6]);
 	// projection transformation
