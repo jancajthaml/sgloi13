@@ -96,7 +96,6 @@ private:
 				if(!under_the_shadow)
 				{
 					//---------------[ DIFFUSE
-
 					color += lightColor * (material.kd * material.getColor(model->getUV(N))) * Helper::max(0.0f, N*L);
 				}
 

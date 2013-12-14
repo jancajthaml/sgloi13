@@ -1477,6 +1477,72 @@ int main(int argc, char **argv)
 {
 	sglSetContext(_contexts[5]);
 	DrawTestScene1A();
+	float *texture = sglGetColorBufferPointer();
+	sglSetContext(_contexts[6]);
+	// projection transformation
+	sglMatrixMode(SGL_PROJECTION);
+	sglLoadIdentity();
+	// modelview transformation
+	sglMatrixMode(SGL_MODELVIEW);
+	sglLoadIdentity();
+	
+	/// BEGIN SCENE DEFINITION
+	sglBeginScene();
+	
+	//sphere
+	sglPointLight(275.0f, 600.0f, -200.0f, 1.0, 1.0, 1.0);
+	sglMaterial(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	sglTexture(512, 512, texture);
+	sglSphere(250.0f, 0.0f, 250.0f, 100.0f);
+	
+	//back wall
+	sglBegin(SGL_POLYGON);
+	sglVertex3f(550.0f, 0.0f, 550.0f);
+	sglVertex3f(0.0f, 0.0f, 550.0f);
+	sglVertex3f(0.0f, 550.0f, 550.0f);
+	sglEnd();
+	sglBegin(SGL_POLYGON);
+	sglVertex3f(0.0f, 550.0f, 550.0f);
+	sglVertex3f(550.0f, 550.0f, 550.0f);
+	sglVertex3f(550.0f, 0.0f, 550.0f);
+	sglEnd();
+
+	
+	sglEndScene();
+	
+	sglAreaMode(SGL_FILL);
+	sglEnable(SGL_DEPTH_TEST);
+	sglClearColor(1.0f, 1.0f, 1.0f, 1);
+	sglClear(SGL_COLOR_BUFFER_BIT|SGL_DEPTH_BUFFER_BIT);
+	
+	// set the viewport transform
+	sglViewport(0, 0, WIDTH, HEIGHT);
+	
+	// setup the camera using appopriate projection transformation
+	// note that the resolution stored in the nff file is ignored
+	sglMatrixMode(SGL_PROJECTION);
+	sglLoadIdentity();
+	sgluPerspective (40, (float)WIDTH/HEIGHT, 1.0, 1800.0);
+	
+	// modelview transformation
+	sglMatrixMode(SGL_MODELVIEW);
+	sglLoadIdentity();
+	sgluLookAt(
+			   275.0f,
+			   275.0f,
+			   -800.0f,
+			   275.0f,
+			   275.0f,
+			   0.0f,
+			   0.0f,
+			   1.0f,
+			   0.0f
+			   );
+	
+	
+	// compute a ray traced image and store it in the color buffer
+	sglRayTraceScene();
+	
 }
 #endif
 

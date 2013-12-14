@@ -216,7 +216,7 @@ public:
 		return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0f;
 	}
 
-	inline Vertex getUV(const Vertex vantage_point)
+	virtual inline Vertex getUV(const Vertex vantage_point)
 	{
 		#ifdef USE_TRIANGLE_NORMAL
 			return Vertex(U,V);
