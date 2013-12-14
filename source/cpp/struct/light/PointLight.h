@@ -17,9 +17,6 @@ public:
 	{
 		ray.origin		= position;
 		ray.direction	= position - point;
-
-		//ray.direction.normalise();
-
 		contribution	= color;
 	}
 

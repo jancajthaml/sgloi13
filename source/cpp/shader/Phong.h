@@ -36,24 +36,20 @@ private:
 		for( int pointer = 0; pointer<size; pointer++ )
 		{
 			Light *light = lights[pointer];
-			
 
-			if( !light->isPoint() )
+			if( light->isAreaLight() )
 				maxSample = MAX_SAMPLES;
 
 			for( int sample = 0; sample < maxSample; ++sample )
 			{
-
+				//printf("sampling %f\n",sample);
 				Ray lightRay;
 				Color lightColor;
 				
 				//calculate random point in triangle
-				float r1 = (float)rand() / (float)RAND_MAX;
-				float r2 = (float)rand() / (float)RAND_MAX;
-				float r1sq = Helper::q3sqrt(r1);
-				float r1p = 1 - r1sq;
-				float r2p = r2 * r1sq;
- 				light->Sample(vantage_point, lightRay, lightColor, r1p, r2p);
+
+				float r1sq	= Helper::q3sqrt( Helper::random() );
+ 				light->Sample(vantage_point, lightRay, lightColor, 1 - r1sq, Helper::random() * r1sq);
 				
 				//LIGHT Direction
 				L = lightRay.direction;
@@ -170,6 +166,7 @@ public:
 		float tmin	= FLOAT_MAX;
 		float t		= FLOAT_MAX;
 		bool isAreaLight = false;
+
 		for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 		{
 			Model* m = (*child)->getModel();
@@ -177,13 +174,29 @@ public:
 			if( m->findIntersection(ray, t) && !m->backfaceCull(ray, t) && t > 0.1 && t<tmin)
 			{
 				isAreaLight = (*child)->isAreaLight();
-				tmin  = t;
-				model = m;
+				tmin  		= t;
+				model 		= m;
 			}
 		}
-		if( isAreaLight ) return model->getMaterial().getColor( ray );
 
-		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
+		if( isAreaLight )
+			return model->getMaterial().getColor( ray );
+		if( tmin<FLOAT_MAX )
+			return calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context);
+		else if( context.envMapLoaded )
+		{
+			//return the sample from Environment map
+			float d		= Helper::q3sqrt(ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y);
+			float r		= d>0 ? 0.159154943f*Helper::acos(ray.direction.z)/d : 0.0f;
+			float u		= 0.5 + ray.direction.x * r;
+			float v		= 1 - (0.5f + ray.direction.y * r);
+			int sx		= 3 * int(context.ew * u);
+			int sy		= 3 * int(context.eh * v);
+			int index	= sx + context.ew * sy;
+			return Color( context.envMap[index], context.envMap[ index+1 ], context.envMap[ index+2 ]);
+		}
+		else
+			return *context.clear;
 	}
 
 };

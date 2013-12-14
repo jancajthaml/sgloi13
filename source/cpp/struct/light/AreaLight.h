@@ -31,23 +31,25 @@ private:
 	Vertex edge1, edge2;
 	float area;
 	int vertexIndex;
+
 public:
 
 	Vertex v0,v1,v2;			// vrcholy svetla
 
 	AreaLight(Chunk context, const Vertex atten,const Color color )
 	{
-		model = new FillPolygonModel(context, Material(color, 1.0, 0.0, 0.0, 0.0, 1.0));
-		this->color = color;
-		this->atten = atten;
-		vertexIndex = 0;
+		this->model			= new FillPolygonModel(context, Material(color, 1.0, 0.0, 0.0, 0.0, 1.0));
+		this->color			= color;
+		this->atten			= atten;
+		this->vertexIndex	= 0;
+		this->area			= 0;
 	}
 	
 	virtual void addVertex(Vertex v)
 	{
 		model->addVertex(v);
 		vertexIndex++;
-		if (vertexIndex > 2)
+		if( vertexIndex>2 )
 			prepare();
 	}
 
@@ -57,7 +59,7 @@ public:
 		edge2	= Vertex(model->vertices[1] - model->vertices[0]);
 		normal	= Vertex::cross(edge1,edge2);
 		normal.normalise();
-		area	= (edge1.length() * edge2.length() * 0.5) / MAX_SAMPLES;
+		area	= (edge1.length() * edge2.length() * 0.5) / float(MAX_SAMPLES);
 	}
 
 	void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
@@ -66,33 +68,22 @@ public:
 		ray.direction	= ray.origin - point;
 
 		float d			= ray.direction.length();
+
 		//RAY Direction MUST NOT be normalized, because we need its length in phong
-		Vertex rayDir = ray.direction;
-		rayDir.normalise();
+		Vertex ray_direction = ray.direction;
+		ray_direction.normalise();
 		
-		float cosfi = rayDir * normal;
-		contribution = color * (cosfi * area/(atten.x + atten.y*d + atten.z*d*d));
+		contribution = color * ( ray_direction * normal * area/(atten.x + atten.y*d + atten.z*d*d));
 	}
 
 	virtual Color getLightColor() const
 	{ return color; }
 
-	bool shadow(const Ray& aRay) const
-	{
-		return false;
-	}
-
-	bool isPoint()
-	{ return false; }
-
 	Color getIntensity() const
 	{ return color; }
 	
-	
 	virtual bool isAreaLight()
-	{
-		return true;
-	}
+	{ return true; }
 
 };
 

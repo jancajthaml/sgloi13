@@ -9,13 +9,12 @@
 #define HELPERS_H_
 
 #include <cstdlib>
-
 #include "./../struct/Edge.h"
 #include "./../struct/Color.h"
 #include "../core/types.h"
 #include "./../struct/Vertex.h"
-
-#define MAX_SAMPLES 8
+#include <cmath>
+#define MAX_SAMPLES 7
 
 //TODO COMMENT !!!!!!!
 struct Helper
@@ -24,6 +23,25 @@ struct Helper
 	//FIXME this is a example of a HELPER ... move to Helpers.h
 	static inline int32 round(float x)
 	{ return ((x>=0.5f)?(int32(x)+1):int32(x)); }
+
+	static inline float acos(float x)
+	{
+		float xa = fabsf(x);
+		float t  = ( xa>0.5625f)?(2.0f * asinf ( q3sqrt(0.5f * (1.0f - xa)))):(1.5707963267948966f - asinf (xa));
+		return ( x<0.0f ) ? (3.1415926535897932 - t) : t;
+	}
+
+	static inline float random()
+	{ return float(rand()) * 4.6566129e-10; }
+
+
+	static inline float asinf( float x )
+	{
+		float x2	= x * x;
+		float x4	= x2 * x2;
+		float x8	= x4 * x4;
+		return (((4.5334220547132049e-2 * x2 - 1.1226216762576600e-2) * x4 + (2.6334281471361822e-2 * x2 + 2.0596336163223834e-2)) * x8 + (3.0582043602875735e-2 * x2 + 4.4630538556294605e-2) * x4 + (7.5000364034134126e-2 * x2 + 1.6666666300567365e-1)) * x2 * x + x;
+	}
 
 	static void sort(float *a, int32 n)
 	{
@@ -123,16 +141,6 @@ struct Helper
 				if(x1.b==x2.b==x3.b==x4.b) return true;
 		return false;
 	}
-};
-
-struct RandomPair
-{
-	float value1, value2;
-	RandomPair()
-	{
-		this->value1 = ((float) rand() / RAND_MAX) ;
-		this->value2 = 2 * PI * ((float) rand() / RAND_MAX) ;
-	};
 };
 
 #endif /* HELPERS_H_ */

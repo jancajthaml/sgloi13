@@ -19,25 +19,20 @@
 //TODO COMMENT
 class Light : public SceneNode
 {
-	public:
-		Vertex position;
-		Color color;
 
-		Light(){}
-		virtual ~Light(){};
+public:
+	Vertex position;
+	Color  color;
 
-		virtual void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
-		{}
+	Light(){}
+	virtual ~Light(){};
 
-		virtual bool isPoint()
-		{
-			return false;
-		}
+	virtual void Sample( const Vertex& point, Ray& ray, Color& contribution, const float u = 0, const float v = 0)
+	{}
 	
-		virtual bool isAreaLight()
-		{
-			return false;
-		}
+	virtual bool isAreaLight()
+	{ return false; }
+
 };
 
 #endif

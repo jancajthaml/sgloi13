@@ -82,8 +82,8 @@ using namespace std;
 //#define WIDTH  512
 //#define HEIGHT 512
 
-#define WIDTH  500
-#define HEIGHT 500
+#define WIDTH  400
+#define HEIGHT 400
 
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8

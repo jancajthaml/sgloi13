@@ -36,9 +36,9 @@ struct Vertex
 		w = 1.0f;
 	}
 
-	Vertex(const float aVal)
+	Vertex(const float value)
 	{
-		x = y = z = aVal;
+		x = y = z = value;
 		w= 1.0f;
 	}
 
@@ -165,17 +165,6 @@ struct Vertex
 		result.normalise();
 		return result;
 	}
-
-
-	static inline Vertex random()
-	{
-		RandomPair random;
-
-		return Vertex (
-			cosf(random.value2)*Helper::q3sqrt(1-random.value1),
-			sinf(random.value2)*Helper::q3sqrt(1-random.value1),
-			Helper::q3sqrt(random.value1));
-	};
 
 	static inline Vertex rotate(const Vertex& N, const Vertex& vector)
 	{

@@ -62,7 +62,7 @@ public:
 	{
 		for (std::vector<Light *>::iterator it = lights.begin(); it != lights.end(); ++it)
 		{
-			if ((*it)->isPoint())
+			if( !(*it)->isAreaLight() )
 				delete *it;
 		}
 	}

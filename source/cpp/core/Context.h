@@ -67,7 +67,7 @@
 struct Context
 {
 
-	int_fast8_t id            ;  //Maximum 256 contexts
+	uint8 id            ;  //Maximum 256 contexts
 
 	Chunk storage             ;  // Graphic dependent data storage
 	Viewport viewport         ;
@@ -113,6 +113,7 @@ struct Context
 	Vertex emissiveAtt; //< attenuation factor for this emissive light
 
 
+
 	Context(uint16 width, uint16 height)
 	{
 		storage        = Chunk();
@@ -121,6 +122,8 @@ struct Context
 		storage.w_h    = width * height;
 		storage.color  = Color(0,255,0);
 		storage.size   = 1;
+		storage.envMap = NULL;
+		storage.envMapLoaded = false;
 
 		//----------------------//
 
