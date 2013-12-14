@@ -116,24 +116,10 @@ public:
 	
 	virtual inline Vertex getUV(const Vertex vantage_point)	//const ?
 	{
-		Vertex Vn = Vertex(0,1,0);
-		Vertex Ve = Vertex(1,0,0);
-
-	    //FIXME faster acosf is Helper::acos
-		float phi = acosf( -1.0f * ( Vn* vantage_point ));
-
-	    float v = phi / PI;
-
-	    //FIXME faster acosf is Helper::acos
-	    //FIXME 2*PI should/could be cached
-
-	    float theta = acosf((Ve*vantage_point) / sinf(phi)) / (2.0f * PI);
-	    float u;
-
-	    if ( ( Vertex::cross( Vn, Ve ) * vantage_point ) > 0 )
-	       u = theta;
-	    else
-	       u = 1 - theta;
+		Vertex d = vantage_point - position;
+		d.normalise();
+		float u = 0.5 + (atan2(d.z, d.x))/(2*M_PI);
+		float v = 0.5 - (asin(d.y)/M_PI);
 		return Vertex(u,v);
 	}
 

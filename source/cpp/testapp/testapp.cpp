@@ -12,7 +12,7 @@
 //#define TEST2
 //#define TEST3
 //#define TEST4
-#define TEST5
+//#define TEST5
 #define TEST6
 
 #ifdef TEST0
@@ -83,8 +83,8 @@ using namespace std;
 //#define WIDTH  512
 //#define HEIGHT 512
 
-#define WIDTH  500
-#define HEIGHT 500
+#define WIDTH  800
+#define HEIGHT 800
 
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8
@@ -1492,19 +1492,19 @@ int main(int argc, char **argv)
 	//sphere
 	sglPointLight(275.0f, 600.0f, -200.0f, 1.0, 1.0, 1.0);
 	sglMaterial(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	sglTexture(512, 512, texture);
+	sglTexture(WIDTH, HEIGHT, texture);
 	sglSphere(250.0f, 0.0f, 250.0f, 100.0f);
 	
 	//back wall
 	sglBegin(SGL_POLYGON);
-	sglVertex3f(550.0f, 0.0f, 550.0f);
-	sglVertex3f(0.0f, 0.0f, 550.0f);
-	sglVertex3f(0.0f, 550.0f, 550.0f);
+	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 0);
+	sglVertex5f(0.0f, 0.0f, 550.0f, 0, 0);
+	sglVertex5f(0.0f, 550.0f, 550.0f, 0, 1);
 	sglEnd();
 	sglBegin(SGL_POLYGON);
-	sglVertex3f(0.0f, 550.0f, 550.0f);
-	sglVertex3f(550.0f, 550.0f, 550.0f);
-	sglVertex3f(550.0f, 0.0f, 550.0f);
+	sglVertex5f(0.0f, 550.0f, 550.0f, 0, 1);
+	sglVertex5f(550.0f, 550.0f, 550.0f, 1, 1);
+	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 0);
 	sglEnd();
 
 	
@@ -1542,6 +1542,8 @@ int main(int argc, char **argv)
 	
 	// compute a ray traced image and store it in the color buffer
 	sglRayTraceScene();
+	
+	delete texture;
 	
 }
 #endif

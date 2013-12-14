@@ -33,7 +33,10 @@ struct Bitmap
 
 	Color getColor(const float U, const float V) const
 	{
-		int offset = (int(U * texture_width) + int((1.0f - V) * texture_height) * texture_width) * 3;
+		int sx = 3 * int((1-U) * texture_width);
+		int sy = 3 * int(V * texture_height);
+		//printf("sx: %d, sy: %d\n", sx, sy);
+		int offset = (sx + sy * texture_width);
 
 		Color c = Color
 		(

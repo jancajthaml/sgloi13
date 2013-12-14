@@ -21,13 +21,26 @@ struct Vertex
 	float y;
 	float z;
 	float w;
+	
+	float tx;
+	float ty;
 
 	Vertex()
 	{
-		x = y = z = 0.0f;
+		x = y = z = tx = ty = 0.0f;
 		w = 1.0f;
 	}
-
+	
+	Vertex(float x, float y, float z, float tx, float ty)
+	{
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->w = 1.0f;
+		this->tx = tx;
+		this->ty = ty;
+	}
+	
 	Vertex(Vertex p1, Vertex p2)
 	{
 		x = p2.x - p1.x;
@@ -67,7 +80,7 @@ struct Vertex
 	}
 	
 	void print() const
-	{ printf("[%f, %f, %f, %f]\n", x, y, z, w); }
+	{ printf("[%f, %f, %f, %f, %f, %f]\n", x, y, z, w, tx, ty); }
 	
 	//FIXME use fast square root
 	inline float length()
