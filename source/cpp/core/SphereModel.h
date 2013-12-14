@@ -76,9 +76,13 @@ public:
 		Vertex Vn = Vertex(0,1,0);
 		Vertex Ve = Vertex(1,0,0);
 
+	    //FIXME faster acosf is Helper::acos
 		float phi = acosf( -1.0f * ( Vn* normal ));
 
 	    float v = phi / PI;
+
+	    //FIXME faster acosf is Helper::acos
+	    //FIXME 2*PI should/could be cached
 
 	    float theta = acosf((Ve*normal) / sinf(phi)) / (2.0f * PI);
 	    float u;
