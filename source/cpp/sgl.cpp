@@ -372,17 +372,12 @@ void sglVertex2f(float x, float y)
 // Using "Midpoint circle algorithm" @see http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 void sglCircle(float x, float y, float z, float r)
 {
-	if (r < 0)
+	if( r<0 )
 	{
 		setErrCode(SGL_INVALID_VALUE);
 		return;
 	}
 
-	//if (current()->BeginBeforeEnd())
-	//{
-		//setErrCode(SGL_INVALID_OPERATION);
-		//return;
-	//}
 
 	current()->drawCricle(x, y, z, r);
 }
@@ -636,7 +631,7 @@ void sglViewport(int x, int y, int width, int height)
 //RGB Color
 void sglColor3f(float r, float g, float b)
 {
-	current()->storage.color = Color(r, g, b);
+	current()->material.color = current()->storage.color = Color(r, g, b);
 }
 
 // ?

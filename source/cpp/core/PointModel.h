@@ -41,7 +41,7 @@ public:
 		{
 			uint16 i = -1;
 			while( ++i<s )
-				setPixel3D( (vertices)[i].x, (vertices)[i].y,(vertices)[i].z, context );
+				setPixel( (vertices)[i].x, (vertices)[i].y,(vertices)[i].z, context );
 		}
 		else
 		{
@@ -57,7 +57,7 @@ public:
 				Vertex v = (vertices)[i];
 				for( uint8 i = -thickness; i < context.size-1; i++ )
 				for( uint8 j = -thickness; j < context.size-1; j++ )
-					setPixel3D(v.x+j, v.y+i,v.z, context);
+					setPixel(v.x+j, v.y+i,v.z, context);
 			}
 		}
 

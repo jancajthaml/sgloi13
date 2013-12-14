@@ -34,13 +34,12 @@ struct Bitmap
 	Color getColor(const float U, const float V) const
 	{
 		int offset = (int(U * texture_width) + int((1.0f - V) * texture_height) * texture_width) * 3;
-		float f = 1.0f/255;
 
 		Color c = Color
 		(
-			texture[offset] * f,
-			texture[offset+1] * f,
-			texture[offset+2] * f
+			texture[offset],
+			texture[offset+1],
+			texture[offset+2]
 		);
 
 		return c;

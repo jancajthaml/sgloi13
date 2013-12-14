@@ -53,7 +53,7 @@ public:
 	 @param _context	graphics context
 	 @param _material	material to be used with this model
 	 */
-	Model( Chunk _context, Material _material)
+	Model( Chunk &_context, Material _material)
 	{
 		this->context  = _context;
 		this->material = _material;
@@ -88,14 +88,15 @@ public:
 	
 	static inline void setPixelChunk( int16 y, int16 start, int16 end, float z, float z_growth, Chunk &context )
 	{
+		//FIXME use uint8
 		for( int16 x=start ; x<end ; x++ )
 		{
-			setPixel3D( x,y,z,context );
+			setPixel( x,y,z,context );
 			z += z_growth;
 		}
 	}
 	
-	static inline void setPixel3D( int16 x, int16 y, float z, Chunk &context)
+	static inline void setPixel( int16 x, int16 y, float z, Chunk &context)
 	{
 		const int32 index = x + context.w * y;
 
@@ -121,7 +122,7 @@ public:
 		const int16 c1	= c0 - (dx << 1);
 		int16 p		= c0 - dx;
 
-		setPixel3D( x1, y1, z1, context );
+		setPixel( x1, y1, z1, context );
 
 		for( int16 i = x1 + 1; i <= x2; ++i )
 		{
@@ -148,7 +149,7 @@ public:
 		const int16 c1	= c0 - (dx << 1);
 		int16 p		= c0 - dx;
 
-		setPixel3D( y1, x1, z1, context );
+		setPixel( y1, x1, z1, context );
 
 		for( int16 i = x1 + 1; i <= x2; ++i )
 		{
@@ -227,7 +228,7 @@ public:
 	virtual inline bool backfaceCull(const Ray &ray, const float &t)
 	{ return true;}
 	
-	inline Vertex getUV(const Vertex normal)
+	inline Vertex getUV(const Vertex vantage_point)
 	{ return Vertex(-1); }
 
 };
