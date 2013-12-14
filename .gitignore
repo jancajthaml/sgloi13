@@ -13,7 +13,6 @@ brejcja1/sgl/testapp/test.dSYM/Contents/Resources/DWARF/test
 *.swp
 desc.neon
 source/cpp/Archive.zip
-source/cpp/testapp/testapp
 publish.zip
 source/cpp/core/Rasterization.h
 source/cpp/testapp/core/Context.h
