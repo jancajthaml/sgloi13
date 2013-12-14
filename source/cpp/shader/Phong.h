@@ -90,7 +90,6 @@ private:
 						}
 					}
 				}
-
 				//####################[ SHADING
 
 				if(!under_the_shadow)
@@ -103,58 +102,58 @@ private:
 				//---------------[ SPECULAR
 
 				color += lightColor * Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
+			}
+			//####################[REFLECTION
 
-				//####################[REFLECTION
+			if( material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0 )
+			{
+				Ray reflected_ray;
+				reflected_ray.origin     = vantage_point;
+				reflected_ray.direction  = ray.direction - ( N * (ray.direction*N*2) );
+				reflected_ray.depth      = ray.depth-1;
+				reflected_ray.type		 = RAY_SECONDARY;
+				reflected_ray.direction.normalise();
 
-				if( material.trn < 1.0f && material.ks > 0.0f && ray.depth >= 0 )
+				color += material.ks * castAndShade(reflected_ray,children,lights,context);
+			}
+
+			//####################[REFRACTION
+
+			float dot		= ray.direction * N;
+			float R_index	= 0.0f;
+
+			if( dot<0.0f )
+			{
+				R_index = 1.0f/material.ior;
+			}
+			else
+			{
+				R_index	= material.ior;
+				dot		= -dot;
+				N		= -1.0f * N;
+			}
+			if( material.trn>0 && ray.depth>=0 )
+			{
+				float cosT2 = 1.0f - R_index*R_index*(1.0f-dot*dot);
+
+				if( cosT2>0.0f )
 				{
-					Ray reflected_ray;
-					reflected_ray.origin     = vantage_point;
-					reflected_ray.direction  = ray.direction - ( N * (ray.direction*N*2) );
-					reflected_ray.depth      = ray.depth-1;
-					reflected_ray.type		 = RAY_SECONDARY;
-					reflected_ray.direction.normalise();
+					cosT2		= dot * R_index + Helper::q3sqrt(cosT2);
+					Vertex T	= -cosT2 * N + ray.direction * R_index;
 
-					color += material.ks * castAndShade(reflected_ray,children,lights,context);
-				}
+					Ray refracted_ray;
+					refracted_ray.origin		= vantage_point + T * 0.1f;
+					refracted_ray.direction		= T;
+					refracted_ray.depth			= ray.depth-1;
+					refracted_ray.type			= RAY_SECONDARY;
+					refracted_ray.environment	= R_index;
 
-				//####################[REFRACTION
+					refracted_ray.direction.normalise();
 
-				float dot		= ray.direction * N;
-				float R_index	= 0.0f;
-
-				if( dot<0.0f )
-				{
-					R_index = 1.0f/material.ior;
-				}
-				else
-				{
-					R_index	= material.ior;
-					dot		= -dot;
-					N		= -1.0f * N;
-				}
-				if( material.trn>0 && ray.depth>=0 )
-				{
-					float cosT2 = 1.0f - R_index*R_index*(1.0f-dot*dot);
-
-					if( cosT2>0.0f )
-					{
-						cosT2		= dot * R_index + Helper::q3sqrt(cosT2);
-						Vertex T	= -cosT2 * N + ray.direction * R_index;
-
-						Ray refracted_ray;
-						refracted_ray.origin		= vantage_point + T * 0.1f;
-						refracted_ray.direction		= T;
-						refracted_ray.depth			= ray.depth-1;
-						refracted_ray.type			= RAY_SECONDARY;
-						refracted_ray.environment	= R_index;
-
-						refracted_ray.direction.normalise();
-
-						color						+= material.trn * castAndShade(refracted_ray,children,lights,context);
-					}
+					color						+= material.trn * castAndShade(refracted_ray,children,lights,context);
 				}
 			}
+
 		}
 		return color;
 	}

@@ -45,8 +45,8 @@
 #endif
 
 #ifdef TEST5
-//#define TEST_5A
-//#define TEST_5B
+#define TEST_5A
+#define TEST_5B
 #define TEST_5C
 #define TEST_5D
 #endif
@@ -82,13 +82,9 @@ using namespace std;
 //#define WIDTH  512
 //#define HEIGHT 512
 
-<<<<<<< HEAD
-#define WIDTH  400
-#define HEIGHT 400
-=======
+
 #define WIDTH  800
 #define HEIGHT 800
->>>>>>> 2c107d97ce9277cea985f50e082b9a24a0e86fb8
 
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8
