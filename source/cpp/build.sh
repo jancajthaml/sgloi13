@@ -4,7 +4,7 @@ if [ "$1" = "clean" ]; then
 	make clean
 	make
 	cd ../ 
-	ln -s ./testapp/testapp testappp
+	ln -s ./testapp/testapplication testappp
 	if [ "$2" = "debug" ]; then
 	gdb ./testappp
 	else
@@ -14,7 +14,7 @@ else
 	cd testapp
 	make
 	cd ../ 
-	ln -s ./testapp/testapp testappp
+	ln -s ./testapp/testapplication testappp
 	if [ "$1" = "debug" ]; then
 	gdb ./testappp
 	else

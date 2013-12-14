@@ -1,4 +1,3 @@
-testapp/testapp
 brejcja1/sgl/testapp/testapp
 brejcja1/sgl/testappp
 brejcja1/sgl/docs
@@ -14,7 +13,6 @@ brejcja1/sgl/testapp/test.dSYM/Contents/Resources/DWARF/test
 *.swp
 desc.neon
 source/cpp/Archive.zip
-source/cpp/testapp/testapp
 publish.zip
 source/cpp/core/Rasterization.h
 source/cpp/testapp/core/Context.h
@@ -42,3 +40,10 @@ xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcdebugge
 source/cpp/Archiv.zip
 www/publish2.zip
 publish2.zip
+newLibsgl.xccheckout
+contents.xcworkspacedata
+UserInterfaceState.xcuserstate
+source/cpp/newLibsgl/newLibsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/newLibsgl.xcscheme
+source/cpp/newLibsgl/newLibsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/xcschememanagement.plist
+Breakpoints_v2.xcbkptlist
+testapplication
