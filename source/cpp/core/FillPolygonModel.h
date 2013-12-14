@@ -20,6 +20,9 @@ private:
 	bool cached;
 	Vertex cache_10;
 	Vertex cache_20;
+	float U;
+	float V;
+
 public:
 	/**
 	 Constructor of model
@@ -166,6 +169,11 @@ public:
 
 		float hit = (cache_20*s2) * inverse;
 		if( hit < 0.0f || hit > 1073741824.0f ) return false;
+		else
+		{
+			U = b1;
+			V = b2;
+		}
 
 		t = hit;
 		return true;
@@ -206,6 +214,13 @@ public:
 		return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0f;
 	}
 
+	inline Vertex getUV(const Vertex normal)
+	{
+		#ifdef USE_TRIANGLE_NORMAL
+			return Vertex(U,V);
+		#endif
+		return Vertex(-1);
+	}
 };
 
 #endif

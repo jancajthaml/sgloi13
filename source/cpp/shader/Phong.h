@@ -50,7 +50,7 @@ private:
 
 				float r1sq	= Helper::q3sqrt( Helper::random() );
  				light->Sample(vantage_point, lightRay, lightColor, 1 - r1sq, Helper::random() * r1sq);
-				
+
 				//LIGHT Direction
 				L = lightRay.direction;
 				float length	= L.length();
@@ -67,7 +67,7 @@ private:
 
 				float t     = FLOAT_MAX;
 
-				if(0.0f < length - 0.1 && ray.depth >= 0)
+				if(ray.type == RAY_PRIMARY && 0.0f < length - 0.1 && ray.depth >= 0)
 				{
 					for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 					{
@@ -97,7 +97,7 @@ private:
 				{
 					//---------------[ DIFFUSE
 
-					color += lightColor * (material.kd * material.getColor(ray)) * Helper::max(0.0f, N*L);
+					color += lightColor * (material.kd * material.getColor(model->getUV(N))) * Helper::max(0.0f, N*L);
 				}
 
 				//---------------[ SPECULAR
@@ -147,7 +147,6 @@ private:
 						refracted_ray.direction		= T;
 						refracted_ray.depth			= ray.depth-1;
 						refracted_ray.type			= RAY_SECONDARY;
-						refracted_ray.environment	= R_index;
 
 						refracted_ray.direction.normalise();
 
@@ -179,8 +178,7 @@ public:
 			}
 		}
 
-		if( isAreaLight )
-			return model->getMaterial().getColor( ray );
+		if( isAreaLight ) return model->getMaterial().color;
 		if( tmin<FLOAT_MAX )
 			return calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context);
 		else if( context.envMapLoaded )

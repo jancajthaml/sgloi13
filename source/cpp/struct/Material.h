@@ -60,7 +60,6 @@ struct Material
 		this->trn				= _trn;
 		this->ior				= _ior;
 		this->using_textures	= false;
-		//this->texture	= *NULL;
 	}
 	
 	Material()
@@ -72,15 +71,12 @@ struct Material
 		this->trn				= 0.0f;
 		this->ior				= 0.0f;
 		this->using_textures	= false;
-		//this->texture	= 0;
 	}
 	
-	Color getColor(const Ray &ray) const
+	Color getColor(const Vertex uv) const
 	{
-		if( this->using_textures )
-		{
-			return color;
-		}
+		if( this->using_textures && uv.x!=-1 )
+			return texture.getColor(uv.x,uv.y);
 
 		return color;
 	}

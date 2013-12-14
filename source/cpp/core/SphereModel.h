@@ -9,6 +9,7 @@
 #ifndef libsgl_SphereModel_h
 #define libsgl_SphereModel_h
 #include <cstdio>
+#include <cmath>
 #include "../struct/Material.h"
 #include "../struct/Vertex.h"
 #include "Model.h"
@@ -19,6 +20,7 @@ class SphereModel : public Model
 public:
 	Vertex position;
 	uint16 r;
+
 	/**
 	 Constructor of Spehre model
 	 @param _g			drawing library
@@ -69,6 +71,26 @@ public:
 	virtual inline bool backfaceCull(const Ray &ray, const float &t)
 	{ return false; }
 	
+	inline Vertex getUV(const Vertex normal)
+	{
+		Vertex Vn = Vertex(0,1,0);
+		Vertex Ve = Vertex(1,0,0);
+
+		float phi = acosf( -1.0f * ( Vn* normal ));
+
+	    float v = phi / PI;
+
+	    float theta = acosf((Ve*normal) / sinf(phi)) / (2.0f * PI);
+	    float u;
+
+	    if ( ( Vertex::cross( Vn, Ve )* normal ) > 0 )
+	       u = theta;
+	    else
+	       u = 1 - theta;
+
+		return Vertex(u,v);
+	}
+
 };
 
 #endif
