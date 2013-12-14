@@ -165,6 +165,13 @@ struct Context
 
 	inline void setVertex4f(float x, float y, float z, float w)
 	{ scene.getCurrentNode()->addVertex(create(x, y, z, w)); }
+	
+	///no need to transform, used only with raytracing
+	inline void setVertex5f(float x, float y, float z, float tx, float ty)
+	{
+		check_MVP();
+		scene.getCurrentNode()->addVertex(Vertex(x, y, z, tx, ty));
+	}
 
 	inline void rasterize()
 	{ scene.rasterize(); }

@@ -12,7 +12,8 @@
 //#define TEST2
 //#define TEST3
 //#define TEST4
-#define TEST5
+//#define TEST5
+#define TEST6
 
 #ifdef TEST0
 #define TEST_0A
@@ -82,8 +83,8 @@ using namespace std;
 //#define WIDTH  512
 //#define HEIGHT 512
 
-#define WIDTH  500
-#define HEIGHT 500
+#define WIDTH  800
+#define HEIGHT 800
 
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8
@@ -1470,6 +1471,81 @@ int main(int argc, char **argv)
    cout<<"    test5d.png : "<<time<<endl;
    WriteTGA("results/test5d.tga");
  }
+#endif
+	
+#ifdef TEST6
+{
+	sglSetContext(_contexts[5]);
+	DrawTestScene2D();
+	float *texture = sglGetColorBufferPointer();
+	sglSetContext(_contexts[6]);
+	// projection transformation
+	sglMatrixMode(SGL_PROJECTION);
+	sglLoadIdentity();
+	// modelview transformation
+	sglMatrixMode(SGL_MODELVIEW);
+	sglLoadIdentity();
+	
+	/// BEGIN SCENE DEFINITION
+	sglBeginScene();
+	
+	//sphere
+	sglPointLight(275.0f, 600.0f, -200.0f, 1.0, 1.0, 1.0);
+	sglMaterial(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	sglTexture(WIDTH, HEIGHT, texture);
+	sglSphere(250.0f, 0.0f, 250.0f, 100.0f);
+	
+	//back wall
+	sglBegin(SGL_POLYGON);
+	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 0);
+	sglVertex5f(0.0f, 0.0f, 550.0f, 0, 0);
+	sglVertex5f(0.0f, 550.0f, 550.0f, 0, 1);
+	sglEnd();
+	sglBegin(SGL_POLYGON);
+	sglVertex5f(0.0f, 550.0f, 550.0f, 0, 1);
+	sglVertex5f(550.0f, 550.0f, 550.0f, 1, 1);
+	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 0);
+	sglEnd();
+
+	
+	sglEndScene();
+	
+	sglAreaMode(SGL_FILL);
+	sglEnable(SGL_DEPTH_TEST);
+	sglClearColor(1.0f, 1.0f, 1.0f, 1);
+	sglClear(SGL_COLOR_BUFFER_BIT|SGL_DEPTH_BUFFER_BIT);
+	
+	// set the viewport transform
+	sglViewport(0, 0, WIDTH, HEIGHT);
+	
+	// setup the camera using appopriate projection transformation
+	// note that the resolution stored in the nff file is ignored
+	sglMatrixMode(SGL_PROJECTION);
+	sglLoadIdentity();
+	sgluPerspective (40, (float)WIDTH/HEIGHT, 1.0, 1800.0);
+	
+	// modelview transformation
+	sglMatrixMode(SGL_MODELVIEW);
+	sglLoadIdentity();
+	sgluLookAt(
+			   275.0f,
+			   275.0f,
+			   -800.0f,
+			   275.0f,
+			   275.0f,
+			   0.0f,
+			   0.0f,
+			   1.0f,
+			   0.0f
+			   );
+	
+	
+	// compute a ray traced image and store it in the color buffer
+	sglRayTraceScene();
+	
+	delete texture;
+	
+}
 #endif
 
   

@@ -216,10 +216,37 @@ public:
 		return ray.direction * getNormal(ray.extrapolate(t)) >= 0.0f;
 	}
 
-	inline Vertex getUV(const Vertex vantage_point)
+	virtual inline Vertex getUV(const Vertex vantage_point)
 	{
 		#ifdef USE_TRIANGLE_NORMAL
-			return Vertex(U,V);
+			//calculate uv with texturing coordinates set in vertex
+			//vantage_point.print();
+			
+			float u,v;
+			Vertex v0 = vertices[0];
+			Vertex v1 = vertices[1];
+			Vertex v2 = vertices[2];
+			
+			//first edge
+			Vertex e1 = v0 - v1;
+			float dx = abs(v0.tx - v1.tx);
+			float dy = abs(v0.ty - v1.ty);
+			if (dx > 0)
+				u = (vantage_point.x / abs(e1.x)) * dx;
+			if (dy > 0)
+				v = (vantage_point.y / abs(e1.y)) * dy;
+			
+			//second edge
+			e1 = v2 - v1;
+			dx = abs(v2.tx - v1.tx);
+			dy = abs(v2.ty - v1.ty);
+			if (dx > 0)
+				u = (vantage_point.x / abs(e1.x)) * dx;
+			if (dy > 0)
+				v = (vantage_point.y / abs(e1.y)) * dy;
+					 
+			return Vertex(u,v);
+		
 		#endif
 		return Vertex(-1);
 	}

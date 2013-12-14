@@ -760,5 +760,9 @@ void sglEnvironmentMap(const int width,
 					   float *texels);
 
 
+void sglTexture(const int width, const int height, float *image);
+
+void sglVertex5f(float x, float y, float z, float tx, float ty);
+
 
 #endif /* of _SGL_H_ */

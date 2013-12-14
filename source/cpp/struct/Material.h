@@ -80,6 +80,12 @@ struct Material
 
 		return color;
 	}
+	
+	void setTexture(Bitmap _texture)
+	{
+		texture = _texture;
+		using_textures = true;
+	}
 
 };
 

@@ -253,7 +253,16 @@ int sglGetContext(void)
 //LongName Function
 float* sglGetColorBufferPointer(void)
 {
-	return (float*)current()->storage.buffer;
+	//return (float*)current()->storage.buffer;
+	Color *buffer = current()->storage.buffer;
+	float *buff = new float[current()->storage.w_h * 3];
+	for (int i = 0; i < current()->storage.w_h; ++i)
+	{
+		buff[3*i] = buffer[i].r;
+		buff[3*i+1] = buffer[i].g;
+		buff[3*i+2] = buffer[i].b;
+	}
+	return buff;
     //return (float *) current()->buffer;
 }
 
@@ -335,6 +344,14 @@ void sglEnd(void)
 	 //we can rasterize
 	 if (!current()->beginSceneBeforeEnd())
 		 current()->rasterize();
+}
+
+/*
+ for setting point with texture mapping
+ */
+void sglVertex5f(float x, float y, float z, float tx, float ty)
+{
+	current()->setVertex5f(x, y, z, tx, ty);
 }
 
 //Vertex with 3 float coords in homogenous coordinates
@@ -771,6 +788,17 @@ void sglMaterial(const float r, const float g, const float b, const float kd, co
 	m.shine = shine;
 	m.trn = T;
 	m.ior = ior;
+}
+
+void sglTexture(const int width, const int height, float *image)
+{
+	if(current()->beginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+	///set texture
+	current()->material.setTexture(Bitmap(width, height, image));
 }
 
 //Point Light

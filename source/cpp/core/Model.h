@@ -228,7 +228,7 @@ public:
 	virtual inline bool backfaceCull(const Ray &ray, const float &t)
 	{ return true;}
 	
-	inline Vertex getUV(const Vertex vantage_point)
+	virtual inline Vertex getUV(const Vertex vantage_point)
 	{ return Vertex(-1); }
 
 };
