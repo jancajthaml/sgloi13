@@ -14,8 +14,8 @@ OBJS = testapp.o ../sgl.o nffread.o timer.o hdrloader.o
 OBJS2 = raytracer.o sgl/sgl.o nffread.o timer.o hdrloader.o
 TEST = ../tests.cpp
 #-lXmu -lXi 
-all: testapp
-testapp: $(OBJS)
+all: testapplication
+testapplication: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(LIBDIR) $(OBJS) $(LIBRARIES)  
 
 .cpp.o:
