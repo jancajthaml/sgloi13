@@ -825,6 +825,13 @@ void sglEnvironmentMap(const int width, const int height, float *texels)
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
+	//set environment map
+	Context *c = current();
+	c->scene.context.envMap = texels;
+	c->scene.context.ew = width;
+	c->scene.context.eh = height;
+	c->scene.context.ew_h = width * height;
+	c->scene.context.envMapLoaded = true;
 }
 
 // ?

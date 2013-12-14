@@ -120,7 +120,8 @@ struct Context
 		storage.w_h    = width * height;
 		storage.color  = Color(0,255,0);
 		storage.size   = 1;
-
+		storage.envMap = NULL;
+		storage.envMapLoaded = false;
 		//----------------------//
 
 		//Initialise Drawing
