@@ -15,6 +15,8 @@
 #include "../core/types.h"
 #include "./../struct/Vertex.h"
 
+#define MAX_SAMPLES 8
+
 //TODO COMMENT !!!!!!!
 struct Helper
 {

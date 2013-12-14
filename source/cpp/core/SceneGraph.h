@@ -62,7 +62,8 @@ public:
 	{
 		for (std::vector<Light *>::iterator it = lights.begin(); it != lights.end(); ++it)
 		{
-			delete *it;
+			if ((*it)->isPoint())
+				delete *it;
 		}
 	}
 
@@ -188,7 +189,7 @@ public:
 	 */
 	void commitCurrentNode(bool isLight)
 	{
-		if( !isLight && currentNode!=NULL )
+		if( currentNode!=NULL )
 			children.push_back(currentNode);
 		currentNode = NULL;
 	}

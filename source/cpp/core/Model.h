@@ -29,13 +29,12 @@ protected:
 	///graphics context
 	Chunk context;
 	
-	///stack holding vertices of this model
-	std::vector< Vertex > vertices;
-	
 	///material of this model
 	Material material;
 	
 public:
+	///stack holding vertices of this model
+	std::vector< Vertex > vertices;
 	
 	Model(){}
 	

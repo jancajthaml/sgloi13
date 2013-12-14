@@ -389,10 +389,12 @@ struct Context
 		//resolve AreaLights
 		if (areaLight)
 		{
-			printf("resolving area light\n");
 			pushTypeState(SGL_AREA_LIGHT);
-			AreaLight *light = new AreaLight(emissiveAtt, emissiveColor);
+			//create new light
+			AreaLight *light = new AreaLight(storage, emissiveAtt, emissiveColor);
+			//add new light to scene
 			scene.addLight(light);
+			//set the light as new node to add points (as the AreaLight is a triangle)
 			scene.beginNewNode(light);
 			return;
 		}

@@ -13,6 +13,7 @@
 #include <cmath>
 #include <typeinfo>
 
+
 class Phong
 {
 
@@ -27,72 +28,34 @@ private:
 		Vertex  L;
 		Vertex N = model->getNormal(vantage_point);
 
-		//vector toward viewer
-		//V = -1.0f * ray.direction;
-
 		const Material material	= model->getMaterial();
-
-		const int NUM_SAMPLES = 0;
-
-		if( ray.type == RAY_PRIMARY )
-		{
-			float contrib = 1.0f / NUM_SAMPLES;
-
-			for (int i = 0; i < NUM_SAMPLES; ++i)
-			{
-				Vertex random	= Vertex::random();
-				random			= Vertex::rotate( N,random );
-
-				Ray global_illumination_ray;
-				global_illumination_ray.type		= RAY_SECONDARY;
-				global_illumination_ray.direction	= random;
-				global_illumination_ray.origin		= i;
-				Color m = material.color;
-				Color plus = (castAndShade( global_illumination_ray, children, lights, context) * material.kd * contrib) /* *m */ ;
-
-				color.r += m.r+plus.r;
-				color.g += m.g+plus.g;
-				color.b += m.b+plus.b;
-			}
-		}
-
 		const long size			= lights.size();
-		//int pointer				= -1;
-		//float lightContrib		= 1.0f/size;
+
 		int maxSample			= 1;
 
 		for( int pointer = 0; pointer<size; pointer++ )
 		{
 			Light *light = lights[pointer];
+			
 
-			//C++ doesnt have a instanceof
-
-			//if(light.isPoint())printf("area light is point\n");
-							//else printf("area light not point\n");
 			if( !light->isPoint() )
-			{
-				maxSample = 8;
-			}
+				maxSample = MAX_SAMPLES;
 
-			for( int sample = 0; sample < maxSample; sample++ )
+			for( int sample = 0; sample < maxSample; ++sample )
 			{
 
-				/*if(is_point)
-				{
-					//static_cast<PointLight*>(light)
-					//SAMPLE POINT LIGHT
-				}
-				else
-				{
-					//static_cast<AreaLight*>(light)
-					//SAMPLE AREA LIGHT
-				}*/
-
-				//LIGHT DIRECTION
-				//L				= light.position - vantage_point;
 				Ray lightRay;
 				Color lightColor;
-				light->Sample(vantage_point, lightRay, lightColor);
+				
+				//calculate random point in triangle
+				float r1 = (float)rand() / (float)RAND_MAX;
+				float r2 = (float)rand() / (float)RAND_MAX;
+				float r1sq = Helper::q3sqrt(r1);
+				float r1p = 1 - r1sq;
+				float r2p = r2 * r1sq;
+ 				light->Sample(vantage_point, lightRay, lightColor, r1p, r2p);
+				
+				//LIGHT Direction
 				L = lightRay.direction;
 				float length	= L.length();
 				L.normalise();
@@ -138,13 +101,12 @@ private:
 				{
 					//---------------[ DIFFUSE
 
-					color += (material.kd * material.color) * Helper::max(0.0f, N*L);
+					color += lightColor * (material.kd * material.color) * Helper::max(0.0f, N*L);
 				}
 
 				//---------------[ SPECULAR
 
-				color += Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
-				color *= light->color;
+				color += lightColor * Color(material.ks, material.ks, material.ks) * powf(Helper::max(0.0f, ray.direction * Vertex::reflextionNormalised(L,N)), material.shine);
 
 				//####################[REFLECTION
 
