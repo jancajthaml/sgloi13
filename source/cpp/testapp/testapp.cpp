@@ -13,6 +13,7 @@
 //#define TEST3
 //#define TEST4
 #define TEST5
+#define TEST6
 
 #ifdef TEST0
 #define TEST_0A
@@ -1470,6 +1471,13 @@ int main(int argc, char **argv)
    cout<<"    test5d.png : "<<time<<endl;
    WriteTGA("results/test5d.tga");
  }
+#endif
+	
+#ifdef TEST6
+{
+	sglSetContext(_contexts[5]);
+	DrawTestScene1A();
+}
 #endif
 
   

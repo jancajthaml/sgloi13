@@ -778,6 +778,17 @@ void sglMaterial(const float r, const float g, const float b, const float kd, co
 	m.ior = ior;
 }
 
+void sglTexture(const int width, const int height, float *image)
+{
+	if(current()->beginBeforeEnd())
+	{
+		setErrCode(SGL_INVALID_OPERATION);
+		return;
+	}
+	///set texture
+	current()->material.setTexture(Bitmap(width, height, image));
+}
+
 //Point Light
 //
 // ? x,y,z base coords r,g,b color and where is the direction ?
