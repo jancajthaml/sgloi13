@@ -835,10 +835,10 @@ void sglEmissiveMaterial(const float r, const float g, const float b, const floa
 		setErrCode(SGL_INVALID_OPERATION);
 		return;
 	}
-	Context *ctx = current();
-	ctx->emissiveColor = Color(r,g,b);
-	ctx->emissiveAtt = Vertex(c0,c1,c2,1.0f);
-	current()->areaLight = true;
+	Context *ctx			= current();
+	ctx->emissiveColor		= Color(r,g,b);
+	ctx->emissiveAtt		= Vertex(c0,c1,c2,1.0f);
+	current()->areaLight	= true;
 }
 
 //---------------------------------------------------------------------------

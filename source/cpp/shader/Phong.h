@@ -13,7 +13,6 @@
 #include <cmath>
 #include <typeinfo>
 
-
 class Phong
 {
 
@@ -102,7 +101,7 @@ private:
 				{
 					//---------------[ DIFFUSE
 
-					color += lightColor * (material.kd * material.color) * Helper::max(0.0f, N*L);
+					color += lightColor * (material.kd * material.getColor(ray)) * Helper::max(0.0f, N*L);
 				}
 
 				//---------------[ SPECULAR
@@ -116,7 +115,6 @@ private:
 					Ray reflected_ray;
 					reflected_ray.origin     = vantage_point;
 					reflected_ray.direction  = ray.direction - ( N * (ray.direction*N*2) );
-					//reflected_ray.direction	 = ray.direction + 2.0f * (N*V)*N;
 					reflected_ray.depth      = ray.depth-1;
 					reflected_ray.type		 = RAY_SECONDARY;
 					reflected_ray.direction.normalise();
@@ -183,8 +181,8 @@ public:
 				model = m;
 			}
 		}
-		if (isAreaLight)
-			return model->getMaterial().color;
+		if( isAreaLight ) return model->getMaterial().getColor( ray );
+
 		return ( tmin<FLOAT_MAX ) ? calculateColor(ray, model, ray.extrapolate(tmin), lights, children, context) : *context.clear;
 	}
 
