@@ -253,17 +253,7 @@ int sglGetContext(void)
 //LongName Function
 float* sglGetColorBufferPointer(void)
 {
-	//return (float*)current()->storage.buffer;
-	Color *buffer = current()->storage.buffer;
-	float *buff = new float[current()->storage.w_h * 3];
-	for (int i = 0; i < current()->storage.w_h; ++i)
-	{
-		buff[3*i] = buffer[i].r;
-		buff[3*i+1] = buffer[i].g;
-		buff[3*i+2] = buffer[i].b;
-	}
-	return buff;
-    //return (float *) current()->buffer;
+	return (float*)current()->storage.buffer;
 }
 
 //---------------------------------------------------------------------------

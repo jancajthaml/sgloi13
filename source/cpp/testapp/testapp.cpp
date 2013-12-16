@@ -83,8 +83,8 @@ using namespace std;
 //#define WIDTH  512
 //#define HEIGHT 512
 
-#define WIDTH  500
-#define HEIGHT 500
+#define WIDTH  800
+#define HEIGHT 800
 
 #define TITLE  "SGL Test Application"
 #define NUM_CONTEXTS 8
@@ -1491,7 +1491,7 @@ int main(int argc, char **argv)
 	
 	//sphere
 	sglPointLight(275.0f, 600.0f, -200.0f, 1.0, 1.0, 1.0);
-	sglMaterial(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	sglMaterial(1.0f, 0.0f, 0.0f, 0.8f, 0.2f, 10.0f, 0.0f, 1.0f);
 	sglTexture(WIDTH, HEIGHT, texture);
 	sglSphere(250.0f, 0.0f, 250.0f, 100.0f);
 	
@@ -1542,8 +1542,7 @@ int main(int argc, char **argv)
 	
 	// compute a ray traced image and store it in the color buffer
 	sglRayTraceScene();
-	
-	delete texture;
+
 	
 }
 #endif
