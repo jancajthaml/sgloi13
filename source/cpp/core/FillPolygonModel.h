@@ -231,21 +231,63 @@ public:
 			
 			//first edge
 			Vertex e1 = v0 - v1;
+			
 			float dx = abs(v0.tx - v1.tx);
 			float dy = abs(v0.ty - v1.ty);
+			bool yused = false;
 			if (dx > 0)
-				u = (vantage_point.x / abs(e1.x)) * dx;
+			{
+				if (abs(e1.x) > abs(e1.y))
+				{
+					u = (vantage_point.x / abs(e1.x)) * dx;
+				}
+				else
+				{
+					yused = true;
+					u = (vantage_point.y / abs(e1.y)) * dy;
+				}
+			}
 			if (dy > 0)
-				v = (vantage_point.y / abs(e1.y)) * dy;
+			{
+				if ((abs(e1.y) >= abs(e1.z)) && !yused)
+				{
+					v = (vantage_point.y / abs(e1.y)) * dy;
+				}
+				else
+				{
+					v = (vantage_point.z / abs(e1.z)) * dy;
+				}
+			}
 			
 			//second edge
 			e1 = v2 - v1;
 			dx = abs(v2.tx - v1.tx);
 			dy = abs(v2.ty - v1.ty);
+			yused = false;
 			if (dx > 0)
-				u = (vantage_point.x / abs(e1.x)) * dx;
+			{
+				if (abs(e1.x) > abs(e1.y))
+				{
+					u = (vantage_point.x / abs(e1.x)) * dx;
+				}
+				else
+				{
+					yused = true;
+					u = (vantage_point.y / abs(e1.y)) * dy;
+				}
+			}
 			if (dy > 0)
-				v = (vantage_point.y / abs(e1.y)) * dy;
+			{
+				if ((abs(e1.y) >= abs(e1.z)) && !yused)
+				{
+					v = (vantage_point.y / abs(e1.y)) * dy;
+				}
+				else
+				{
+					v = (vantage_point.z / abs(e1.z)) * dy;
+				}
+			}
+
 					 
 			return Vertex(u,v);
 		

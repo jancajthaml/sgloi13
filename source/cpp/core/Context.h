@@ -30,6 +30,7 @@
 #include <vector>
 #include "./../sgl.h"
 #include "./types.h"
+#include <cstring>
 
 /*
  * Side-notes:

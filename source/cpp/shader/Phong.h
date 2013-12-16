@@ -67,7 +67,7 @@ private:
 
 				float t     = FLOAT_MAX;
 
-				if(ray.type == RAY_PRIMARY && 0.0f < length - 0.1 && ray.depth >= 0)
+				if(0.0f < length - 0.1 && ray.depth >= 0)
 				{
 					for( std::vector< SceneNode* >::iterator child = children.begin(); child != children.end(); ++child )
 					{

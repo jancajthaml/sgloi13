@@ -9,6 +9,7 @@
 #define MATRIX_H_
 
 #include "Vertex.h"
+#include <cstring>
 
 static const int SIZE_FLOAT = sizeof(float) << 4;
 

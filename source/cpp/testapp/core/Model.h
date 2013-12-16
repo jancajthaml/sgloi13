@@ -10,6 +10,7 @@
 #define libsgl_Model_h
 
 #include <vector>
+#include <cstring>
 #include "./../helpers/Helpers.h"
 #include "../struct/light/Light.h"
 #include "../struct/Material.h"

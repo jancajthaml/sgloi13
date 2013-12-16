@@ -124,6 +124,7 @@ public:
 			float v = 0.5 - (asin(d.y)/M_PI);
 			return Vertex(u,v);
 		}
+		return Vertex(-1);
 	}
 
 };

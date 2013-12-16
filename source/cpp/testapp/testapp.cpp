@@ -106,6 +106,77 @@ public:
 	{return Vector3(A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x);}
 };
 
+struct STGA
+{
+	int width;
+	int height;
+	unsigned char byteCount;
+	float* data;
+	
+	
+	STGA(const char *filename)
+	{
+		data = (float *)NULL;
+		width = 0;
+		height = 0;
+		byteCount = 0;
+		
+		FILE *file;
+		unsigned char type[4];
+		unsigned char info[6];
+		
+        file = fopen(filename, "rb");
+		
+        if (!file)
+			throw runtime_error("File could not be not opened.");
+		
+		fread (&type, sizeof (char), 3, file);
+		fseek (file, 12, SEEK_SET);
+		fread (&info, sizeof (char), 6, file);
+		
+		//image type either 2 (color) or 3 (greyscale)
+		if (type[1] != 0 || (type[2] != 2 && type[2] != 3))
+		{
+			fclose(file);
+			throw runtime_error("Wrong type of file to open.");
+		}
+		
+		width = info[0] + info[1] * 256;
+		height = info[2] + info[3] * 256;
+		byteCount = info[4] / 8;
+		if (byteCount != 3 && byteCount != 4) {
+			fclose(file);
+			throw runtime_error("Wrong type of file to open.");
+		}
+		
+		long imageSize = width * height * byteCount;
+		
+		//allocate memory for image data
+		unsigned char *dataChar = new unsigned char[imageSize];
+		
+		//read in image data
+		fread(dataChar, sizeof(unsigned char), imageSize, file);
+		
+		//convert loaded image data to foat *
+		data = new float[width * height * 3];
+		for (int i = 0; i < width * height; ++i)
+		{
+			data[3 * i] = (float)dataChar[byteCount*i + 2] / 255.0f;
+			data[3 * i + 1] = (float)dataChar[byteCount*i + 1] / 255.0f;
+			data[3 * i + 2] = (float)dataChar[byteCount*i] / 255.0f;
+		}
+		//free original loaded data
+		delete[] dataChar;
+		
+		//close file
+		fclose(file);
+	}
+	
+	~STGA() { delete[] data; data = 0; }
+	
+	void destroy() { delete[] data; data = 0; }
+};
+
 
 typedef unsigned char uint8;
 typedef unsigned int uint;
@@ -1475,9 +1546,12 @@ int main(int argc, char **argv)
 	
 #ifdef TEST6
 {
-	sglSetContext(_contexts[5]);
-	DrawTestScene1A();
+	//sglSetContext(_contexts[5]);
+	//DrawTestScene1A();
+	sglSetContext(3);
 	float *texture = sglGetColorBufferPointer();
+	STGA texture2("./marble.tga");
+	STGA checkboard("./checkboard.tga");
 	sglSetContext(_contexts[6]);
 	// projection transformation
 	sglMatrixMode(SGL_PROJECTION);
@@ -1491,11 +1565,13 @@ int main(int argc, char **argv)
 	
 	//sphere
 	sglPointLight(275.0f, 600.0f, -200.0f, 1.0, 1.0, 1.0);
-	sglMaterial(1.0f, 0.0f, 0.0f, 0.8f, 0.2f, 10.0f, 0.0f, 1.0f);
-	sglTexture(WIDTH, HEIGHT, texture);
-	sglSphere(250.0f, 0.0f, 250.0f, 100.0f);
+	sglMaterial(1.0f, 0.0f, 0.0f, 0.8f, 0.2f, 20.0f, 0.0f, 1.0f);
+	sglTexture(texture2.width, texture2.height, texture2.data);
+	sglSphere(250.0f, 100.0f, 250.0f, 100.0f);
 	
 	//back wall
+	sglMaterial(1.0f, 0.0f, 0.0f, 0.8f, 0.2f, 10.0f, 0.0f, 1.0f);
+	sglTexture(WIDTH, HEIGHT, texture);
 	sglBegin(SGL_POLYGON);
 	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 0);
 	sglVertex5f(0.0f, 0.0f, 550.0f, 0, 0);
@@ -1506,7 +1582,30 @@ int main(int argc, char **argv)
 	sglVertex5f(550.0f, 550.0f, 550.0f, 1, 1);
 	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 0);
 	sglEnd();
+	
+	//floor
+	sglMaterial(1.0f, 0.0f, 0.0f, 0.8f, 0.2f, 10.0f, 0.0f, 1.0f);
+	sglTexture(checkboard.width, checkboard.height, checkboard.data);
+	sglBegin(SGL_POLYGON);
+	sglVertex5f(550.0f, 0.0f, 0.0f, 1, 0);
+	sglVertex5f(0.0f, 0.0f, 0.0f, 0, 0);
+	sglVertex5f(0.0f, 0.0f, 550.0f, 0, 1);
+	
+	sglEnd();
+	sglBegin(SGL_POLYGON);
+	sglVertex5f(0.0f, 0.0f, 550.0f, 0, 1);
+	sglVertex5f(550.0f, 0.0f, 550.0f, 1, 1);
+	sglVertex5f(550.0f, 0.0f, 0.0f, 1, 0);
+	sglEnd();
 
+	/*
+	sglEmissiveMaterial(1.0f, 1.0f, 1.0f, 0, 0, 1);
+	sglBegin(SGL_POLYGON);
+	sglVertex3f(350.0f, 548.0f, 50.0f);
+	sglVertex3f(350.0f, 548.0f, 250.0f);
+	sglVertex3f(200.0f, 548.0f, 250.0f);
+	//sglVertex3f(200.0f, 548.0f, 50.0f);
+	sglEnd();*/
 	
 	sglEndScene();
 	
