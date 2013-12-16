@@ -3,7 +3,6 @@ brejcja1/sgl/testappp
 brejcja1/sgl/docs
 brejcja1/sgl/test
 *.o
-*.tga
 xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/contents.xcworkspacedata
 xcodeproject/libsgl/libsgl.xcodeproj/project.xcworkspace/xcuserdata/janbrejcha.xcuserdatad/UserInterfaceState.xcuserstate
 xcodeproject/libsgl/libsgl.xcodeproj/xcuserdata/janbrejcha.xcuserdatad/xcschemes/libsgl.xcscheme
